@@ -1,0 +1,199 @@
+/* Styles personnalisés extraits de la balise <style> de header.php */
+
+.container.py-5 {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+#profileTabs .nav-link {
+    color: #2c3e50 !important;
+    font-weight: 500;
+}
+#profileTabs .nav-link.active {
+    color: #2c3e50 !important;
+    background-color: rgba(44, 62, 80, 0.1);
+    border-color: #2c3e50;
+}
+#profileTabs .nav-link:hover {
+    color: #2c3e50 !important;
+    background-color: rgba(44, 62, 80, 0.05);
+}
+
+.status-badge.badge.bg-secondary {
+    background-color: #28a745 !important;
+    color: white !important;
+}
+
+.btn-info.action-button,
+a.btn.btn-sm.btn-info.action-button {
+    background-color: #2c3e50 !important;
+    border-color: #2c3e50 !important;
+    color: white !important;
+}
+.btn-info.action-button:hover,
+a.btn.btn-sm.btn-info.action-button:hover {
+    background-color: #1a252f !important;
+    border-color: #1a252f !important;
+    color: white !important;
+}
+
+.badge.bg-secondary {
+    background-color: #495057 !important;
+    color: white !important;
+}
+.status-badge.badge.bg-secondary {
+    background-color: #28a745 !important;
+}
+
+.btn-reserve {
+    background: #2c3e50 !important;
+    color: #fff !important;
+    border: none !important;
+}
+.btn-reserve:hover, .btn-reserve:focus {
+    background: #1a252f !important;
+    color: #fff !important;
+    box-shadow: 0 4px 15px rgba(44,62,80,0.15);
+}
+
+.pagination .page-link {
+    background-color: #2c3e50 !important;
+    border: 1px solid #2c3e50 !important;
+    color: #fff !important;
+    font-weight: 500;
+    transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+}
+.pagination .page-link:hover, .pagination .page-link:focus {
+    background-color: #1a252f !important;
+    border-color: #1a252f !important;
+    color: #fff !important;
+    box-shadow: 0 4px 15px rgba(44,62,80,0.12);
+}
+.pagination .page-item.active .page-link {
+    background-color: #2c3e50 !important;
+    border-color: #2c3e50 !important;
+    color: #fff !important;
+    font-weight: bold;
+    z-index: 2;
+}
+.pagination .page-link:focus {
+    outline: none !important;
+    box-shadow: 0 0 0 0.15rem rgba(44,62,80,0.25) !important;
+}
+.pagination .page-link,
+.pagination .page-link.pagination-enhanced {
+    color: #2c3e50 !important;
+    border: 1px solid #2c3e50 !important;
+    background: #fff !important;
+    font-weight: 500;
+}
+.pagination .page-item.active .page-link,
+.pagination .page-link.active,
+.pagination .page-link:focus,
+.pagination .page-link:hover {
+    background: #2c3e50 !important;
+    color: #fff !important;
+    border-color: #2c3e50 !important;
+    box-shadow: 0 2px 8px rgba(44,62,80,0.10);
+}
+
+.navbar .navbar-nav .nav-link {
+    display: flex;
+    align-items: center;
+    height: 48px;
+    line-height: 1.2;
+    padding-top: 0;
+    padding-bottom: 0;
+    font-size: 1rem;
+}
+.navbar .navbar-nav .nav-item {
+    margin-right: 0.75rem;
+}
+.navbar .navbar-nav .nav-item:last-child {
+    margin-right: 0;
+}
+
+.pagination-info {
+    display: none !important;
+}
+
+.admin-layout {
+    display: flex;
+    width: 100%;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+}
+.admin-layout .sidebar {
+    width: 220px;
+    min-width: 200px;
+    max-width: 260px;
+    background: #2c3e50;
+    color: #fff;
+    min-height: 100vh;
+    padding: 0;
+}
+.admin-layout .content {
+    flex: 1 1 0%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    background: #f8f9fa;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+}
+.admin-layout .container-fluid {
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 1200px;
+    width: 100%;
+    padding: 2rem 0 2rem 2rem;
+}
+@media (max-width: 991.98px) {
+    .admin-layout .sidebar {
+        position: absolute;
+        z-index: 1050;
+        left: -220px;
+        transition: left 0.3s;
+    }
+    .admin-layout .sidebar.active {
+        left: 0;
+    }
+    .admin-layout .content {
+        width: 100%;
+    }
+}
+
+.sidebar .badge.bg-primary {
+    background-color: rgb(33, 86, 112) !important;
+    color: #fff !important;
+}
+
+/* ========== Z-INDEX FIXES ========== */
+/* S'assurer que les modales passent bien au premier plan */
+.modal-reservation,
+.modal-reservation.show,
+.modal-reservation.fade.show {
+    z-index: var(--z-modal) !important;
+}
+
+.modal-backdrop.show {
+    z-index: calc(var(--z-modal) - 1) !important;
+}
+
+/* Fix pour les dropdowns de navigation */
+.navbar .dropdown-menu {
+    z-index: var(--z-dropdown) !important;
+}
+
+/* Fix pour les tooltips et popovers */
+.tooltip {
+    z-index: calc(var(--z-modal) + 10) !important;
+}
+
+.popover {
+    z-index: calc(var(--z-modal) + 5) !important;
+}
