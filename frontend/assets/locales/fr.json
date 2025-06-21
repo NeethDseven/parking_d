@@ -1,0 +1,102 @@
+{
+    "app": {
+        "title": "ParkMe In",
+        "slogan": "Votre solution de stationnement intelligente",
+        "loading": "Chargement..."
+    },
+    "nav": {
+        "home": "Accueil",
+        "places": "Places disponibles",
+        "about": "À propos",
+        "contact": "Contact",
+        "login": "Connexion",
+        "register": "Inscription",
+        "profile": "Mon profil",
+        "admin": "Administration",
+        "logout": "Déconnexion"
+    },
+    "places": {
+        "available": "Places disponibles",
+        "occupied": "Places occupées",
+        "types": {
+            "all": "Tous les types",
+            "standard": "Standard",
+            "handicap": "Handicapé",
+            "electric": "Électrique"
+        },
+        "filter": {
+            "title": "Filtrer les places",
+            "type": "Type de place",
+            "show_fees": "Afficher les tarifs"
+        },
+        "fees": {
+            "title": "Grille tarifaire",
+            "hourly": "Tarif horaire",
+            "daily": "Tarif journalier",
+            "monthly": "Abonnement mensuel"
+        },
+        "book": "Réserver",
+        "details": "Détails"
+    },
+    "reservation": {
+        "title": "Réservation",
+        "confirm": "Confirmer la réservation",
+        "start_date": "Date et heure de début",
+        "duration": "Durée",
+        "hours": "heures",
+        "minutes": "minutes",
+        "total_price": "Prix total",
+        "status": {
+            "pending": "En attente",
+            "confirmed": "Confirmée",
+            "in_progress": "En cours",
+            "completed": "Terminée",
+            "canceled": "Annulée",
+            "immediate": "En cours (immédiat)"
+        },
+        "actions": {
+            "cancel": "Annuler",
+            "confirm": "Confirmer",
+            "details": "Voir détails",
+            "expired": "Réservation expirée"
+        },
+        "form": {
+            "guest": "Réservation invité",
+            "submit": "Réserver maintenant",
+            "free_minutes": "minutes gratuites",
+            "subscribe": "Abonnez-vous pour bénéficier des {0} minutes gratuites !"
+        },
+        "validation": {
+            "place_required": "Erreur: ID de place non défini.",
+            "date_required": "Veuillez sélectionner une date et heure de début.",
+            "duration_positive": "La durée doit être supérieure à zéro."
+        }
+    },
+    "profile": {
+        "tabs": {
+            "info": "Mes informations",
+            "reservations": "Mes réservations",
+            "notifications": "Notifications"
+        },
+        "info": {
+            "title": "Informations personnelles",
+            "first_name": "Prénom",
+            "last_name": "Nom",
+            "email": "Email",
+            "phone": "Téléphone",
+            "new_password": "Nouveau mot de passe",
+            "confirm_password": "Confirmer le nouveau mot de passe",
+            "receive_notifications": "Recevoir des notifications par email",
+            "update": "Mettre à jour mon profil"
+        }
+    },
+    "errors": {
+        "passwords_mismatch": "Les mots de passe ne correspondent pas.",
+        "invalid_email": "Veuillez entrer une adresse email valide.",
+        "required_field": "Ce champ est requis."
+    },
+    "success": {
+        "profile_updated": "Votre profil a été mis à jour avec succès.",
+        "reservation_confirmed": "Votre réservation a été confirmée."
+    }
+}

@@ -1,0 +1,11 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /projet/parking_d/
+
+    # Ne pas appliquer la règle si le fichier ou le dossier existe
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    
+    # Réécrire l'URL pour le routeur MVC
+    RewriteRule ^(.*)$ index.php?url=$1 [QSA,L]
+</IfModule>

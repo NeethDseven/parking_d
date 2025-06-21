@@ -1,0 +1,123 @@
+/* Variables CSS Uniformes - Basées sur le style header élégant */
+:root {
+  /* ========== COULEURS PRINCIPALES ========== */
+  /* Basé sur votre nouvelle couleur #2c3e50 */
+  --primary-dark: #1a252f;
+  /* Footer et éléments sombres */
+  --primary-main: #2c3e50;
+  /* Couleur principale - #2c3e50 */
+  --primary-light: #34495e;
+  /* Variation claire */
+  --header-bg: #2c3e50;
+  /* Header couleur #2c3e50 */
+  /* ========== BACKGROUNDS (Basé sur la page places) ========== */
+  --bg-primary: linear-gradient(135deg, #f2f2f2 0%, #eaeaea 50%, #e6e6e6 100%);
+  /* Fond principal de la page places */
+  --bg-primary-solid: #eaeaea;
+  /* Version solide pour compatibilité */
+  --bg-secondary: #ffffff;
+  /* Blanc pur pour cartes */
+  --bg-sidebar: #f8f9fa;
+  /* Blanc cassé pour sidebar admin */
+  --bg-header: #2c3e50;
+  /* Header background #2c3e50 */
+  --bg-footer: #2c3e50;
+  /* Footer background #2c3e50 */
+
+  /* ========== COULEURS ACCENT ========== */
+  --accent-primary: #f1c40f;
+  /* Or/doré - couleur accent de votre thème */
+  --accent-hover: #d4af37;
+  /* Or plus foncé au survol */
+  --accent-light: rgba(241, 196, 15, 0.1);
+  --accent-dark: #b8860b;
+  /* Or encore plus foncé */
+
+  /* ========== COULEURS TEXTE (Contraste amélioré) ========== */
+  --text-primary: #2c3e50;
+  /* Texte principal plus foncé */
+  --text-secondary: #34495e;
+  /* Texte secondaire plus visible */
+  --text-light: rgba(255, 255, 255, 0.95);
+  /* Texte sur fond sombre */
+  --text-muted: rgba(255, 255, 255, 0.8);
+  /* Texte atténué */
+  --text-dark: #1a252f;
+  /* Texte très foncé pour contraste */
+
+  /* ========== COULEURS STATUS ========== */
+  --success: #27ae60;
+  /* Vert élégant */
+  --danger: #c0392b;
+  /* Rouge élégant */
+  --warning: #f39c12;
+  /* Orange/ambre */
+  --info: #2980b9;
+  /* Bleu élégant */
+
+  /* ========== BORDERS ========== */
+  --border-light: rgba(0, 0, 0, 0.08);
+  --border-medium: rgba(0, 0, 0, 0.12);
+  --border-accent: var(--accent-primary);
+
+  /* ========== SHADOWS ========== */
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 15px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 8px 25px rgba(0, 0, 0, 0.15);
+  --shadow-xl: 0 12px 30px rgba(0, 0, 0, 0.2);
+  --shadow-sidebar: 2px 0 10px rgba(0, 0, 0, 0.08);
+  /* Ombre droite sidebar */
+
+  /* ========== RADIUS ========== */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  /* ========== SPACING ========== */
+  --spacing-xs: 0.25rem;
+  /* 4px */
+  --spacing-sm: 0.5rem;
+  /* 8px */
+  --spacing-md: 0.75rem;
+  /* 12px */
+  --spacing-lg: 1rem;
+  /* 16px */
+  --spacing-xl: 1.5rem;
+  /* 24px */
+  --spacing-2xl: 2rem;
+  /* 32px */
+  --spacing-3xl: 3rem;
+  /* 48px */
+  --spacing-4xl: 4rem;
+  /* 64px */
+
+  /* ========== TYPOGRAPHY ========== */
+  --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-3xl: 2rem;
+
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  --line-height-tight: 1.2;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.75;
+
+  /* ========== TRANSITIONS ========== */
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.3s ease;
+  --transition-slow: 0.5s ease;
+
+  /* ========== Z-INDEX ========== */
+  --z-header: 1000;
+  --z-sidebar: 900;
+  --z-modal: 1050;
+  --z-dropdown: 800;
+}
