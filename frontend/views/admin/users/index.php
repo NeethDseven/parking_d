@@ -1,115 +1,174 @@
 <!-- Main content -->
 <meta name="current-page" content="admin_users">
 <div class="content">
-    <div class="container-fluid p-4">
-        <!-- Mobile toggle -->
-        <button class="btn btn-primary d-md-none mb-3" id="sidebarToggle">
-            <i class="fas fa-bars"></i>
-        </button>
+    <div class="container-fluid">
+        <!-- Container principal uniforme -->
+        <div class="admin-page-container">
 
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1>Gestion des utilisateurs</h1>
-            <div>
-                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUserModal">
-                    <i class="fas fa-user-plus me-2"></i>Ajouter un utilisateur
-                </button>
+            <!-- Header de page uniforme -->
+            <div class="admin-page-header">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h1 class="admin-page-title">
+                            <i class="fas fa-users"></i>
+                            Gestion des utilisateurs
+                        </h1>
+                        <p class="text-muted mb-0">Gérez les comptes utilisateurs et leurs permissions</p>
+                    </div>
+                    <div class="admin-page-actions">
+                        <button class="admin-btn admin-btn-primary" data-bs-toggle="modal" data-bs-target="#addUserModal">
+                            <i class="fas fa-user-plus"></i>
+                            Ajouter un utilisateur
+                        </button>
+                    </div>
+                </div>
             </div>
-        </div>
 
-        <?php if (isset($_SESSION['success'])): ?>
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <?php echo $_SESSION['success']; ?>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-            <?php unset($_SESSION['success']); ?>
-        <?php endif; ?>
-
-        <?php if (isset($_SESSION['error'])): ?>
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <?php echo $_SESSION['error']; ?>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-            <?php unset($_SESSION['error']); ?>
-        <?php endif; ?>
-
-        <!-- Stats Cards -->
-        <div class="row mb-4">
-            <div class="col-md-4 mb-3 mb-md-0">
-                <div class="card stat-card">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center">
-                            <div class="stat-icon bg-primary text-white me-3">
-                                <i class="fas fa-users"></i>
-                            </div>
-                            <div>
-                                <h5 class="stats-big-number mb-0"><?php echo $totalUsers; ?></h5>
-                                <p class="stats-label mb-0">Utilisateurs totaux</p>
-                            </div>
+            <!-- Alertes style uniforme -->
+            <?php if (isset($_SESSION['success'])): ?>
+                <div class="admin-content-card">
+                    <div class="admin-content-card-body">
+                        <div class="dashboard-alert alert-success">
+                            <i class="fas fa-check-circle"></i>
+                            <?php echo $_SESSION['success']; ?>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="col-md-4 mb-3 mb-md-0">
-                <div class="card stat-card">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center">
-                            <div class="stat-icon bg-success text-white me-3">
-                                <i class="fas fa-user-plus"></i>
-                            </div>
-                            <div>
-                                <h5 class="stats-big-number mb-0"><?php echo $newUsers; ?></h5>
-                                <p class="stats-label mb-0">Nouveaux ce mois</p>
-                            </div>
+                <?php unset($_SESSION['success']); ?>
+            <?php endif; ?>
+
+            <?php if (isset($_SESSION['error'])): ?>
+                <div class="admin-content-card">
+                    <div class="admin-content-card-body">
+                        <div class="dashboard-alert alert-danger">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <?php echo $_SESSION['error']; ?>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card stat-card">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center">
-                            <div class="stat-icon bg-info text-white me-3">
-                                <i class="fas fa-user-check"></i>
-                            </div>
-                            <div>
-                                <h5 class="stats-big-number mb-0"><?php echo $activeUsers; ?></h5>
-                                <p class="stats-label mb-0">Utilisateurs actifs</p>
-                            </div>
+                <?php unset($_SESSION['error']); ?>
+            <?php endif; ?>
+
+            <!-- Stats Cards style uniforme -->
+            <div class="dashboard-stats-row">
+                <div class="dashboard-stat-card primary">
+                    <div class="dashboard-stat-header">
+                        <div class="dashboard-stat-content">
+                            <h6>Utilisateurs totaux</h6>
+                            <h2><?php echo $totalUsers; ?></h2>
+                            <small>Comptes enregistrés</small>
+                        </div>
+                        <div class="dashboard-stat-icon primary">
+                            <i class="fas fa-users"></i>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Table de recherche et filtrage -->
-        <div class="card mb-4">
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-8 mb-3 mb-md-0">
-                        <input type="text" id="searchUsers" class="form-control" placeholder="Rechercher un utilisateur (nom, prénom, email)...">
-                    </div>
-                    <div class="col-md-4">
-                        <select id="filterUsers" class="form-select">
-                            <option value="all">Tous les utilisateurs</option>
-                            <option value="admin">Administrateurs</option>
-                            <option value="user">Utilisateurs standard</option>
-                            <option value="actif">Utilisateurs actifs</option>
-                            <option value="inactif">Utilisateurs inactifs</option>
-                        </select>
+                    <div class="dashboard-stat-footer">
+                        <a href="#usersList">
+                            <i class="fas fa-arrow-right"></i>
+                            Voir la liste
+                        </a>
                     </div>
                 </div>
-            </div>
-        </div>
 
-        <!-- Liste des utilisateurs -->
-        <div class="card">
-            <div class="card-header bg-white">
-                <h5 class="mb-0">Liste des utilisateurs</h5>
+                <div class="dashboard-stat-card success">
+                    <div class="dashboard-stat-header">
+                        <div class="dashboard-stat-content">
+                            <h6>Nouveaux ce mois</h6>
+                            <h2><?php echo $newUsers; ?></h2>
+                            <small>Inscriptions récentes</small>
+                        </div>
+                        <div class="dashboard-stat-icon success">
+                            <i class="fas fa-user-plus"></i>
+                        </div>
+                    </div>
+                    <div class="dashboard-stat-footer">
+                        <a href="#usersList">
+                            <i class="fas fa-arrow-right"></i>
+                            Voir détails
+                        </a>
+                    </div>
+                </div>
+
+                <div class="dashboard-stat-card info">
+                    <div class="dashboard-stat-header">
+                        <div class="dashboard-stat-content">
+                            <h6>Utilisateurs actifs</h6>
+                            <h2><?php echo $activeUsers; ?></h2>
+                            <small>Comptes actifs</small>
+                        </div>
+                        <div class="dashboard-stat-icon info">
+                            <i class="fas fa-user-check"></i>
+                        </div>
+                    </div>
+                    <div class="dashboard-stat-footer">
+                        <a href="#usersList">
+                            <i class="fas fa-arrow-right"></i>
+                            Voir actifs
+                        </a>
+                    </div>
+                </div>
             </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="bg-light">
+
+            <!-- Filtres et tri style uniforme -->
+            <div class="admin-content-card">
+                <div class="admin-content-card-header">
+                    <h3 class="admin-content-card-title">
+                        <i class="fas fa-filter me-2"></i>
+                        Filtres et tri
+                    </h3>
+                </div>
+                <div class="admin-content-card-body">
+                    <form method="GET" action="<?php echo BASE_URL; ?>admin/users" class="row g-3 align-items-end">
+                        <div class="col-md-3">
+                            <label for="filterRole" class="form-label">Rôle</label>
+                            <select id="filterRole" name="role" class="form-select">
+                                <option value="">Tous les rôles</option>
+                                <option value="admin" <?php echo isset($_GET['role']) && $_GET['role'] == 'admin' ? 'selected' : ''; ?>>Administrateur</option>
+                                <option value="user" <?php echo isset($_GET['role']) && $_GET['role'] == 'user' ? 'selected' : ''; ?>>Utilisateur</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="filterStatus" class="form-label">Statut</label>
+                            <select id="filterStatus" name="status" class="form-select">
+                                <option value="">Tous les statuts</option>
+                                <option value="actif" <?php echo isset($_GET['status']) && $_GET['status'] == 'actif' ? 'selected' : ''; ?>>Actif</option>
+                                <option value="inactif" <?php echo isset($_GET['status']) && $_GET['status'] == 'inactif' ? 'selected' : ''; ?>>Inactif</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="sortBy" class="form-label">Trier par</label>
+                            <select id="sortBy" name="sort" class="form-select">
+                                <option value="created_at_desc" <?php echo isset($_GET['sort']) && $_GET['sort'] == 'created_at_desc' ? 'selected' : ''; ?>>Plus récent</option>
+                                <option value="created_at_asc" <?php echo isset($_GET['sort']) && $_GET['sort'] == 'created_at_asc' ? 'selected' : ''; ?>>Plus ancien</option>
+                                <option value="nom_asc" <?php echo isset($_GET['sort']) && $_GET['sort'] == 'nom_asc' ? 'selected' : ''; ?>>Nom A-Z</option>
+                                <option value="nom_desc" <?php echo isset($_GET['sort']) && $_GET['sort'] == 'nom_desc' ? 'selected' : ''; ?>>Nom Z-A</option>
+                                <option value="email_asc" <?php echo isset($_GET['sort']) && $_GET['sort'] == 'email_asc' ? 'selected' : ''; ?>>Email A-Z</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <button type="submit" class="admin-btn admin-btn-primary w-100">
+                                <i class="fas fa-filter"></i>
+                                Appliquer
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+
+
+            <!-- Liste des utilisateurs style uniforme -->
+            <div class="admin-content-card" id="usersList">
+                <div class="admin-content-card-header">
+                    <h3 class="admin-content-card-title">
+                        <i class="fas fa-list me-2"></i>
+                        Liste des utilisateurs
+                    </h3>
+                </div>
+                <div class="admin-content-card-body">
+                    <div class="admin-table-wrapper">
+                        <table class="admin-table">
+                            <thead>
                             <tr>
                                 <th>ID</th>
                                 <th>Nom</th>
@@ -135,15 +194,15 @@
                                                 </div>
                                             </div>
                                         </td>
-                                        <td><?php echo htmlspecialchars($user['email']); ?></td>
-                                        <td>
+                                        <td data-sort="<?php echo htmlspecialchars($user['email']); ?>"><?php echo htmlspecialchars($user['email']); ?></td>
+                                        <td data-sort="<?php echo $user['role']; ?>">
                                             <?php if ($user['role'] === 'admin'): ?>
                                                 <span class="badge bg-primary">Admin</span>
                                             <?php else: ?>
                                                 <span class="badge bg-secondary">Utilisateur</span>
                                             <?php endif; ?>
                                         </td>
-                                        <td>
+                                        <td data-sort="<?php echo $user['status'] ?? 'actif'; ?>">
                                             <?php
                                             $status = $user['status'] ?? 'actif'; // Utiliser 'actif' comme valeur par défaut si status n'est pas défini
                                             if ($status === 'actif'):
@@ -153,20 +212,20 @@
                                                 <span class="badge bg-danger">Inactif</span>
                                             <?php endif; ?>
                                         </td>
-                                        <td><?php echo date('d/m/Y', strtotime($user['created_at'])); ?></td>
+                                        <td data-sort="<?php echo date('Y-m-d', strtotime($user['created_at'])); ?>"><?php echo date('d/m/Y', strtotime($user['created_at'])); ?></td>
                                         <td>
-                                            <div class="btn-group btn-group-sm">
-                                                <a href="<?php echo BASE_URL; ?>admin/editUser/<?php echo $user['id']; ?>" class="btn btn-info" title="Modifier">
+                                            <div class="d-flex gap-1">
+                                                <a href="<?php echo BASE_URL; ?>admin/editUser/<?php echo $user['id']; ?>" class="admin-btn-icon edit" title="Modifier">
                                                     <i class="fas fa-edit"></i>
                                                 </a>
 
-                                                <?php if ($user['id'] != 1): // Ne pas permettre d'afficher le bouton pour l'admin principal 
+                                                <?php if ($user['id'] != 1): // Ne pas permettre d'afficher le bouton pour l'admin principal
                                                 ?>
                                                     <?php
                                                     $status = $user['status'] ?? 'actif';
                                                     if ($status === 'actif'):
                                                     ?>
-                                                        <button type="button" class="btn btn-warning change-status-btn"
+                                                        <button type="button" class="admin-btn-icon status change-status-btn"
                                                             data-id="<?php echo $user['id']; ?>"
                                                             data-name="<?php echo htmlspecialchars($user['prenom'] . ' ' . $user['nom']); ?>"
                                                             data-status="inactif"
@@ -175,7 +234,7 @@
                                                             <i class="fas fa-user-slash"></i>
                                                         </button>
                                                     <?php else: ?>
-                                                        <button type="button" class="btn btn-success change-status-btn"
+                                                        <button type="button" class="admin-btn-icon success change-status-btn"
                                                             data-id="<?php echo $user['id']; ?>"
                                                             data-name="<?php echo htmlspecialchars($user['prenom'] . ' ' . $user['nom']); ?>"
                                                             data-status="actif"
@@ -188,14 +247,14 @@
                                                 <?php if (strpos($user['email'], 'deleted_') === 0): ?>
                                                     <!-- Utilisateur déjà désactivé - ajouter un bouton de suppression forcée -->
                                                     <a href="<?php echo BASE_URL; ?>admin/forceDeleteUser/<?php echo $user['id']; ?>"
-                                                        class="btn btn-danger"
+                                                        class="admin-btn-icon delete"
                                                         onclick="return confirm('Attention! Cette action supprimera définitivement l\'utilisateur et ne peut pas être annulée. Continuer?');"
                                                         title="Supprimer définitivement">
                                                         <i class="fas fa-skull-crossbones"></i>
                                                     </a>
                                                 <?php else: ?>
                                                     <!-- Utilisateur normal - bouton standard de suppression -->
-                                                    <button type="button" class="btn btn-danger delete-user-btn"
+                                                    <button type="button" class="admin-btn-icon delete delete-user-btn"
                                                         data-id="<?php echo $user['id']; ?>"
                                                         data-name="<?php echo htmlspecialchars($user['prenom'] . ' ' . $user['nom']); ?>"
                                                         title="Supprimer">
@@ -212,10 +271,12 @@
                                 </tr>
                             <?php endif; ?>
                         </tbody>
-                    </table>
+                        </table>
+                    </div>
                 </div>
-            </div>
-            <div class="card-footer bg-white">
+
+                <!-- Footer avec pagination style uniforme -->
+                <div class="admin-content-card-header" style="border-top: 1px solid #e9ecef; border-bottom: none;">
                 <?php if (isset($totalPages) && $totalPages > 1): ?>
                     <nav aria-label="Pagination">
                         <ul class="pagination justify-content-center mb-0">
@@ -275,8 +336,10 @@
                         </ul>
                     </nav>
                 <?php endif; ?>
+                </div>
             </div>
-        </div>
+
+        </div> <!-- Fin admin-page-container -->
     </div>
 </div>
 

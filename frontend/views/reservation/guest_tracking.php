@@ -93,6 +93,12 @@
                                                     <span class="badge bg-primary">PMR</span>
                                                 <?php elseif ($reservation['type'] === 'electrique'): ?>
                                                     <span class="badge bg-success">Électrique</span>
+                                                <?php elseif ($reservation['type'] === 'moto/scooter'): ?>
+                                                    <span class="badge bg-warning text-dark">Moto/Scooter</span>
+                                                <?php elseif ($reservation['type'] === 'velo'): ?>
+                                                    <span class="badge bg-info">Vélo</span>
+                                                <?php else: ?>
+                                                    <span class="badge bg-light text-dark"><?php echo ucfirst($reservation['type']); ?></span>
                                                 <?php endif; ?>
                                             </td>
                                         </tr>
@@ -123,6 +129,14 @@
                                 <p>Utilisez ce code pour accéder au parking :</p>
                                 <div class="d-inline-block p-3 mb-3 border border-dark rounded code-box">
                                     <span class="h2 mb-0"><?php echo $reservation['code_acces']; ?></span>
+                                </div>
+
+                                <!-- QR Code -->
+                                <div class="mt-3 mb-3">
+                                    <div id="qr-guest-tracking-code" class="mx-auto mb-3" style="width: 150px; height: 150px;"></div>
+                                    <button class="btn btn-sm btn-outline-primary" onclick="copyAccessCodeTracking()" title="Copier le code d'accès">
+                                        <i class="fas fa-copy me-1"></i> Copier le code
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -182,3 +196,90 @@
 </div>
 
 <!-- Styles gérés par la structure CSS optimisée -->
+
+<!-- QR Code Generator et fonctions de copie -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const accessCode = '<?php echo htmlspecialchars($reservation['code_acces']); ?>';
+
+    // Fonction pour générer QR codes avec l'API QR Server
+    function generateQRCode(text, containerId, color = '000000') {
+        const container = document.getElementById(containerId);
+        if (container && text) {
+            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(text)}&color=${color}&bgcolor=ffffff&margin=10`;
+            const img = document.createElement('img');
+            img.src = qrUrl;
+            img.alt = 'QR Code: ' + text;
+            img.style.width = '150px';
+            img.style.height = '150px';
+            img.style.border = '1px solid #ddd';
+            img.style.borderRadius = '5px';
+
+            img.onload = function() {
+                console.log('✅ QR code généré pour le code d\'accès');
+            };
+
+            img.onerror = function() {
+                console.error('❌ Erreur lors de la génération du QR code');
+                container.innerHTML = '<div class="text-muted small">QR code indisponible</div>';
+            };
+
+            container.innerHTML = '';
+            container.appendChild(img);
+        }
+    }
+
+    // Générer le QR code pour le code d'accès si la réservation est confirmée
+    if (accessCode && '<?php echo $reservation['status']; ?>' === 'confirmée') {
+        generateQRCode(accessCode, 'qr-guest-tracking-code', '007bff');
+    }
+});
+
+// Fonction pour copier le code d'accès
+function copyAccessCodeTracking() {
+    const accessCode = '<?php echo htmlspecialchars($reservation['code_acces']); ?>';
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(accessCode).then(function() {
+            showCopySuccess('Code d\'accès copié !');
+        }).catch(function() {
+            fallbackCopy(accessCode);
+        });
+    } else {
+        fallbackCopy(accessCode);
+    }
+}
+
+// Fonction de fallback pour la copie
+function fallbackCopy(text) {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    document.body.appendChild(textArea);
+    textArea.select();
+    try {
+        document.execCommand('copy');
+        showCopySuccess('Copié !');
+    } catch (err) {
+        console.error('Erreur lors de la copie:', err);
+        alert('Impossible de copier automatiquement. Veuillez sélectionner et copier manuellement.');
+    }
+    document.body.removeChild(textArea);
+}
+
+// Fonction pour afficher le message de succès
+function showCopySuccess(message) {
+    // Créer une notification temporaire
+    const notification = document.createElement('div');
+    notification.className = 'alert alert-success position-fixed';
+    notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 200px;';
+    notification.innerHTML = `<i class="fas fa-check me-2"></i>${message}`;
+
+    document.body.appendChild(notification);
+
+    // Supprimer après 3 secondes
+    setTimeout(function() {
+        if (notification.parentNode) {
+            notification.parentNode.removeChild(notification);
+        }
+    }, 3000);
+}
+</script>

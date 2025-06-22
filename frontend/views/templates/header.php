@@ -48,6 +48,8 @@ function getBaseUrl()
     <link href="<?php echo getBaseUrl(); ?>frontend/assets/css/pages.css?v=<?php echo time(); ?>" rel="stylesheet">
       <!-- Styles personnalisés extraits de la balise <style> -->
     <link href="<?php echo getBaseUrl(); ?>frontend/assets/css/custom-header.css?v=<?php echo time(); ?>" rel="stylesheet">
+      <!-- Styles pour les améliorations des places -->
+    <link href="<?php echo getBaseUrl(); ?>frontend/assets/css/places-improvements.css?v=<?php echo time(); ?>" rel="stylesheet">
 </head>
 
 <body data-page="<?php echo isset($active_page) ? $active_page : 'home'; ?>"> <!-- Navigation - Style élégant en tons de gris -->
@@ -57,17 +59,21 @@ function getBaseUrl()
                 --bs-navbar-hover-color: var(--accent-color);
                 --bs-navbar-active-color: var(--accent-color);">
         <div class="container">
+            <!-- Logo à gauche -->
             <a class="navbar-brand d-flex align-items-center" href="<?php echo getBaseUrl(); ?>">
                 <div class="logo-container me-2">
                     <img src="<?php echo getBaseUrl(); ?>frontend/assets/img/logo.webp" alt="ParkMe In Logo" class="logo-img logo-filter">
                 </div>
                 <span>Park<strong>Me</strong> <span class="brand-accent">In</span></span>
             </a>
+
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
+
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
+                <!-- Menu principal centré -->
+                <ul class="navbar-nav mx-auto">
                     <li class="nav-item">
                         <a class="nav-link <?php echo empty($_GET['url']) ? 'active' : ''; ?>" href="<?php echo getBaseUrl(); ?>">Accueil</a>
                     </li>

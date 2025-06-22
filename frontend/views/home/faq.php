@@ -5,7 +5,6 @@
             <p class="lead">Voici les réponses aux questions fréquemment posées sur notre service de stationnement.</p>
             <!-- Ajout d'un champ de recherche pour la FAQ -->
             <div class="faq-search mt-4">
-                <i class="fas fa-search search-icon"></i>
                 <input type="text" class="form-control" id="faq-search-input" placeholder="Rechercher une question...">
             </div>
         </div>

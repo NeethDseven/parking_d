@@ -9,6 +9,16 @@
     </div>
 
     <ul class="nav flex-column">
+        <!-- Section utilisateur en haut -->
+        <li class="nav-item">
+            <div class="user-section">
+                <div class="user-info">
+                    <i class="fas fa-user-circle me-2"></i>
+                    <span><?php echo isset($_SESSION['user']) ? htmlspecialchars($_SESSION['user']['prenom'] . ' ' . $_SESSION['user']['nom']) : 'Admin'; ?></span>
+                </div>
+            </div>
+        </li>
+
         <li class="nav-item">
             <a href="<?php echo BASE_URL; ?>admin/dashboard" class="nav-link <?php echo isset($activeMenu) && $activeMenu === 'dashboard' ? 'active' : ''; ?>">
                 <i class="fas fa-tachometer-alt me-2"></i> Tableau de bord
@@ -39,11 +49,18 @@
                 <i class="fas fa-id-card me-2"></i> Abonnements
             </a>
         </li>
-        <li class="nav-item mt-5">
+
+        <!-- Séparateur -->
+        <li class="nav-item mt-4">
+            <hr class="sidebar-divider">
+        </li>
+
+        <li class="nav-item">
             <a href="<?php echo BASE_URL; ?>" class="nav-link text-info">
                 <i class="fas fa-home me-2"></i> Retour au site
             </a>
         </li>
+
         <li class="nav-item">
             <a href="<?php echo BASE_URL; ?>auth/logout" class="nav-link text-danger">
                 <i class="fas fa-sign-out-alt me-2"></i> Déconnexion

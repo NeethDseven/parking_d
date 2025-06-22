@@ -86,12 +86,21 @@ class AuthController extends BaseController
         ];
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $validated = $this->validateRequiredFields([
-                'nom', 'prenom', 'email', 'password', 'confirm_password'
-            ]);
+            // Validation manuelle pour éviter la redirection automatique
+            $requiredFields = ['nom', 'prenom', 'email', 'password', 'confirm_password', 'accept_terms'];
+            $validated = [];
+            $missing = [];
 
-            if (!$validated) {
-                $data['error'] = 'Tous les champs sont obligatoires';
+            foreach ($requiredFields as $field) {
+                if (!isset($_POST[$field]) || trim($_POST[$field]) === '') {
+                    $missing[] = $field;
+                } else {
+                    $validated[$field] = trim($_POST[$field]);
+                }
+            }
+
+            if (!empty($missing)) {
+                $data['error'] = 'Champs obligatoires manquants : ' . implode(', ', $missing);
             } elseif (!$this->isValidEmail($validated['email'])) {
                 $data['error'] = 'L\'adresse email est invalide';
             } elseif ($validated['password'] !== $validated['confirm_password']) {
@@ -102,35 +111,44 @@ class AuthController extends BaseController
                 $data['error'] = 'Un compte existe déjà avec cette adresse email';
             } else {
                 // Création de l'utilisateur
-                $userId = $this->userModel->createUser(
-                    $validated['nom'],
-                    $validated['prenom'],
-                    $validated['email'],
-                    $_POST['telephone'] ?? null,
-                    $validated['password']
-                );
+                try {
+                    $userId = $this->userModel->createUser(
+                        $validated['nom'],
+                        $validated['prenom'],
+                        $validated['email'],
+                        $_POST['telephone'] ?? null,
+                        $validated['password']
+                    );
 
-                if ($userId) {
-                    // Connexion automatique
-                    $user = $this->userModel->getUserById($userId);
-                    $_SESSION['user'] = [
-                        'id' => $user['id'],
-                        'nom' => $user['nom'],
-                        'prenom' => $user['prenom'],
-                        'email' => $user['email'],
-                        'role' => $user['role'],
-                        'is_subscribed' => false
-                    ];
+                    if ($userId && $userId > 0) {
+                        // Connexion automatique
+                        $user = $this->userModel->getUserById($userId);
+                        if ($user) {
+                            $_SESSION['user'] = [
+                                'id' => $user['id'],
+                                'nom' => $user['nom'],
+                                'prenom' => $user['prenom'],
+                                'email' => $user['email'],
+                                'role' => $user['role'],
+                                'is_subscribed' => false
+                            ];
 
-                    // Journaliser l'inscription
-                    $this->logModel->addLog($userId, 'inscription', 'Création de compte réussie');
-                    
-                    // Vérifier si l'utilisateur a des réservations invité à convertir
-                    $this->handleGuestReservationConversion($userId, $validated['email']);
-                    
-                    $this->redirectWithSuccess('auth/profile', 'Votre compte a été créé avec succès!');
-                } else {
-                    $data['error'] = 'Une erreur est survenue lors de la création de votre compte.';
+                            // Journaliser l'inscription
+                            $this->logModel->addLog($userId, 'inscription', 'Création de compte réussie');
+
+                            // Vérifier si l'utilisateur a des réservations invité à convertir
+                            $this->handleGuestReservationConversion($userId, $validated['email']);
+
+                            $this->redirectWithSuccess('auth/profile', 'Votre compte a été créé avec succès!');
+                        } else {
+                            $data['error'] = 'Une erreur est survenue lors de la récupération de votre compte.';
+                        }
+                    } else {
+                        $data['error'] = 'Une erreur est survenue lors de la création de votre compte.';
+                    }
+                } catch (Exception $e) {
+                    error_log("Erreur lors de l'inscription: " . $e->getMessage());
+                    $data['error'] = 'Une erreur est survenue lors de la création de votre compte. Veuillez réessayer.';
                 }
             }
         }
@@ -310,7 +328,8 @@ class AuthController extends BaseController
      * Gestion de la conversion des réservations invité lors de l'inscription
      * @param int $userId ID de l'utilisateur
      * @param string $email Email de l'utilisateur
-     */    private function handleGuestReservationConversion($userId, $email)
+     */
+    private function handleGuestReservationConversion($userId, $email)
     {
         if (!$userId || !$email) {
             return;

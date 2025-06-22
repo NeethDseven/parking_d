@@ -87,7 +87,7 @@ elseif (empty($status) || $status === 'inconnu') {
                                         break;
                                     case 'annulée':
                                     case 'annulee':
-                                        echo 'bg-danger';
+                                        echo 'bg-danger-custom';
                                         break;
                                     case 'expiré':
                                     case 'expire':

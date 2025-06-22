@@ -66,22 +66,88 @@ class UserModel
 
     public function createUser($nom, $prenom, $email, $telephone, $password)
     {
-        // Vérifier si l'email existe déjà
-        if ($this->emailExists($email)) {
+        try {
+            // Vérifier si l'email existe déjà
+            if ($this->emailExists($email)) {
+                return false;
+            }
+
+            // Connexion directe
+            $connection = $this->db->getConnection();
+
+            // SOLUTION DÉFINITIVE : Toujours générer un ID unique manuellement
+
+            // 1. Supprimer tous les utilisateurs avec ID 0
+            $connection->exec("DELETE FROM users WHERE id = 0");
+
+            // 2. Obtenir le prochain ID disponible
+            $stmt = $connection->query("SELECT COALESCE(MAX(id), 0) + 1 as next_id FROM users WHERE id > 0");
+            $result = $stmt->fetch();
+            $nextId = $result['next_id'];
+
+            // 3. S'assurer que l'ID est au minimum 1
+            if ($nextId < 1) {
+                $nextId = 1;
+            }
+
+            // 4. Vérifier que cet ID n'existe pas déjà (sécurité supplémentaire)
+            $stmt = $connection->prepare("SELECT COUNT(*) as count FROM users WHERE id = ?");
+            $stmt->execute([$nextId]);
+            $exists = $stmt->fetch();
+
+            // Si l'ID existe déjà, trouver le premier ID libre
+            $attempts = 0;
+            while ($exists['count'] > 0 && $attempts < 100) {
+                $nextId++;
+                $attempts++;
+                $stmt->execute([$nextId]);
+                $exists = $stmt->fetch();
+            }
+
+            if ($attempts >= 100) {
+                return false;
+            }
+
+            // 5. Insérer avec l'ID spécifique (sans created_at pour éviter les erreurs)
+            $sql = "INSERT INTO users (id, nom, prenom, email, telephone, password, role, notifications_active, status)
+                    VALUES (?, ?, ?, ?, ?, ?, 'user', 1, 'actif')";
+
+            $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+
+            $params = [
+                $nextId,
+                $nom,
+                $prenom,
+                $email,
+                $telephone,
+                $hashedPassword
+            ];
+
+            $stmt = $connection->prepare($sql);
+            $result = $stmt->execute($params);
+
+            if (!$result) {
+                return false;
+            }
+
+            // 6. Mettre à jour l'AUTO_INCREMENT pour les prochaines insertions
+            $connection->exec("ALTER TABLE users AUTO_INCREMENT = " . ($nextId + 1));
+
+            // 7. Vérifier que l'utilisateur a bien été créé avec le bon ID
+            $stmt = $connection->prepare("SELECT id FROM users WHERE email = ? AND id = ?");
+            $stmt->execute([$email, $nextId]);
+            $createdUser = $stmt->fetch();
+
+            if ($createdUser && $createdUser['id'] == $nextId) {
+                return $nextId;
+            } else {
+                return false;
+            }
+
+        } catch (Exception $e) {
+            error_log("Erreur dans createUser: " . $e->getMessage());
             return false;
         }
-
-        // Insérer l'utilisateur avec des valeurs par défaut pour certains champs
-        return $this->db->insert('users', [
-            'nom' => $nom,
-            'prenom' => $prenom,
-            'email' => $email,
-            'telephone' => $telephone,
-            'password' => password_hash($password, PASSWORD_DEFAULT),
-            'role' => 'user',
-            'notifications_active' => 1,
-            'status' => 'actif' // Par défaut, le compte est actif
-        ]);
     }
 
     public function updateUser($id, $data)
@@ -97,12 +163,17 @@ class UserModel
         return $this->db->update('users', $data, 'id = :id', ['id' => $id]);
     }
 
-    private function emailExists($email)
+    public function emailExists($email)
     {
-        $sql = "SELECT id FROM users WHERE email = :email";
-        $user = $this->db->findOne($sql, ['email' => $email]);
+        try {
+            $sql = "SELECT id FROM users WHERE email = :email";
+            $user = $this->db->findOne($sql, ['email' => $email]);
 
-        return $user !== false;
+            return $user !== false && $user !== null;
+        } catch (Exception $e) {
+            error_log("Erreur dans emailExists: " . $e->getMessage());
+            return false; // En cas d'erreur, considérer que l'email n'existe pas
+        }
     }
     public function getUserById($id)
     {
@@ -207,6 +278,98 @@ class UserModel
         $stmt->execute();
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Récupère les utilisateurs avec filtres et tri
+     */
+    public function getFilteredUsers($role = null, $status = null, $sort = 'created_at_desc', $offset = 0, $limit = 10)
+    {
+        $conditions = [];
+        $params = [];
+
+        if ($role && $role !== '') {
+            $conditions[] = "role = :role";
+            $params['role'] = $role;
+        }
+
+        if ($status && $status !== '') {
+            $conditions[] = "status = :status";
+            $params['status'] = $status;
+        }
+
+        $whereClause = "";
+        if (!empty($conditions)) {
+            $whereClause = "WHERE " . implode(" AND ", $conditions);
+        }
+
+        // Gestion du tri
+        $orderClause = "ORDER BY ";
+        switch ($sort) {
+            case 'created_at_asc':
+                $orderClause .= "created_at ASC";
+                break;
+            case 'nom_asc':
+                $orderClause .= "nom ASC, prenom ASC";
+                break;
+            case 'nom_desc':
+                $orderClause .= "nom DESC, prenom DESC";
+                break;
+            case 'email_asc':
+                $orderClause .= "email ASC";
+                break;
+            case 'created_at_desc':
+            default:
+                $orderClause .= "created_at DESC";
+                break;
+        }
+
+        $sql = "SELECT * FROM users $whereClause $orderClause LIMIT :offset, :limit";
+
+        $stmt = $this->db->getConnection()->prepare($sql);
+        foreach ($params as $key => $value) {
+            $stmt->bindValue(":$key", $value);
+        }
+        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Compte le nombre d'utilisateurs avec filtres
+     */
+    public function countFilteredUsers($role = null, $status = null)
+    {
+        $conditions = [];
+        $params = [];
+
+        if ($role && $role !== '') {
+            $conditions[] = "role = :role";
+            $params['role'] = $role;
+        }
+
+        if ($status && $status !== '') {
+            $conditions[] = "status = :status";
+            $params['status'] = $status;
+        }
+
+        $whereClause = "";
+        if (!empty($conditions)) {
+            $whereClause = "WHERE " . implode(" AND ", $conditions);
+        }
+
+        $sql = "SELECT COUNT(*) as count FROM users $whereClause";
+
+        $stmt = $this->db->getConnection()->prepare($sql);
+        foreach ($params as $key => $value) {
+            $stmt->bindValue(":$key", $value);
+        }
+        $stmt->execute();
+
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result['count'];
     }
 
     /**

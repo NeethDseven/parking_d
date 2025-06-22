@@ -1,122 +1,4 @@
-<style>
-    /* Styles personnalisés pour les types de places */
-    .bg-moto-scooter {
-        background-color: #8a2be2 !important;
-        /* Couleur violette pour moto/scooter */
-        color: white !important;
-    }
-
-    .bg-standard {
-        background-color: #6c757d !important;
-        /* Gris (bg-secondary) pour standard */
-        color: white !important;
-    }
-
-    /* Styles pour l'affichage des cartes de places */
-    .place-card {
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-
-    .place-card:hover {
-        transform: translateY(-5px);
-    }
-
-    .place-card .card {
-        border: none;
-        border-radius: 12px;
-        overflow: hidden;
-        transition: all 0.3s ease;
-    }
-
-    .place-card .card:hover {
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-    }
-
-    .place-card-image {
-        height: 200px;
-        background-size: cover;
-        background-position: center;
-        position: relative;
-    }
-
-    .place-card-image::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: linear-gradient(to bottom, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.1));
-    }
-
-    .place-card .card-header {
-        position: relative;
-        z-index: 2;
-    }
-
-    .btn-reserve,
-    .btn-reserve-immediate {
-        border: none;
-        border-radius: 8px;
-        padding: 10px 20px;
-        font-weight: 500;
-        transition: all 0.3s ease;
-        width: 100%;
-        text-align: center;
-        text-decoration: none;
-        display: inline-block;
-        cursor: pointer;
-    }
-
-    .btn-reserve {
-        background: linear-gradient(45deg, #007bff, #0056b3);
-        color: white;
-        margin-bottom: 8px;
-    }
-
-    .btn-reserve:hover {
-        background: linear-gradient(45deg, #0056b3, #004085);
-        transform: translateY(-2px);
-        box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
-        color: white;
-    }
-
-    .btn-reserve-immediate {
-        background: linear-gradient(45deg, #28a745, #1e7e34);
-        color: white;
-    }
-
-    .btn-reserve-immediate:hover {
-        background: linear-gradient(45deg, #1e7e34, #155724);
-        transform: translateY(-2px);
-        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
-        color: white;
-    }
-
-    /* Responsive adjustments */
-    @media (max-width: 768px) {
-        .place-card-image {
-            height: 150px;
-        }
-    }
-
-    /* Animation fade-in pour les cartes */
-    @keyframes fadeInUp {
-        from {
-            opacity: 0;
-            transform: translateY(30px);
-        }
-
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    .place-card {
-        animation: fadeInUp 0.6s ease forwards;
-    }
-</style>
+<!-- Tous les styles CSS ont été déplacés vers frontend/assets/css/places-improvements.css -->
 
 <div class="places-page-background">
     <div class="container">
@@ -259,14 +141,14 @@
             <p class="mt-3 text-primary">Chargement des places disponibles...</p>
         </div>
 
-        <!-- Container des places avec disposition 3 par ligne -->
-        <div class="row justify-content-center animate-on-scroll" id="places-container"
+        <!-- Container des places avec disposition 3 par ligne - Structure 3x2 grid -->
+        <div id="places-container" class="places-grid-container"
             data-current-page="<?php echo isset($current_page) ? $current_page : 1; ?>"
             data-selected-type="<?php echo $selected_type ?? 'all'; ?>">
             <?php
             // Vérifier que $places et $tarifs sont bien définis
             if (isset($places) && !empty($places) && isset($tarifs)):
-                // Pagination côté serveur : 6 places par page
+                // Pagination côté serveur : 6 places par page (3x2 grid)
                 $placesPerPage = 6;
                 $currentPage = isset($current_page) ? $current_page : 1;
                 $startIndex = ($currentPage - 1) * $placesPerPage;
@@ -277,146 +159,175 @@
                     $tarifFloat = isset($tarifs[$place['type']]['prix_heure']) ?
                         floatval($tarifs[$place['type']]['prix_heure']) : 0;
             ?>
-                    <!-- Carte de place avec col-lg-4 pour 3 cartes par ligne sur desktop -->
-                    <div class="col-lg-4 col-md-6 col-sm-12 mb-4 place-card animate-on-scroll fade-in"
+                    <!-- Carte de place - Structure 3x2 grid -->
+                    <div class="place-card-item animate-on-scroll fade-in"
                         data-type="<?php echo htmlspecialchars($place['type']); ?>"
-                        style="--card-index: <?php echo $key; ?>;">
-                        <div class="card h-100 shadow-sm hover-effect">
+                        data-card-index="<?php echo $key; ?>">
+                        <div class="card h-100 shadow-sm hover-effect"
                             <!-- Image différente selon le type de place -->
                             <?php
                             $placeImage = '';
                             if ($place['type'] === 'standard') {
-                                // Sélectionner une image aléatoire parmi les 7 disponibles pour les places standard
+                                // Images pour les places standard
                                 $standardImages = [
-                                    'parking-propre.webp',
-                                    'download.webp',
-                                    'download-1.webp',
-                                    'istockphoto-182490567-612x612.webp',
+                                    'standar.jpg',
+                                    'standar1.jpg',
+                                    'standar2.jpg',
+                                    'standar3.jpg',
+                                    'standar4.jpg',
+                                    'standar5.jpg',
+                                    'standar6.webp',
+                                    'standar7.jpg',
+                                    'standar8.jpg',
+                                    'standar9.jpg',
+                                    'standar10.jpg',
+                                    'standar11.webp',
+                                    'standar12.webp',
                                     'standard1.webp',
                                     'standard2.webp',
-                                    'standard3.webp',
-                                    'empty-underground-parking-garage (4).jpg',
-                                    'empty-underground-parking-garage (3).jpg',
-                                    'empty-underground-parking-garage (2).jpg',
-                                    'empty-underground-parking-garage (1).jpg',
-                                    'empty-parking-lot.jpg',
-                                    'empty-interior-with-railings.jpg',
+                                    'standard3.webp'
                                 ];
                                 $randomIndex = array_rand($standardImages);
                                 $placeImage = BASE_URL . 'frontend/assets/img/' . $standardImages[$randomIndex];
                             } elseif ($place['type'] === 'handicape') {
+                                // Images pour les places PMR/handicapé
                                 $handicapImages = [
+                                    'pmr.jpg',
                                     'pmr1.jpg',
+                                    'pmr1.webp',
                                     'pmr2.jpg',
                                     'pmr3.jpg',
                                     'pmr4.jpg',
                                     'pmr5.jpg',
                                     'pmr6.jpg',
                                     'pmr7.jpg',
-                                    'pmr1.webp',
+                                    'pmr8.jpg',
+                                    'pmr9.webp'
                                 ];
 
                                 // Rotation basée sur l'ID (ou autre identifiant unique)
                                 $selectedHandicapImage = $handicapImages[$place['id'] % count($handicapImages)];
                                 $placeImage = BASE_URL . 'frontend/assets/img/' . $selectedHandicapImage;
                             } elseif ($place['type'] === 'moto/scooter') {
-                                // Sélectionner une image aléatoire parmi les 3 disponibles pour les places moto/scooter
+                                // Images pour les places moto/scooter
                                 $motoImages = [
                                     'moto.jpg',
                                     'moto1.jpg',
                                     'moto2.jpg',
                                     'moto3.jpg',
-                                    'moto4.jpg',
+                                    'moto4.jpg'
                                 ];
                                 $randomIndex = array_rand($motoImages);
                                 $placeImage = BASE_URL . 'frontend/assets/img/' . $motoImages[$randomIndex];
                             } elseif ($place['type'] === 'velo') {
-                                // Sélectionner une image aléatoire parmi les 3 disponibles pour les places vélo
+                                // Images pour les places vélo
                                 $bikeImages = [
+                                    'velo.jpg',
                                     'velo1.webp',
-                                    'velo2.webp',
-                                    'velo3.webp'
+                                    'velo2.jpg',
+                                    'velo4.jpg',
+                                    'velo5.jpg',
+                                    'velo6.webp',
+                                    'velo7.jpg'
                                 ];
                                 $randomIndex = array_rand($bikeImages);
                                 $placeImage = BASE_URL . 'frontend/assets/img/' . $bikeImages[$randomIndex];
                             } elseif ($place['type'] === 'electrique') {
-                                // Sélectionner une image aléatoire parmi les 5 disponibles pour les places électriques
+                                // Images pour les places électriques (elec1 à elec6)
                                 $electricImages = [
                                     'elec1.webp',
                                     'elec2.webp',
                                     'elec3.webp',
                                     'elec4.webp',
-                                    'elec5.webp'
+                                    'elec5.webp',
+                                    'elec6.webp'
                                 ];
                                 $randomIndex = array_rand($electricImages);
                                 $placeImage = BASE_URL . 'frontend/assets/img/' . $electricImages[$randomIndex];
                             }
                             ?>
+                            <!-- Image de fond avec header -->
                             <div class="place-card-image" style="background-image: url('<?php echo $placeImage; ?>');">
-                                <div class="card-header bg-transparent border-0 <?php
-                                                                                if ($place['type'] === 'handicape') echo 'text-white';
-                                                                                else if ($place['type'] === 'electrique') echo 'text-white';
-                                                                                ?>">
-                                    <span class="badge <?php
-                                                        if ($place['type'] === 'handicape') echo 'bg-warning text-dark';
-                                                        elseif ($place['type'] === 'electrique') echo 'bg-success';
-                                                        else echo 'bg-secondary text-white';
-                                                        ?>">
+                                <div class="card-header bg-transparent border-0">
+                                    <?php
+                                    // Badge avec couleur selon le type
+                                    $badgeClass = 'bg-secondary text-white';
+                                    $icon = 'fas fa-car';
+
+                                    switch($place['type']) {
+                                        case 'handicape':
+                                            $badgeClass = 'bg-warning text-dark';
+                                            $icon = 'fas fa-wheelchair';
+                                            break;
+                                        case 'electrique':
+                                            $badgeClass = 'bg-success text-white';
+                                            $icon = 'fas fa-charging-station';
+                                            break;
+                                        case 'moto/scooter':
+                                            $badgeClass = 'bg-secondary text-white';
+                                            $icon = 'fas fa-motorcycle';
+                                            break;
+                                        case 'velo':
+                                            $badgeClass = 'bg-info text-white';
+                                            $icon = 'fas fa-bicycle';
+                                            break;
+                                    }
+                                    ?>
+                                    <span class="badge <?php echo $badgeClass; ?>">
                                         Place <?php echo htmlspecialchars($place['numero']); ?>
-                                        <?php if ($place['type'] === 'handicape'): ?>
-                                            <i class="fas fa-wheelchair ms-1"></i>
-                                        <?php elseif ($place['type'] === 'electrique'): ?>
-                                            <i class="fas fa-charging-station ms-1"></i>
-                                        <?php endif; ?>
+                                        <i class="<?php echo $icon; ?> ms-1"></i>
                                     </span>
                                 </div>
                             </div>
+
+                            <!-- Corps de la carte -->
                             <div class="card-body">
                                 <h5 class="card-title">Type: <?php echo ucfirst($place['type']); ?></h5>
+
+                                <!-- Statut -->
                                 <p class="card-text">
                                     <?php if ($place['status'] === 'libre'): ?>
-                                        <span class="badge bg-success"><i class="fas fa-check me-1"></i> Disponible</span>
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-check me-1"></i> Disponible
+                                        </span>
                                     <?php else: ?>
-                                        <span class="badge bg-warning text-dark"><i class="fas fa-clock me-1"></i> Occupée</span>
+                                        <span class="badge bg-warning">
+                                            <i class="fas fa-clock me-1"></i> Occupée
+                                        </span>
                                     <?php endif; ?>
                                 </p>
+
+                                <!-- Tarif -->
                                 <p class="card-text">
                                     <strong>Tarif:</strong> <?php echo number_format($tarifFloat, 2); ?> € / heure
                                 </p>
 
-                                <!-- Affichage des créneaux réservés -->
+                                <!-- Disponibilité -->
                                 <?php if (isset($reservedTimeSlots[$place['id']]) && !empty($reservedTimeSlots[$place['id']])): ?>
-                                    <div class="reserved-slots mb-3">
-                                        <h6 class="text-danger"><i class="fas fa-clock me-1"></i> Créneaux indisponibles:</h6>
-                                        <ul class="list-unstyled small">
-                                            <?php foreach ($reservedTimeSlots[$place['id']] as $slot): ?>
-                                                <li>
-                                                    <span class="badge bg-danger">
-                                                        <?php echo date('d/m/Y H:i', strtotime($slot['date_debut'])); ?> -
-                                                        <?php echo date('d/m/Y H:i', strtotime($slot['date_fin'])); ?>
-                                                    </span>
-                                                </li>
-                                            <?php endforeach; ?>
-                                        </ul>
-                                    </div> <?php else: ?> <?php if ($place['status'] === 'occupe'): ?>
-                                        <p class="text-warning small"><i class="fas fa-clock me-1"></i>
-                                            <?php if (isset($currentOccupation[$place['id']])): ?>
-                                                Occupée jusqu'à <?php echo date('d/m/Y H:i', strtotime($currentOccupation[$place['id']]['date_fin'])); ?>
-                                            <?php else: ?>
-                                                Temporairement occupée
-                                            <?php endif; ?>
-                                        </p>
-                                    <?php else: ?>
-                                        <p class="text-success small"><i class="fas fa-clock me-1"></i> Tous les créneaux sont disponibles</p>
-                                    <?php endif; ?>
-                                <?php endif; ?> <button class="btn-reserve" data-bs-toggle="modal" data-bs-target="#reservationModal"
-                                    data-place-id="<?php echo $place['id']; ?>"
-                                    data-place-numero="<?php echo htmlspecialchars($place['numero']); ?>"
-                                    data-place-type="<?php echo htmlspecialchars($place['type']); ?>"
-                                    data-place-tarif="<?php echo isset($place['type']) && isset($tarifs[$place['type']]) ? $tarifs[$place['type']]['prix_heure'] : 0; ?>">
+                                    <p class="text-warning small">
+                                        <i class="fas fa-clock me-1"></i> Créneaux indisponibles
+                                    </p>
+                                <?php elseif ($place['status'] === 'occupe'): ?>
+                                    <p class="text-warning small">
+                                        <i class="fas fa-clock me-1"></i> Temporairement occupée
+                                    </p>
+                                <?php else: ?>
+                                    <p class="text-success small">
+                                        <i class="fas fa-clock me-1"></i> Tous les créneaux sont disponibles
+                                    </p>
+                                <?php endif; ?>
+
+                                <!-- Boutons d'action -->
+                                <button class="btn-reserve"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#reservationModal"
+                                        data-place-id="<?php echo $place['id']; ?>"
+                                        data-place-numero="<?php echo htmlspecialchars($place['numero']); ?>"
+                                        data-place-type="<?php echo htmlspecialchars($place['type']); ?>"
+                                        data-place-tarif="<?php echo $tarifFloat; ?>">
                                     <i class="fas fa-calendar-check me-2"></i> Réserver
                                 </button>
-                                <!-- Bouton de réservation immédiate -->
+
                                 <form action="<?php echo BASE_URL; ?>reservation/reserveImmediate" method="post" class="mt-2">
                                     <input type="hidden" name="place_id" value="<?php echo $place['id']; ?>">
                                     <button type="submit" class="btn-reserve-immediate">
@@ -501,23 +412,12 @@
                                 <p class="mb-0">Total: <strong id="montant-total">0.50 €</strong></p>
                             </div>
 
-                            <div class="d-grid gap-2">
+                            <div class="d-grid">
                                 <button type="submit" class="btn btn-primary" id="confirm-reservation-btn">
                                     <i class="fas fa-check me-2"></i> Confirmer la réservation
                                 </button>
-                                <button type="button" class="btn btn-outline-secondary" id="create-alert-btn">
-                                    <i class="fas fa-bell me-2"></i> Créer une alerte si indisponible
-                                </button>
                             </div>
                         </form>
-                        <!-- Formulaire caché pour créer une alerte -->
-                        <form action="<?php echo BASE_URL; ?>reservation/createAlert" method="post" id="alert-form" class="hidden">
-                            <input type="hidden" name="place_id" id="alert_place_id" value="">
-                            <input type="hidden" name="date_debut" id="alert_date_debut" value="">
-                            <input type="hidden" name="duree" id="alert_duree" value="">
-                            <input type="hidden" name="include_similar_places" id="alert_include_similar" value="0">
-                            <input type="submit" id="alert_submit" class="hidden">
-                        </form> <!-- Logique des alertes maintenant dans unifiedReservationManager.js -->
 
                         <!-- Données d'abonnement pour JavaScript -->
                         <?php if (isset($userSubscriptionBenefits) && $userSubscriptionBenefits): ?>
@@ -620,92 +520,114 @@
             </div> <!-- Fermeture du places-page-background -->
         <!-- Tous les scripts inline ont été transférés vers unifiedReservationManager.js -->
 
+        <!-- Script de correction pour les formulaires de réservation -->
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🔧 Script de correction formulaires chargé');
+
+            // Vérifier si l'utilisateur est connecté
+            const isUserLoggedIn = <?php echo isset($_SESSION['user']) ? 'true' : 'false'; ?>;
+            console.log('👤 Utilisateur connecté:', isUserLoggedIn);
+
+            // Attendre que la modal soit disponible et que le JavaScript principal soit chargé
+            setTimeout(function() {
+                if (isUserLoggedIn) {
+                    // Utilisateur connecté - vérifier le formulaire utilisateur
+                    const userForm = document.getElementById('reservation-form');
+                    console.log('🔍 Formulaire utilisateur trouvé:', userForm);
+
+                    if (userForm) {
+                        console.log('✅ Formulaire utilisateur disponible - pas de correction nécessaire');
+                    } else {
+                        console.warn('⚠️ Formulaire utilisateur non trouvé');
+                    }
+                } else {
+                    // Utilisateur non connecté - gérer le formulaire invité
+                    const guestForm = document.getElementById('guest-reservation-form');
+                    console.log('🔍 Formulaire invité trouvé:', guestForm);
+
+                    if (guestForm) {
+                        // Vérifier si le gestionnaire est déjà attaché
+                        if (!guestForm.dataset.handlerAttached) {
+                            console.log('🔧 Ajout du gestionnaire AJAX au formulaire invité');
+
+                            // Marquer comme traité
+                            guestForm.dataset.handlerAttached = 'true';
+
+                            // Ajouter un gestionnaire AJAX
+                            guestForm.addEventListener('submit', function(event) {
+                                event.preventDefault();
+                                event.stopPropagation();
+                                console.log('🚀 Formulaire invité soumis via AJAX (script de correction)');
+
+                                // Vérifier le place_id
+                                const placeIdField = document.getElementById('guest_place_id');
+                                console.log('🔍 Champ place_id:', placeIdField, 'Valeur:', placeIdField?.value);
+
+                                if (!placeIdField || !placeIdField.value) {
+                                    alert('Erreur: Place non sélectionnée. Veuillez fermer cette fenêtre et cliquer à nouveau sur "Réserver" pour une place.');
+                                    return;
+                                }
+
+                                // Désactiver le bouton de soumission
+                                const submitButton = guestForm.querySelector('button[type="submit"]');
+                                if (submitButton) {
+                                    submitButton.disabled = true;
+                                    submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Traitement...';
+                                }
+
+                                // Créer FormData
+                                const formData = new FormData(guestForm);
+                                console.log('📋 Données du formulaire:');
+                                for (let [key, value] of formData.entries()) {
+                                    console.log(`  ${key}: ${value}`);
+                                }
+
+                                // Envoyer la requête AJAX
+                                fetch('<?php echo BASE_URL; ?>reservation/guestReserve', {
+                                    method: 'POST',
+                                    body: formData
+                                })
+                                .then(response => response.json())
+                                .then(data => {
+                                    console.log('📡 Réponse du serveur:', data);
+                                    if (data.success) {
+                                        console.log('✅ Redirection vers:', data.redirect_url);
+                                        window.location.href = data.redirect_url;
+                                    } else {
+                                        alert('Erreur: ' + (data.error || 'Une erreur est survenue'));
+                                        // Réactiver le bouton
+                                        if (submitButton) {
+                                            submitButton.disabled = false;
+                                            submitButton.innerHTML = '<i class="fas fa-check me-2"></i> Réserver en tant qu\'invité';
+                                        }
+                                    }
+                                })
+                                .catch(error => {
+                                    console.error('❌ Erreur:', error);
+                                    alert('Erreur de communication avec le serveur');
+                                    // Réactiver le bouton
+                                    if (submitButton) {
+                                        submitButton.disabled = false;
+                                        submitButton.innerHTML = '<i class="fas fa-check me-2"></i> Réserver en tant qu\'invité';
+                                    }
+                                });
+                            });
+
+                            console.log('✅ Gestionnaire AJAX ajouté au formulaire invité');
+                        } else {
+                            console.log('ℹ️ Gestionnaire déjà attaché au formulaire invité');
+                        }
+                    } else {
+                        console.log('ℹ️ Formulaire invité non trouvé (normal pour utilisateur non connecté)');
+                    }
+                }
+            }, 1500); // Attendre 1.5 secondes pour que tout soit chargé
+        });
+        </script>
+
         <!-- Correctif anti-conflit pour les cartes et le spinner -->
         <!-- <script src="<?php echo BASE_URL; ?>frontend/assets/js/components/places-fix.js"></script> -->
 
-        <!-- Script de validation pour la page places -->
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                console.log('🔧 Validation page places - Initialisation...');
-                // S'assurer que la grille tarifaire est cachée par défaut
-                const tarifsInfo = document.querySelector('.tarifs-info');
-                const showFeesCheckbox = document.getElementById('show-fees');
-
-                if (tarifsInfo && showFeesCheckbox) {
-                    // S'assurer que la grille tarifaire est cachée par défaut
-                    if (!showFeesCheckbox.checked) {
-                        tarifsInfo.style.display = 'none';
-                        console.log('✅ Grille tarifaire cachée par défaut');
-                    } else {
-                        tarifsInfo.style.display = 'block';
-                        console.log('✅ Grille tarifaire affichée selon checkbox');
-                    }
-
-                    // Gestionnaire pour la checkbox des tarifs
-                    showFeesCheckbox.addEventListener('change', function() {
-                        if (this.checked) {
-                            tarifsInfo.style.display = 'block';
-                            console.log('📋 Grille tarifaire affichée');
-                        } else {
-                            tarifsInfo.style.display = 'none';
-                            console.log('📋 Grille tarifaire cachée');
-                        }
-                    });
-                }
-
-                // S'assurer que le spinner de chargement est caché par défaut
-                const loadingSpinner = document.getElementById('loading-spinner');
-                if (loadingSpinner) {
-                    // Forcer l'état caché
-                    loadingSpinner.classList.add('d-none');
-                    loadingSpinner.style.display = 'none';
-                    console.log('✅ Spinner de chargement caché par défaut');
-                }
-
-                // S'assurer que toutes les cartes de places sont visibles
-                const placeCards = document.querySelectorAll('.place-card');
-                if (placeCards.length > 0) {
-                    placeCards.forEach((card, index) => {
-                        // Forcer la visibilité des cartes
-                        card.style.display = 'block';
-                        card.style.opacity = '1';
-
-                        // Animation d'apparition progressive
-                        setTimeout(() => {
-                            card.style.transform = 'translateY(0)';
-                            card.style.transition = 'all 0.3s ease';
-                        }, index * 100);
-                    });
-                    console.log(`✅ ${placeCards.length} cartes de places rendues visibles avec animations`);
-                } else {
-                    console.warn('⚠️ Aucune carte de place trouvée dans le DOM');
-                }
-
-                // S'assurer que le container des places est visible
-                const placesContainer = document.getElementById('places-container');
-                if (placesContainer) {
-                    placesContainer.style.display = 'flex';
-                    placesContainer.style.flexWrap = 'wrap';
-                    console.log('✅ Container des places forcé visible en mode flex');
-                }
-
-                // Fonction utilitaire pour montrer le spinner lors des requêtes AJAX
-                window.showAjaxSpinner = function() {
-                    if (loadingSpinner) {
-                        loadingSpinner.classList.remove('d-none');
-                        loadingSpinner.style.display = 'block';
-                        console.log('🔄 Spinner AJAX affiché');
-                    }
-                };
-
-                // Fonction utilitaire pour cacher le spinner
-                window.hideAjaxSpinner = function() {
-                    if (loadingSpinner) {
-                        loadingSpinner.classList.add('d-none');
-                        loadingSpinner.style.display = 'none';
-                        console.log('✅ Spinner AJAX caché');
-                    }
-                };
-                console.log('✅ Validation page places terminée - Affichage optimisé');
-            });
-        </script>
+        <!-- Gestionnaire des places - Logique fonctionnelle séparée -->
+        <script src="<?php echo BASE_URL; ?>frontend/assets/js/components/placesManager.js"></script>

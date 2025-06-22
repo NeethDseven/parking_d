@@ -1,42 +1,139 @@
 <!-- Main content -->
 <meta name="current-page" content="admin_tarifs">
 <div class="content">
-    <div class="container-fluid p-4">
-        <!-- Mobile toggle -->
-        <button class="btn btn-primary d-md-none mb-3" id="sidebarToggle">
-            <i class="fas fa-bars"></i>
-        </button>
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1>Gestion des tarifs</h1>
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTarifModal">
-                <i class="fas fa-plus"></i> Ajouter un tarif
-            </button>
-        </div>
+    <div class="container-fluid">
+        <!-- Container principal uniforme -->
+        <div class="admin-page-container">
 
-        <?php if (isset($_SESSION['success'])): ?>
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <?php echo $_SESSION['success']; ?>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <!-- Header de page uniforme -->
+            <div class="admin-page-header">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h1 class="admin-page-title">
+                            <i class="fas fa-tags"></i>
+                            Gestion des tarifs
+                        </h1>
+                        <p class="text-muted mb-0">Configurez les prix pour chaque type de place de parking</p>
+                    </div>
+                    <div class="admin-page-actions">
+                        <button type="button" class="admin-btn admin-btn-primary" data-bs-toggle="modal" data-bs-target="#addTarifModal">
+                            <i class="fas fa-plus"></i>
+                            Ajouter un tarif
+                        </button>
+                    </div>
+                </div>
             </div>
-            <?php unset($_SESSION['success']); ?>
-        <?php endif; ?>
 
-        <?php if (isset($_SESSION['error'])): ?>
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <?php echo $_SESSION['error']; ?>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-            <?php unset($_SESSION['error']); ?>
-        <?php endif; ?>
+            <!-- Alertes style uniforme -->
+            <?php if (isset($_SESSION['success'])): ?>
+                <div class="admin-content-card">
+                    <div class="admin-content-card-body">
+                        <div class="dashboard-alert alert-success">
+                            <i class="fas fa-check-circle"></i>
+                            <?php echo $_SESSION['success']; ?>
+                        </div>
+                    </div>
+                </div>
+                <?php unset($_SESSION['success']); ?>
+            <?php endif; ?>
 
-        <div class="card">
-            <div class="card-header bg-white">
-                <h5 class="mb-0">Liste des tarifs</h5>
+            <?php if (isset($_SESSION['error'])): ?>
+                <div class="admin-content-card">
+                    <div class="admin-content-card-body">
+                        <div class="dashboard-alert alert-danger">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <?php echo $_SESSION['error']; ?>
+                        </div>
+                    </div>
+                </div>
+                <?php unset($_SESSION['error']); ?>
+            <?php endif; ?>
+
+            <!-- Stats Cards style uniforme -->
+            <div class="dashboard-stats-row">
+                <div class="dashboard-stat-card primary">
+                    <div class="dashboard-stat-header">
+                        <div class="dashboard-stat-content">
+                            <h6>Types de tarifs</h6>
+                            <h2><?php echo isset($tarifs) ? count($tarifs) : 0; ?></h2>
+                            <small>Configurations actives</small>
+                        </div>
+                        <div class="dashboard-stat-icon primary">
+                            <i class="fas fa-tags"></i>
+                        </div>
+                    </div>
+                    <div class="dashboard-stat-footer">
+                        <a href="#tarifsList">
+                            <i class="fas fa-arrow-right"></i>
+                            Voir la liste
+                        </a>
+                    </div>
+                </div>
+
+                <div class="dashboard-stat-card success">
+                    <div class="dashboard-stat-header">
+                        <div class="dashboard-stat-content">
+                            <h6>Prix moyen/heure</h6>
+                            <h2><?php
+                                if (isset($tarifs) && count($tarifs) > 0) {
+                                    $total = array_sum(array_column($tarifs, 'prix_heure'));
+                                    echo number_format($total / count($tarifs), 2);
+                                } else {
+                                    echo '0.00';
+                                }
+                            ?> €</h2>
+                            <small>Moyenne des tarifs</small>
+                        </div>
+                        <div class="dashboard-stat-icon success">
+                            <i class="fas fa-euro-sign"></i>
+                        </div>
+                    </div>
+                    <div class="dashboard-stat-footer">
+                        <a href="#tarifsList">
+                            <i class="fas fa-arrow-right"></i>
+                            Voir détails
+                        </a>
+                    </div>
+                </div>
+
+                <div class="dashboard-stat-card info">
+                    <div class="dashboard-stat-header">
+                        <div class="dashboard-stat-content">
+                            <h6>Dernière modification</h6>
+                            <h2><?php
+                                if (isset($historique) && count($historique) > 0) {
+                                    echo date('d/m', strtotime($historique[0]['created_at']));
+                                } else {
+                                    echo 'N/A';
+                                }
+                            ?></h2>
+                            <small>Date de modification</small>
+                        </div>
+                        <div class="dashboard-stat-icon info">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                    </div>
+                    <div class="dashboard-stat-footer">
+                        <a href="#historiqueList">
+                            <i class="fas fa-arrow-right"></i>
+                            Voir historique
+                        </a>
+                    </div>
+                </div>
             </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="bg-light">
+
+            <!-- Liste des tarifs style uniforme -->
+            <div class="admin-content-card" id="tarifsList">
+                <div class="admin-content-card-header">
+                    <h3 class="admin-content-card-title">
+                        <i class="fas fa-list me-2"></i>
+                        Liste des tarifs
+                    </h3>
+                </div>
+                <div class="admin-content-card-body">
+                    <div class="admin-table-wrapper">
+                        <table class="admin-table">
+                            <thead>
                             <tr>
                                 <th>ID</th>
                                 <th>Type de place</th>
@@ -50,16 +147,16 @@
                             <?php if (isset($tarifs) && count($tarifs) > 0): ?>
                                 <?php foreach ($tarifs as $tarif): ?>
                                     <tr>
-                                        <td><?php echo $tarif['id']; ?></td>
-                                        <td>
+                                        <td data-sort="<?php echo $tarif['id']; ?>"><?php echo $tarif['id']; ?></td>
+                                        <td data-sort="<?php echo $tarif['type_place']; ?>">
                                             <?php echo getTypePlaceBadge($tarif['type_place']); ?>
                                         </td>
-                                        <td><?php echo number_format($tarif['prix_heure'], 2); ?> €</td>
-                                        <td><?php echo number_format($tarif['prix_journee'], 2); ?> €</td>
-                                        <td><?php echo number_format($tarif['prix_mois'], 2); ?> €</td>
+                                        <td data-sort="<?php echo $tarif['prix_heure']; ?>"><?php echo number_format($tarif['prix_heure'], 2); ?> €</td>
+                                        <td data-sort="<?php echo $tarif['prix_journee']; ?>"><?php echo number_format($tarif['prix_journee'], 2); ?> €</td>
+                                        <td data-sort="<?php echo $tarif['prix_mois']; ?>"><?php echo number_format($tarif['prix_mois'], 2); ?> €</td>
                                         <td>
-                                            <div class="btn-group btn-group-sm">
-                                                <button type="button" class="btn btn-info edit-tarif"
+                                            <div class="d-flex gap-1">
+                                                <button type="button" class="admin-btn-icon edit edit-tarif"
                                                     data-id="<?php echo $tarif['id']; ?>"
                                                     data-type="<?php echo $tarif['type_place']; ?>"
                                                     data-prix-heure="<?php echo $tarif['prix_heure']; ?>"
@@ -67,12 +164,14 @@
                                                     data-prix-mois="<?php echo $tarif['prix_mois']; ?>"
                                                     data-free-minutes="<?php echo $tarif['free_minutes'] ?? 0; ?>"
                                                     data-bs-toggle="modal"
-                                                    data-bs-target="#editTarifModal">
+                                                    data-bs-target="#editTarifModal"
+                                                    title="Modifier">
                                                     <i class="fas fa-edit"></i>
                                                 </button>
-                                                <button type="button" class="btn btn-danger delete-tarif"
+                                                <button type="button" class="admin-btn-icon delete delete-tarif"
                                                     data-id="<?php echo $tarif['id']; ?>"
-                                                    data-type="<?php echo $tarif['type_place']; ?>">
+                                                    data-type="<?php echo $tarif['type_place']; ?>"
+                                                    title="Supprimer">
                                                     <i class="fas fa-trash"></i>
                                                 </button>
                                             </div>
@@ -85,22 +184,23 @@
                                 </tr>
                             <?php endif; ?>
                         </tbody>
-                    </table>
+                        </table>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Historique des modifications -->
-        <div class="row mt-4">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-header bg-white">
-                        <h5 class="mb-0">Historique des modifications</h5>
-                    </div>
-                    <div class="card-body p-0">
-                        <div class="table-responsive">
-                            <table class="table table-hover align-middle mb-0">
-                                <thead class="bg-light">
+            <!-- Historique des modifications style uniforme -->
+            <div class="admin-content-card" id="historiqueList">
+                <div class="admin-content-card-header">
+                    <h3 class="admin-content-card-title">
+                        <i class="fas fa-history me-2"></i>
+                        Historique des modifications
+                    </h3>
+                </div>
+                <div class="admin-content-card-body">
+                    <div class="admin-table-wrapper">
+                        <table class="admin-table">
+                            <thead>
                                     <tr>
                                         <th>Date</th>
                                         <th>Utilisateur</th>
@@ -176,12 +276,12 @@
                                         </tr>
                                     <?php endif; ?>
                                 </tbody>
-                            </table>
-                        </div>
+                        </table>
                     </div>
                 </div>
             </div>
-        </div>
+
+        </div> <!-- Fin admin-page-container -->
     </div>
 </div>
 

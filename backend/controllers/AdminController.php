@@ -66,14 +66,32 @@ class AdminController extends BaseController
         $limit = 10;
         $offset = ($page - 1) * $limit;
 
+        // Récupérer les filtres de l'URL
+        $roleFilter = $_GET['role'] ?? null;
+        $statusFilter = $_GET['status'] ?? null;
+        $sortFilter = $_GET['sort'] ?? 'created_at_desc';
+
+        // Récupérer les utilisateurs avec filtres
+        if ($roleFilter || $statusFilter || $sortFilter !== 'created_at_desc') {
+            $users = $this->userModel->getFilteredUsers($roleFilter, $statusFilter, $sortFilter, $offset, $limit);
+            $totalCount = $this->userModel->countFilteredUsers($roleFilter, $statusFilter);
+        } else {
+            $users = $this->userModel->getUsersPaginated($offset, $limit);
+            $totalCount = $this->userModel->countUsers();
+        }
+
         $data = $this->setActiveMenu('users') + [
             'title' => 'Gestion des utilisateurs - Administration',
-            'users' => $this->userModel->getUsersPaginated($offset, $limit),
+            'users' => $users,
             'currentPage' => $page,
-            'totalPages' => ceil($this->userModel->countUsers() / $limit),
+            'totalPages' => ceil($totalCount / $limit),
             'totalUsers' => $this->userModel->countUsers(),
             'newUsers' => $this->userModel->countNewUsersThisMonth(),
-            'activeUsers' => $this->userModel->countActiveUsersLastMonth()
+            'activeUsers' => $this->userModel->countActiveUsersLastMonth(),
+            // Filtres actuels
+            'role' => $roleFilter,
+            'status' => $statusFilter,
+            'sort' => $sortFilter
         ];
 
         $this->renderView('admin/users/index', $data, 'admin');
@@ -451,7 +469,7 @@ class AdminController extends BaseController
             return;
         }
 
-        if ($reservation['status'] === 'annulee' || $reservation['status'] === 'terminee') {
+        if (in_array($reservation['status'], ['annulee', 'annulée', 'terminee', 'terminée'])) {
             $this->redirectWithError(BASE_URL . 'admin/reservations', 'Cette réservation ne peut pas être annulée.');
             return;
         }
@@ -476,24 +494,42 @@ class AdminController extends BaseController
     // ====== GESTION DES PLACES ======
 
     /**
-     * Liste des places avec pagination
+     * Liste des places avec pagination et filtres
      */
     public function places($page = 1)
     {
         $limit = 10;
         $offset = ($page - 1) * $limit;
+
+        // Récupérer les filtres de l'URL
+        $typeFilter = $_GET['type'] ?? null;
+        $statusFilter = $_GET['status'] ?? null;
+
         // Obtenir les statistiques des places
         $placeStats = $this->getPlaceStatistics();
+
+        // Récupérer les places avec filtres
+        if ($typeFilter || $statusFilter) {
+            $places = $this->placeModel->getFilteredPlaces($typeFilter, $statusFilter, $offset, $limit);
+            $totalCount = $this->placeModel->countFilteredPlaces($typeFilter, $statusFilter);
+        } else {
+            $places = $this->placeModel->getPlacesPaginated($offset, $limit);
+            $totalCount = $this->placeModel->countPlaces();
+        }
+
         // S'assurer que les données pour les graphiques sont bien structurées
         $data = $this->setActiveMenu('places') + [
             'title' => 'Gestion des places - Administration',
-            'places' => $this->placeModel->getPlacesPaginated($offset, $limit),
+            'places' => $places,
             'currentPage' => $page,
-            'totalPages' => ceil($this->placeModel->countPlaces() / $limit),
+            'totalPages' => ceil($totalCount / $limit),
             'stats' => $placeStats,
             // Pour les graphiques
             'placeStats' => $placeStats, // Données complètes
-            'typeStats' => $placeStats['by_type'] // Spécifiquement les types de places
+            'typeStats' => $placeStats['by_type'], // Spécifiquement les types de places
+            // Filtres actuels
+            'type' => $typeFilter,
+            'status' => $statusFilter
         ];
 
         $this->renderView('admin/places/index', $data, 'admin');

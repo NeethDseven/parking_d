@@ -89,8 +89,10 @@
 <!-- Section Parking - Identification visuelle -->
 <div class="features-section animate-fade-in" style="background: url('/projet/parking_d/frontend/assets/img/parking-underground.webp') center center / cover no-repeat fixed; position: relative;">
     <div class="container" style="position: relative; z-index: 2;">
-        <h2 class="text-center mb-4 text-white"><i class="fas fa-building me-2"></i>Votre Parking ParkMe In</h2>
-        <p class="text-center mb-5 lead"><i class="fas fa-map-marker-alt me-2"></i>123 Rue du Faubourg Saint-Honoré, 75008 Paris</p>
+        <div class="text-center mb-5">
+            <h2 class="mb-3 text-white"><i class="fas fa-building me-2"></i>Votre Parking ParkMe In</h2>
+            <p class="lead text-white"><i class="fas fa-map-marker-alt me-2"></i>123 Rue du Faubourg Saint-Honoré, 75008 Paris</p>
+        </div>
 
         <div class="row justify-content-center">
             <div class="col-lg-10">
@@ -261,33 +263,68 @@
 <div class="container mb-5 animate-fade-in">
     <h2 class="text-center mb-4">Nos abonnements</h2>
     <div class="row">
-        <div class="col-md-6 mb-4">
-            <div class="card h-100 subscription-promo-card">
-                <div class="card-body">
-                    <h3 class="card-title">Économisez avec nos abonnements</h3>
-                    <p class="card-text">Profitez de nombreux avantages en souscrivant à un abonnement mensuel ou annuel :</p>
-                    <ul>
-                        <li>Jusqu'à 30 minutes gratuites par réservation</li>
-                        <li>Réductions exclusives sur toutes vos réservations</li>
-                        <li>Accès prioritaire aux places de parking</li>
-                        <li>Résiliation possible à tout moment</li>
-                    </ul>
-                    <a href="<?php echo BASE_URL; ?>subscription" class="btn btn-primary mt-3">Voir les offres</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6 mb-4">
-            <div class="card h-100 subscription-cta-card">
-                <div class="card-body text-center">
-                    <div class="subscription-icon mb-3">
-                        <i class="fas fa-ticket-alt"></i>
+        <div class="col-12 mb-4">
+            <div class="card h-100 subscription-promo-card shadow-lg">
+                <div class="card-body text-center py-5 px-4">
+                    <div class="subscription-header mb-4">
+                        <div class="subscription-icon mb-3">
+                            <i class="fas fa-star text-warning" style="font-size: 3rem;"></i>
+                        </div>
+                        <h2 class="card-title display-5 mb-3">Économisez avec nos abonnements</h2>
+                        <p class="lead card-text mb-4">Profitez de nombreux avantages en souscrivant à un abonnement mensuel ou annuel et optimisez vos frais de stationnement !</p>
                     </div>
-                    <h3 class="card-title mb-3">Abonnements à partir de 29,99€/mois</h3>
-                    <p class="card-text mb-4">Stationnez plus, payez moins. Nos abonnements s'adaptent à vos besoins.</p>
-                    <a href="http://127.0.0.1/projet/parking_d/" class="btn btn-lg" style="background-color: #2c3e50; color: #fff; border: none;">Voir les détails</a>
+
+                    <div class="row g-4 mb-5">
+                        <div class="col-lg-3 col-md-6">
+                            <div class="feature-item">
+                                <div class="feature-icon mb-3">
+                                    <i class="fas fa-clock text-success" style="font-size: 2rem;"></i>
+                                </div>
+                                <h5>Minutes gratuites</h5>
+                                <p class="text-muted">Jusqu'à 30 minutes gratuites par réservation</p>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6">
+                            <div class="feature-item">
+                                <div class="feature-icon mb-3">
+                                    <i class="fas fa-percentage text-info" style="font-size: 2rem;"></i>
+                                </div>
+                                <h5>Réductions exclusives</h5>
+                                <p class="text-muted">Réductions sur toutes vos réservations</p>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6">
+                            <div class="feature-item">
+                                <div class="feature-icon mb-3">
+                                    <i class="fas fa-medal text-warning" style="font-size: 2rem;"></i>
+                                </div>
+                                <h5>Accès prioritaire</h5>
+                                <p class="text-muted">Accès prioritaire aux meilleures places de parking</p>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6">
+                            <div class="feature-item">
+                                <div class="feature-icon mb-3">
+                                    <i class="fas fa-handshake text-primary" style="font-size: 2rem;"></i>
+                                </div>
+                                <h5>Flexibilité totale</h5>
+                                <p class="text-muted">Résiliation possible à tout moment sans frais</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="subscription-cta">
+                        <p class="mb-3"><strong>À partir de 19,99€/mois</strong> - Choisissez la formule qui vous convient</p>
+                        <div class="text-center">
+                            <a href="<?php echo BASE_URL; ?>subscription" class="btn btn-primary btn-lg px-4">
+                                <i class="fas fa-eye me-2"></i>Voir toutes les offres
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
+
     </div>
 </div>
 

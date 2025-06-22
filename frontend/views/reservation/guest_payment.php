@@ -61,7 +61,7 @@
                     <form action="<?php echo BASE_URL; ?>reservation/guestPayment/<?php echo $reservation['id']; ?>/<?php echo $reservation['guest_token']; ?>" method="post" id="guest-payment-form">
                         <div class="mb-4">
                             <div class="form-check mb-3 border p-3 rounded">
-                                <input class="form-check-input" type="radio" name="mode_paiement" id="carte" value="carte" checked>
+                                <input class="form-check-input" type="radio" name="mode_payment" id="carte" value="carte" checked>
                                 <label class="form-check-label" for="carte">
                                     <div class="d-flex align-items-center">
                                         <div>
@@ -99,7 +99,7 @@
                             </div>
 
                             <div class="form-check mb-3 border p-3 rounded">
-                                <input class="form-check-input" type="radio" name="mode_paiement" id="paypal" value="paypal">
+                                <input class="form-check-input" type="radio" name="mode_payment" id="paypal" value="paypal">
                                 <label class="form-check-label" for="paypal">
                                     <div class="d-flex align-items-center">
                                         <div>
@@ -114,7 +114,7 @@
                             </div>
 
                             <div class="form-check border p-3 rounded">
-                                <input class="form-check-input" type="radio" name="mode_paiement" id="virement" value="virement">
+                                <input class="form-check-input" type="radio" name="mode_payment" id="virement" value="virement">
                                 <label class="form-check-label" for="virement">
                                     <div class="d-flex align-items-center">
                                         <div>

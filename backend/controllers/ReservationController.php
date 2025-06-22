@@ -176,7 +176,9 @@ class ReservationController extends BaseController
         }
 
         // Récupérer la réservation
-        $reservation = $this->reservationModel->getReservationById($id);        // Vérifier si la réservation existe et appartient à l'utilisateur
+        $reservation = $this->reservationModel->getReservationById($id);
+
+        // Vérifier si la réservation existe et appartient à l'utilisateur
         if (!$reservation || $reservation['user_id'] != $_SESSION['user']['id']) {
             $this->redirectWithError('auth/profile', 'Réservation non trouvée ou accès non autorisé.');
             return;
@@ -201,11 +203,15 @@ class ReservationController extends BaseController
             'active_page' => 'reservation',
             'reservation' => $reservation,
             'modes_payment' => ['carte', 'paypal', 'virement']
-        ];        // Vérifier si c'est le paiement d'une réservation immédiate
+        ];
+
+        // Vérifier si c'est le paiement d'une réservation immédiate
         $isImmediatePayment = isset($_SESSION['immediate_payment']) && $_SESSION['immediate_payment']['reservation_id'] == $id;
         if ($isImmediatePayment) {
             $data['immediate_payment'] = $_SESSION['immediate_payment'];
-        }        // Récupérer les avantages d'abonnement de l'utilisateur
+        }
+
+        // Récupérer les avantages d'abonnement de l'utilisateur
         $activeSubscriptions = $this->subscriptionModel->getUserActiveSubscriptions($_SESSION['user']['id']);
         $subscriptionBenefits = null;
 
@@ -249,7 +255,9 @@ class ReservationController extends BaseController
                 $data['final_amount'] = 0;
                 $data['total_savings'] = $originalAmount;
             }
-        } // Traiter le paiement si le formulaire est soumis
+        }
+
+        // Traiter le paiement si le formulaire est soumis
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $validated = $this->validateRequiredFields(['mode_paiement']);
             if (!$validated) {
@@ -312,16 +320,22 @@ class ReservationController extends BaseController
         if (!$reservation || $reservation['user_id'] != $_SESSION['user']['id']) {
             $this->redirectWithError('auth/profile', 'Réservation non trouvée ou accès non autorisé.');
             return;
-        }        // Récupérer les informations de paiement associé
+        }
+
+        // Récupérer les informations de paiement associé
         $payment = null;
         if ($reservation['montant_total'] > 0) {
             $payment = $this->reservationModel->getPaymentByReservationId($id);
-        }        // Déterminer le code de sortie à afficher
+        }
+
+        // Déterminer le code de sortie à afficher
         $code_sortie = '';
         $status_normalized = strtolower(str_replace(['é', 'è', 'ê'], 'e', $reservation['status']));
         if (in_array($status_normalized, ['terminee', 'confirmee']) || strpos($status_normalized, 'termine') !== false) {
             $code_sortie = $reservation['code_sortie'];
-        } // Récupérer les informations de paiement immédiat si disponibles
+        }
+
+        // Récupérer les informations de paiement immédiat si disponibles
         $immediate_payment_info = null;
         if (isset($_SESSION['immediate_payment']) && $_SESSION['immediate_payment']['reservation_id'] == $id) {
             $immediate_payment_info = $_SESSION['immediate_payment'];
@@ -343,7 +357,9 @@ class ReservationController extends BaseController
                 'duree_minutes' => $dureeMinutes,
                 'montant' => $reservation['montant_total']
             ];
-        }        // Vérifier si c'est une réservation immédiate basée sur plusieurs critères
+        }
+
+        // Vérifier si c'est une réservation immédiate basée sur plusieurs critères
         $is_immediate = false;
 
         // 1. Si le statut contient "immediat"
@@ -363,10 +379,14 @@ class ReservationController extends BaseController
         // 3. Si on a des informations de paiement immédiat en session
         else if (isset($_SESSION['immediate_payment'])) {
             $is_immediate = true;
-        }        // Si c'est une réservation immédiate terminée, s'assurer que le code de sortie est défini
+        }
+
+        // Si c'est une réservation immédiate terminée, s'assurer que le code de sortie est défini
         if ($is_immediate && !empty($reservation['code_sortie'])) {
             $code_sortie = $reservation['code_sortie'];
-        }        // Récupérer les avantages d'abonnement pour les réservations immédiates
+        }
+
+        // Récupérer les avantages d'abonnement pour les réservations immédiates
         $subscriptionBenefits = null;
         $original_amount = null;
         $final_amount = null;
@@ -376,7 +396,9 @@ class ReservationController extends BaseController
             $activeSubscriptions = $this->subscriptionModel->getUserActiveSubscriptions($_SESSION['user']['id']);
 
             if (!empty($activeSubscriptions)) {
-                $subscriptionBenefits = $activeSubscriptions[0];                // Pour les réservations immédiates terminées avec paiement
+                $subscriptionBenefits = $activeSubscriptions[0];
+
+                // Pour les réservations immédiates terminées avec paiement
                 if ($payment && isset($immediate_payment_info['duree_minutes'])) {
                     // Le montant payé est le montant final (avec réductions appliquées)
                     $final_amount = floatval($payment['montant']);
@@ -388,7 +410,9 @@ class ReservationController extends BaseController
                     $total_savings = $original_amount - $final_amount;
                 }
             }
-        } // Debug : afficher les informations pour diagnostiquer
+        }
+
+        // Debug : afficher les informations pour diagnostiquer
         error_log("DEBUG Confirmation - Réservation ID: " . $id);
         error_log("DEBUG Confirmation - Statut: " . $reservation['status']);
         error_log("DEBUG Confirmation - Code sortie DB: " . ($reservation['code_sortie'] ?? 'NULL'));
@@ -440,11 +464,15 @@ class ReservationController extends BaseController
         }
 
         // Récupérer la réservation
-        $reservation = $this->reservationModel->getReservationById($id);        // Vérifier si la réservation existe et appartient à l'utilisateur
+        $reservation = $this->reservationModel->getReservationById($id);
+
+        // Vérifier si la réservation existe et appartient à l'utilisateur
         if (!$reservation || $reservation['user_id'] != $_SESSION['user']['id']) {
             $this->redirectWithError('auth/profile', 'Réservation non trouvée ou accès non autorisé.');
             return;
-        }        // Vérifier si la réservation peut être annulée
+        }
+
+        // Vérifier si la réservation peut être annulée
         $now = new DateTime();
         $dateDebut = new DateTime($reservation['date_debut']);
 
@@ -596,7 +624,7 @@ class ReservationController extends BaseController
         }
 
         // Créer la réservation invité
-        $reservationId = $this->reservationModel->createGuestReservation(
+        $result = $this->reservationModel->createGuestReservation(
             $placeId,
             $dateDebutFormatted,
             $dateFin,
@@ -605,7 +633,10 @@ class ReservationController extends BaseController
             $guestPhone
         );
 
-        if ($reservationId) {
+        if ($result && is_array($result)) {
+            $reservationId = $result['reservation_id'];
+            $guestToken = $result['guest_token'];
+
             // Récupérer la réservation complète
             $reservation = $this->reservationModel->getReservationById($reservationId);
 
@@ -613,12 +644,12 @@ class ReservationController extends BaseController
             $this->logModel->addLog(1, 'guest_reservation_create', 'Réservation invité créée: ' . $reservationId);
 
             // Définir le jeton invité dans la session pour le paiement
-            $_SESSION['guest_token'] = $reservation['guest_token'];
+            $_SESSION['guest_token'] = $guestToken;
             $this->jsonResponse([
                 'success' => true,
                 'reservation_id' => $reservationId,
-                'guest_token' => $reservation['guest_token'],
-                'redirect_url' => buildUrl('reservation/guestPayment/' . $reservationId . '/' . $reservation['guest_token'])
+                'guest_token' => $guestToken,
+                'redirect_url' => buildUrl('reservation/guestPayment/' . $reservationId . '/' . $guestToken)
             ]);
         } else {
             $this->jsonResponse(['success' => false, 'error' => 'Erreur lors de la création de la réservation.'], 500);
@@ -643,7 +674,9 @@ class ReservationController extends BaseController
         if (!$reservation || $reservation['id'] != $id) {
             $this->redirectWithError(BASE_URL, 'Réservation non trouvée ou accès non autorisé.');
             return;
-        }        // Vérifier si la réservation n'est pas déjà payée
+        }
+
+        // Vérifier si la réservation n'est pas déjà payée
         $payment = $this->reservationModel->getPaymentByReservationId($id);
         if ($payment && $payment['status'] === 'valide') {
             $this->redirect('reservation/guestConfirmation/' . $id . '/' . $token);
@@ -707,10 +740,14 @@ class ReservationController extends BaseController
             return;
         }
 
+        // Récupérer les données de paiement
+        $payment = $this->reservationModel->getPaymentByReservationId($id);
+
         $data = [
             'title' => 'Confirmation de réservation - ' . APP_NAME,
             'description' => 'Votre réservation a bien été enregistrée',
             'reservation' => $reservation,
+            'payment' => $payment,
             'token' => $token
         ];
 
@@ -736,10 +773,14 @@ class ReservationController extends BaseController
 
         $_SESSION['guest_token'] = $token;
 
+        // Récupérer les données de paiement
+        $payment = $this->reservationModel->getPaymentByReservationId($reservation['id']);
+
         $data = [
             'title' => 'Suivi de réservation - ' . APP_NAME,
             'description' => 'Suivez l\'état de votre réservation',
             'reservation' => $reservation,
+            'payment' => $payment,
             'token' => $token
         ];
 
@@ -763,7 +804,7 @@ class ReservationController extends BaseController
             return;
         }
 
-        if ($reservation['status'] !== 'en_attente' && $reservation['status'] !== 'confirmee') {
+        if (!in_array($reservation['status'], ['en_attente', 'confirmee', 'confirmée'])) {
             $this->redirectWithError(
                 'reservation/trackReservation/' . $token,
                 'Cette réservation ne peut pas être annulée.'
@@ -792,7 +833,8 @@ class ReservationController extends BaseController
      * Gère une réservation immédiate
      */
     public function reserveImmediate()
-    {        // Vérifier si c'est une requête AJAX
+    {
+        // Vérifier si c'est une requête AJAX
         $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) &&
             strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
 
@@ -1363,5 +1405,58 @@ class ReservationController extends BaseController
         } catch (Exception $e) {
             error_log("Erreur lors de la suppression des notifications pour la réservation {$reservationId}: " . $e->getMessage());
         }
+    }
+
+    /**
+     * Génère les codes d'accès et de sortie manquants pour une réservation
+     */
+    public function generateCodes()
+    {
+        $this->requireAuth();
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->jsonResponse(['success' => false, 'message' => 'Méthode non autorisée']);
+            return;
+        }
+
+        // Récupérer les données JSON
+        $input = json_decode(file_get_contents('php://input'), true);
+        $reservationId = $input['reservation_id'] ?? null;
+
+        if (!$reservationId) {
+            $this->jsonResponse(['success' => false, 'message' => 'ID de réservation manquant']);
+            return;
+        }
+
+        // Vérifier que la réservation appartient à l'utilisateur connecté
+        $reservation = $this->reservationModel->getReservationById($reservationId);
+        if (!$reservation || $reservation['user_id'] != $_SESSION['user']['id']) {
+            $this->jsonResponse(['success' => false, 'message' => 'Réservation non trouvée']);
+            return;
+        }
+
+        $response = ['success' => true];
+
+        // Générer le code d'accès s'il n'existe pas
+        if (empty($reservation['code_acces'])) {
+            $newAccessCode = $this->reservationModel->generateOrUpdateAccessCode($reservationId);
+            if ($newAccessCode) {
+                $response['code_acces'] = $newAccessCode;
+            }
+        } else {
+            $response['code_acces'] = $reservation['code_acces'];
+        }
+
+        // Générer le code de sortie s'il n'existe pas
+        if (empty($reservation['code_sortie'])) {
+            $newExitCode = $this->reservationModel->generateOrUpdateExitCode($reservationId);
+            if ($newExitCode) {
+                $response['code_sortie'] = $newExitCode;
+            }
+        } else {
+            $response['code_sortie'] = $reservation['code_sortie'];
+        }
+
+        $this->jsonResponse($response);
     }
 }

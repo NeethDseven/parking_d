@@ -71,37 +71,40 @@
             </p>
             <div class="row">
                 <div class="col-md-3 col-sm-6 mb-4">
-                    <div class="card text-center h-100">
-                        <div class="card-body"> <img src="<?php echo BASE_URL; ?>frontend/assets/images/team-1.jpg" alt="CEO" class="rounded-circle img-fluid mb-3 img-square-150"
-                                onerror="this.src='https://via.placeholder.com/150?text=CEO';this.onerror='';">
+                    <div class="card text-center h-100 team-member-card">
+                        <div class="card-body">
+                            <img src="<?php echo BASE_URL; ?>frontend/assets/img/ceo.webp" alt="CEO" class="rounded-circle img-fluid mb-3 img-square-150"
+                                onerror="this.src='<?php echo BASE_URL; ?>frontend/assets/img/ceo.jpg';this.onerror='';">
                             <h4>Sophie Martin</h4>
                             <p class="text-muted">CEO & Fondatrice</p>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-3 col-sm-6 mb-4">
-                    <div class="card text-center h-100">
-                        <div class="card-body"> <img src="<?php echo BASE_URL; ?>frontend/assets/images/team-2.jpg" alt="CTO" class="rounded-circle img-fluid mb-3 img-square-150"
-                                onerror="this.src='https://via.placeholder.com/150?text=CTO';this.onerror='';">
+                    <div class="card text-center h-100 team-member-card">
+                        <div class="card-body">
+                            <img src="<?php echo BASE_URL; ?>frontend/assets/img/cto.jpeg" alt="CTO" class="rounded-circle img-fluid mb-3 img-square-150"
+                                onerror="this.src='<?php echo BASE_URL; ?>frontend/assets/img/cto.jpg';this.onerror='';">
                             <h4>Thomas Dubois</h4>
                             <p class="text-muted">Directeur Technique</p>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-3 col-sm-6 mb-4">
-                    <div class="card text-center h-100">
-                        <div class="card-body"> <img src="<?php echo BASE_URL; ?>frontend/assets/images/team-3.jpg" alt="COO" class="rounded-circle img-fluid mb-3 img-square-150"
-                                onerror="this.src='https://via.placeholder.com/150?text=COO';this.onerror='';">
+                    <div class="card text-center h-100 team-member-card">
+                        <div class="card-body">
+                            <img src="<?php echo BASE_URL; ?>frontend/assets/img/coo.jpeg" alt="COO" class="rounded-circle img-fluid mb-3 img-square-150"
+                                onerror="this.src='<?php echo BASE_URL; ?>frontend/assets/img/coo.jpg';this.onerror='';">
                             <h4>Marie Lefebvre</h4>
                             <p class="text-muted">Directrice des Opérations</p>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-3 col-sm-6 mb-4">
-                    <div class="card text-center h-100">
+                    <div class="card text-center h-100 team-member-card">
                         <div class="card-body">
-                            <img src="<?php echo BASE_URL; ?>frontend/assets/images/team-4.jpg" alt="CMO" class="rounded-circle img-fluid mb-3 img-square-150"
-                                onerror="this.src='https://via.placeholder.com/150?text=CMO';this.onerror='';">
+                            <img src="<?php echo BASE_URL; ?>frontend/assets/img/cmo.jpg" alt="CMO" class="rounded-circle img-fluid mb-3 img-square-150"
+                                onerror="this.src='<?php echo BASE_URL; ?>frontend/assets/img/cmo.jpeg';this.onerror='';">
                             <h4>Pierre Dupont</h4>
                             <p class="text-muted">Directeur Marketing</p>
                         </div>

@@ -1,25 +1,155 @@
-/* Styles spécifiques pour la page des places - Améliorations */
+/* Styles spécifiques pour la page des places - Améliorations avec espacement généreux */
+/* PRIORITÉ MAXIMALE avec sélecteurs très spécifiques */
 
-/* Disposition des cartes en 3 colonnes sur grands écrans - Taille améliorée */
-@media (min-width: 992px) {
-    .places-page-background .place-card {
-        max-width: calc(33.333% - 1.5rem);
-        flex: 0 0 calc(33.333% - 1.5rem);
-        margin: 0.75rem;
+/* Utiliser plus de largeur de page FORCÉ */
+.places-page-background .container-fluid,
+.places-page-background .container {
+    max-width: 98% !important; /* Utiliser 98% de la largeur de l'écran */
+    padding: 0 1rem !important;
+    width: 98% !important;
+}
+
+/* Espacement général amélioré */
+.places-page-background {
+    padding: 2rem 0 !important;
+}
+
+/* Forcer le container des places à utiliser toute la largeur */
+.places-page-background #places-container {
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+/* OVERRIDE COMPLET des styles inline et autres CSS */
+.places-page-background .place-card .card {
+    border: none !important;
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    transition: all 0.3s ease !important;
+}
+
+.places-page-background .place-card .card:hover {
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.18) !important;
+}
+
+/* TRANSPARENCE DE LA CARTE AVEC IMAGE VISIBLE */
+.places-page-background .place-card .card {
+    background: rgba(255, 255, 255, 0.1) !important; /* Fond blanc très transparent */
+    backdrop-filter: blur(10px) !important; /* Effet de flou d'arrière-plan */
+    -webkit-backdrop-filter: blur(10px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important; /* Bordure transparente */
+}
+
+.places-page-background .place-card .card:hover {
+    background: rgba(255, 255, 255, 0.15) !important; /* Légèrement plus opaque au hover */
+    backdrop-filter: blur(15px) !important;
+    -webkit-backdrop-filter: blur(15px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+}
+
+/* L'image reste complètement visible */
+.places-page-background .place-card .place-card-image {
+    background-size: cover !important;
+    background-position: center !important;
+    opacity: 1 !important; /* Image à 100% d'opacité */
+}
+
+/* Card-body transparent avec texte lisible */
+.places-page-background .place-card .card-body {
+    background: rgba(255, 255, 255, 0.9) !important; /* Fond blanc semi-transparent */
+    backdrop-filter: blur(5px) !important;
+    -webkit-backdrop-filter: blur(5px) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.3) !important;
+}
+
+/* Texte bien lisible sur fond semi-transparent */
+.places-page-background .place-card .card-title {
+    color: #333 !important;
+    font-weight: 600 !important;
+}
+
+.places-page-background .place-card .card-text {
+    color: #555 !important;
+}
+
+/* ========== DISPOSITION 3x2 GRID POUR LES PLACES ========== */
+
+/* Container principal - Grid 3x2 */
+.places-grid-container {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 2rem !important;
+    padding: 2rem !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+}
+
+/* Items de la grille */
+.place-card-item {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+/* Cartes avec hauteur uniforme */
+.place-card-item .card {
+    height: 100% !important;
+    min-height: 450px !important;
+    border: none !important;
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12) !important;
+}
+
+.place-card-item .card:hover {
+    transform: translateY(-8px) !important;
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.18) !important;
+}
+
+/* Image de la carte avec hauteur fixe */
+.place-card-item .place-card-image {
+    height: 200px !important;
+    background-size: cover !important;
+    background-position: center !important;
+    position: relative !important;
+}
+
+/* Corps de la carte avec hauteur flexible */
+.place-card-item .card-body {
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    padding: 1.5rem !important;
+    background: rgba(255, 255, 255, 0.95) !important;
+}
+
+/* Responsive - 2 colonnes sur tablettes */
+@media (min-width: 768px) and (max-width: 991px) {
+    .places-grid-container {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 1.5rem !important;
+        padding: 1.5rem !important;
     }
-    
-    /* Container pour limiter à 6 places par page */
-    #places-container {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        margin: 0 -0.75rem; /* Pour compenser les marges des cartes */
+
+    .place-card-item .card {
+        min-height: 420px !important;
     }
-    
-    /* Taille de carte améliorée */
-    .place-card .card {
-        height: 100%;
-        min-height: 380px; /* Hauteur minimum pour les cartes */
+}
+
+/* Responsive - 1 colonne sur mobile */
+@media (max-width: 767px) {
+    .places-grid-container {
+        grid-template-columns: 1fr !important;
+        gap: 1rem !important;
+        padding: 1rem !important;
+    }
+
+    .place-card-item .card {
+        min-height: auto !important;
+    }
+
+    .place-card-item .place-card-image {
+        height: 160px !important;
     }
 }
 
@@ -76,12 +206,279 @@
 /* Animation d'apparition pour les cartes - Améliorations spécifiques */
 .places-page-background .place-card {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
-    margin-bottom: 1.5rem; /* Espacement vertical amélioré */
+    margin-bottom: 2.5rem; /* Espacement vertical très généreux */
 }
 
 .places-page-background .place-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    transform: translateY(-8px); /* Effet hover plus prononcé */
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.18);
+}
+
+/* Espacement interne des cartes */
+.places-page-background .place-card .card-body {
+    padding: 1.5rem; /* Plus de padding interne */
+}
+
+/* Espacement pour les boutons */
+.places-page-background .place-card .btn-reserve,
+.places-page-background .place-card .btn-reserve-immediate {
+    margin-bottom: 0.75rem; /* Espacement entre les boutons */
+}
+
+/* ========== STYLES DÉPLACÉS DEPUIS places.php ========== */
+
+/* Styles personnalisés pour les types de places */
+.bg-moto-scooter {
+    background-color: #8a2be2 !important;
+    /* Couleur violette pour moto/scooter */
+    color: white !important;
+}
+
+.bg-standard {
+    background-color: #6c757d !important;
+    /* Gris (bg-secondary) pour standard */
+    color: white !important;
+}
+
+/* Styles pour l'image des cartes de places */
+.place-card-image {
+    height: 200px !important;
+    background-size: cover !important;
+    background-position: center !important;
+    position: relative !important;
+}
+
+.place-card-image::before {
+    content: '' !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.1)) !important;
+}
+
+.place-card .card-header {
+    position: relative !important;
+    z-index: 2 !important;
+}
+
+/* Styles pour les boutons de réservation */
+.btn-reserve,
+.btn-reserve-immediate {
+    border: none !important;
+    border-radius: 8px !important;
+    padding: 10px 20px !important;
+    font-weight: 500 !important;
+    transition: all 0.3s ease !important;
+    width: 100% !important;
+    text-align: center !important;
+    text-decoration: none !important;
+    display: inline-block !important;
+    cursor: pointer !important;
+}
+
+.btn-reserve {
+    background: linear-gradient(45deg, #2c3e50, #1a252f) !important;
+    color: white !important;
+    margin-bottom: 8px !important;
+}
+
+.btn-reserve:hover {
+    background: linear-gradient(45deg, #1a252f, #0f1419) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 15px rgba(44, 62, 80, 0.4) !important;
+    color: white !important;
+}
+
+.btn-reserve-immediate {
+    background: linear-gradient(45deg, #28a745, #1e7e34) !important;
+    color: white !important;
+}
+
+.btn-reserve-immediate:hover {
+    background: linear-gradient(45deg, #1e7e34, #155724) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3) !important;
+    color: white !important;
+}
+
+/* Animation fade-in pour les cartes */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.place-card {
+    animation: fadeInUp 0.6s ease forwards !important;
+}
+
+/* Header bg-primary avec couleur #2980b9 */
+.card-header.bg-primary,
+.bg-primary {
+    background: linear-gradient(135deg, #2980b9, #1f5f8b) !important;
+    color: white !important;
+    border-bottom: 2px solid rgba(41, 128, 185, 0.3) !important;
+}
+
+.card-header.bg-primary:hover,
+.bg-primary:hover {
+    background: linear-gradient(135deg, #1f5f8b, #1a4f73) !important;
+}
+
+/* Forcer le texte blanc sur tous les headers bg-primary et bg-info */
+.card-header.bg-primary,
+.card-header.bg-primary h1,
+.card-header.bg-primary h2,
+.card-header.bg-primary h3,
+.card-header.bg-primary h4,
+.card-header.bg-primary h5,
+.card-header.bg-primary h6,
+.card-header.bg-primary i,
+.card-header.bg-info,
+.card-header.bg-info h1,
+.card-header.bg-info h2,
+.card-header.bg-info h3,
+.card-header.bg-info h4,
+.card-header.bg-info h5,
+.card-header.bg-info h6,
+.card-header.bg-info i {
+    color: white !important;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Badge bleu électrique (spécifique aux badges pour éviter conflit) */
+.badge.bg-primary,
+.badge.rounded-pill.bg-primary {
+    background: linear-gradient(45deg, #00bfff, #0080ff) !important; /* Bleu électrique */
+    color: white !important;
+    border: 1px solid rgba(0, 191, 255, 0.3) !important;
+    box-shadow: 0 2px 8px rgba(0, 191, 255, 0.3) !important;
+}
+
+.badge.bg-primary:hover {
+    background: linear-gradient(45deg, #0080ff, #0066cc) !important;
+    box-shadow: 0 3px 12px rgba(0, 191, 255, 0.5) !important;
+}
+
+/* Badge rouge vif avec forme parfaitement ronde */
+.badge.bg-danger,
+.badge.bg-danger.rounded-pill {
+    background: linear-gradient(45deg, #ff1744, #d50000) !important; /* Rouge vif */
+    color: white !important;
+    border: 1px solid rgba(255, 23, 68, 0.3) !important;
+    box-shadow: 0 2px 8px rgba(255, 23, 68, 0.4) !important;
+    border-radius: 50% !important; /* Parfaitement rond */
+    width: 24px !important; /* Largeur fixe pour cercle parfait */
+    height: 24px !important; /* Hauteur fixe pour cercle parfait */
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 0.75rem !important;
+    font-weight: 600 !important;
+    line-height: 1 !important;
+    padding: 0 !important; /* Supprimer le padding pour un cercle parfait */
+    min-width: 24px !important;
+    text-align: center !important;
+}
+
+.badge.bg-danger:hover,
+.badge.bg-danger.rounded-pill:hover {
+    background: linear-gradient(45deg, #d50000, #b71c1c) !important;
+    box-shadow: 0 3px 12px rgba(255, 23, 68, 0.6) !important;
+    transform: scale(1.05) !important;
+    transition: all 0.2s ease !important;
+}
+
+/* Badge "Annulée" style similaire au badge "Terminée" mais en rouge vif */
+.status-badge.badge.bg-danger-custom,
+span.status-badge.badge.bg-danger-custom,
+.badge.bg-danger-custom {
+    background: linear-gradient(135deg, #ff1744, #d50000) !important; /* Rouge vif */
+    background-color: #ff1744 !important; /* Fallback */
+    color: white !important;
+    border: 1px solid rgba(255, 23, 68, 0.4) !important;
+    box-shadow: 0 2px 8px rgba(255, 23, 68, 0.4) !important;
+    border-radius: 12px !important; /* Arrondi moderne comme "Terminée" */
+    padding: 0.375rem 0.75rem !important;
+    font-size: 0.75rem !important;
+    font-weight: 600 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.25rem !important;
+    text-transform: none !important; /* Pas de majuscules forcées */
+    letter-spacing: 0.02em !important;
+    transition: all 0.2s ease !important;
+}
+
+.status-badge.badge.bg-danger-custom:hover,
+span.status-badge.badge.bg-danger-custom:hover,
+.badge.bg-danger-custom:hover {
+    background: linear-gradient(135deg, #d50000, #b71c1c) !important;
+    background-color: #d50000 !important; /* Fallback */
+    box-shadow: 0 3px 12px rgba(255, 23, 68, 0.6) !important;
+    transform: translateY(-1px) !important;
+}
+
+/* Icône dans le badge "Annulée" */
+.status-badge.badge.bg-danger-custom i,
+span.status-badge.badge.bg-danger-custom i,
+.badge.bg-danger-custom i {
+    font-size: 0.7rem !important;
+    opacity: 0.9 !important;
+    color: white !important;
+}
+
+/* Badge "Terminée" style élégant en vert */
+.status-badge.badge.bg-secondary,
+span.status-badge.badge.bg-secondary,
+.badge.bg-secondary {
+    background: linear-gradient(135deg, #28a745, #1e7e34) !important; /* Vert élégant */
+    background-color: #28a745 !important; /* Fallback */
+    color: white !important;
+    border: 1px solid rgba(40, 167, 69, 0.4) !important;
+    box-shadow: 0 2px 8px rgba(40, 167, 69, 0.4) !important;
+    border-radius: 12px !important; /* Arrondi moderne */
+    padding: 0.375rem 0.75rem !important;
+    font-size: 0.75rem !important;
+    font-weight: 600 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.25rem !important;
+    text-transform: none !important; /* Pas de majuscules forcées */
+    letter-spacing: 0.02em !important;
+    transition: all 0.2s ease !important;
+}
+
+.status-badge.badge.bg-secondary:hover,
+span.status-badge.badge.bg-secondary:hover,
+.badge.bg-secondary:hover {
+    background: linear-gradient(135deg, #1e7e34, #155724) !important;
+    background-color: #1e7e34 !important; /* Fallback */
+    box-shadow: 0 3px 12px rgba(40, 167, 69, 0.6) !important;
+    transform: translateY(-1px) !important;
+}
+
+/* Icône dans le badge "Terminée" */
+.status-badge.badge.bg-secondary i,
+span.status-badge.badge.bg-secondary i,
+.badge.bg-secondary i {
+    font-size: 0.7rem !important;
+    opacity: 0.9 !important;
+    color: white !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .place-card-image {
+        height: 150px !important;
+    }
 }
 
 /* Améliorations pour les images des cartes */
@@ -112,41 +509,64 @@
     letter-spacing: 0.03em;
 }
 
-/* Responsive : 2 colonnes sur tablettes */
-@media (min-width: 768px) and (max-width: 991px) {
-    .places-page-background .place-card {
-        max-width: calc(50% - 1.5rem);
-        flex: 0 0 calc(50% - 1.5rem);
-        margin: 0.75rem;
-    }
-    
-    .place-card .card {
-        min-height: 360px; /* Hauteur ajustée pour tablettes */
-    }
-    
-    #places-container {
-        margin: 0 -0.75rem;
-    }
+/* ========== STYLES SUPPRIMÉS - REMPLACÉS PAR LA GRILLE 3x2 ========== */
+
+/* ========== CORRECTIONS SPÉCIFIQUES POUR LA GRILLE 3x2 ========== */
+
+/* Supprimer tous les styles inline problématiques */
+.place-card-item .card-body[style] {
+    height: auto !important;
 }
 
-/* 1 colonne sur mobiles */
-@media (max-width: 767px) {
-    .places-page-background .place-card {
-        max-width: calc(100% - 1rem);
-        flex: 0 0 calc(100% - 1rem);
-        margin: 0.5rem;
-    }
-    
-    .place-card .card {
-        min-height: auto; /* Hauteur auto pour mobile */
-    }
-    
-    #places-container {
-        margin: 0 -0.5rem;
-    }
-    
-    /* Ajuster la hauteur des images sur mobile */
-    .place-card-image {
-        height: 150px;
-    }
+/* Assurer une hauteur cohérente pour les boutons */
+.place-card-item .btn-reserve,
+.place-card-item .btn-reserve-immediate {
+    margin-top: auto !important;
+    width: 100% !important;
+    margin-bottom: 0.5rem !important;
+}
+
+/* Espacement des éléments dans le corps de la carte */
+.place-card-item .card-title {
+    margin-bottom: 1rem !important;
+    font-size: 1.1rem !important;
+    font-weight: 600 !important;
+}
+
+.place-card-item .card-text {
+    margin-bottom: 0.75rem !important;
+}
+
+/* Assurer que les cartes ont la même hauteur */
+.place-card-item {
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+/* Animation d'apparition pour les nouvelles cartes */
+.place-card-item.fade-in {
+    animation: fadeInUp 0.6s ease forwards !important;
+    opacity: 0 !important;
+    transform: translateY(30px) !important;
+}
+
+.place-card-item.fade-in.animate-on-scroll {
+    opacity: 1 !important;
+    transform: translateY(0) !important;
+}
+
+/* Amélioration de l'overlay sur l'image */
+.place-card-item .place-card-image::before {
+    content: '' !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.1)) !important;
+}
+
+.place-card-item .card-header {
+    position: relative !important;
+    z-index: 2 !important;
 }

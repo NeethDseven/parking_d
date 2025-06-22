@@ -17,6 +17,15 @@
                         <div class="d-inline-block p-3 mb-3 border border-dark rounded code-box">
                             <span class="h2 mb-0"><?php echo $reservation['code_acces']; ?></span>
                         </div>
+
+                        <!-- QR Code -->
+                        <div class="mt-3 mb-3">
+                            <div id="qr-guest-access-code" class="mx-auto mb-3" style="width: 150px; height: 150px;"></div>
+                            <button class="btn btn-sm btn-outline-primary" onclick="copyAccessCode()" title="Copier le code d'accès">
+                                <i class="fas fa-copy me-1"></i> Copier le code
+                            </button>
+                        </div>
+
                         <p>Veuillez conserver ce code, il vous sera demandé à l'entrée du parking.</p>
                     </div>
 
@@ -29,7 +38,7 @@
                             <div class="alert alert-primary">
                                 <div class="d-flex align-items-center justify-content-between">
                                     <span class="font-monospace fw-bold"><?php echo $reservation['guest_token']; ?></span>
-                                    <button class="btn btn-sm btn-outline-primary copy-btn" data-clipboard-text="<?php echo $reservation['guest_token']; ?>">
+                                    <button class="btn btn-sm btn-outline-primary" onclick="copyGuestToken()" title="Copier le code de suivi">
                                         <i class="fas fa-copy me-1"></i> Copier
                                     </button>
                                 </div>
@@ -55,7 +64,22 @@
                                         </tr>
                                         <tr>
                                             <th>Place :</th>
-                                            <td><?php echo htmlspecialchars($reservation['numero']); ?> (<?php echo ucfirst($reservation['type']); ?>)</td>
+                                            <td>
+                                                <?php echo htmlspecialchars($reservation['numero']); ?>
+                                                <?php if ($reservation['type'] === 'standard'): ?>
+                                                    <span class="badge bg-secondary ms-2">Standard</span>
+                                                <?php elseif ($reservation['type'] === 'handicape'): ?>
+                                                    <span class="badge bg-primary ms-2">PMR</span>
+                                                <?php elseif ($reservation['type'] === 'electrique'): ?>
+                                                    <span class="badge bg-success ms-2">Électrique</span>
+                                                <?php elseif ($reservation['type'] === 'moto/scooter'): ?>
+                                                    <span class="badge bg-warning text-dark ms-2">Moto/Scooter</span>
+                                                <?php elseif ($reservation['type'] === 'velo'): ?>
+                                                    <span class="badge bg-info ms-2">Vélo</span>
+                                                <?php else: ?>
+                                                    <span class="badge bg-light text-dark ms-2"><?php echo ucfirst($reservation['type']); ?></span>
+                                                <?php endif; ?>
+                                            </td>
                                         </tr>
                                         <tr>
                                             <th>Montant total :</th>
@@ -78,8 +102,12 @@
                                             <td>
                                                 <?php if (isset($payment) && $payment['status'] === 'valide'): ?>
                                                     <span class="badge bg-success">Payé</span>
-                                                <?php else: ?>
+                                                <?php elseif (isset($payment) && $payment['status'] === 'en_attente'): ?>
                                                     <span class="badge bg-warning text-dark">En attente</span>
+                                                <?php elseif (isset($payment) && $payment['status'] === 'annule'): ?>
+                                                    <span class="badge bg-danger">Annulé</span>
+                                                <?php else: ?>
+                                                    <span class="badge bg-success">Payé</span>
                                                 <?php endif; ?>
                                             </td>
                                         </tr>
@@ -130,4 +158,104 @@
 
 <!-- Styles gérés par la structure CSS optimisée -->
 
-<!-- La fonctionnalité de copie est maintenant gérée par coreUIService.js -->
+<!-- QR Code Generator et fonctions de copie -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const accessCode = '<?php echo htmlspecialchars($reservation['code_acces']); ?>';
+    const guestToken = '<?php echo htmlspecialchars($reservation['guest_token']); ?>';
+
+    // Fonction pour générer QR codes avec l'API QR Server
+    function generateQRCode(text, containerId, color = '000000') {
+        const container = document.getElementById(containerId);
+        if (container && text) {
+            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(text)}&color=${color}&bgcolor=ffffff&margin=10`;
+            const img = document.createElement('img');
+            img.src = qrUrl;
+            img.alt = 'QR Code: ' + text;
+            img.style.width = '150px';
+            img.style.height = '150px';
+            img.style.border = '1px solid #ddd';
+            img.style.borderRadius = '5px';
+
+            img.onload = function() {
+                console.log('✅ QR code généré pour le code d\'accès');
+            };
+
+            img.onerror = function() {
+                console.error('❌ Erreur lors de la génération du QR code');
+                container.innerHTML = '<div class="text-muted small">QR code indisponible</div>';
+            };
+
+            container.innerHTML = '';
+            container.appendChild(img);
+        }
+    }
+
+    // Générer le QR code pour le code d'accès
+    if (accessCode) {
+        generateQRCode(accessCode, 'qr-guest-access-code', '007bff');
+    }
+});
+
+// Fonction pour copier le code d'accès
+function copyAccessCode() {
+    const accessCode = '<?php echo htmlspecialchars($reservation['code_acces']); ?>';
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(accessCode).then(function() {
+            showCopySuccess('Code d\'accès copié !');
+        }).catch(function() {
+            fallbackCopy(accessCode);
+        });
+    } else {
+        fallbackCopy(accessCode);
+    }
+}
+
+// Fonction pour copier le token invité
+function copyGuestToken() {
+    const guestToken = '<?php echo htmlspecialchars($reservation['guest_token']); ?>';
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(guestToken).then(function() {
+            showCopySuccess('Code de suivi copié !');
+        }).catch(function() {
+            fallbackCopy(guestToken);
+        });
+    } else {
+        fallbackCopy(guestToken);
+    }
+}
+
+// Fonction de fallback pour la copie
+function fallbackCopy(text) {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    document.body.appendChild(textArea);
+    textArea.select();
+    try {
+        document.execCommand('copy');
+        showCopySuccess('Copié !');
+    } catch (err) {
+        console.error('Erreur lors de la copie:', err);
+        alert('Impossible de copier automatiquement. Veuillez sélectionner et copier manuellement.');
+    }
+    document.body.removeChild(textArea);
+}
+
+// Fonction pour afficher le message de succès
+function showCopySuccess(message) {
+    // Créer une notification temporaire
+    const notification = document.createElement('div');
+    notification.className = 'alert alert-success position-fixed';
+    notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 200px;';
+    notification.innerHTML = `<i class="fas fa-check me-2"></i>${message}`;
+
+    document.body.appendChild(notification);
+
+    // Supprimer après 3 secondes
+    setTimeout(function() {
+        if (notification.parentNode) {
+            notification.parentNode.removeChild(notification);
+        }
+    }, 3000);
+}
+</script>

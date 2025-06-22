@@ -403,12 +403,12 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <span class="d-block p-2 border rounded bg-light fs-4 font-monospace"><?php echo isset($reservation['code_acces']) ? $reservation['code_acces'] : 'N/A'; ?></span>
-                                            <?php if (isset($reservation['code_acces']) && !empty($reservation['code_acces'])): ?>
-                                                <button type="button" class="btn btn-sm btn-outline-primary mt-2" onclick="copyToClipboard('<?php echo $reservation['code_acces']; ?>')">
-                                                    <i class="fas fa-copy me-1"></i>Copier
-                                                </button>
-                                            <?php endif; ?>
+                                            <span class="d-block p-2 border rounded bg-light fs-4 font-monospace" id="code-acces-<?php echo $reservation['id']; ?>">
+                                                <?php echo isset($reservation['code_acces']) && !empty($reservation['code_acces']) ? $reservation['code_acces'] : 'Génération...'; ?>
+                                            </span>
+                                            <button type="button" class="btn btn-sm btn-outline-primary mt-2" id="copy-acces-<?php echo $reservation['id']; ?>" onclick="copyToClipboard(document.getElementById('code-acces-<?php echo $reservation['id']; ?>').textContent.trim())" style="<?php echo (!isset($reservation['code_acces']) || empty($reservation['code_acces'])) ? 'display:none;' : ''; ?>">
+                                                <i class="fas fa-copy me-1"></i>Copier
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -425,12 +425,12 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <span class="d-block p-2 border rounded bg-light fs-4 font-monospace"><?php echo isset($reservation['code_sortie']) ? $reservation['code_sortie'] : 'N/A'; ?></span>
-                                            <?php if (isset($reservation['code_sortie']) && !empty($reservation['code_sortie'])): ?>
-                                                <button type="button" class="btn btn-sm btn-outline-success mt-2" onclick="copyToClipboard('<?php echo $reservation['code_sortie']; ?>')">
-                                                    <i class="fas fa-copy me-1"></i>Copier
-                                                </button>
-                                            <?php endif; ?>
+                                            <span class="d-block p-2 border rounded bg-light fs-4 font-monospace" id="code-sortie-<?php echo $reservation['id']; ?>">
+                                                <?php echo isset($reservation['code_sortie']) && !empty($reservation['code_sortie']) ? $reservation['code_sortie'] : 'Génération...'; ?>
+                                            </span>
+                                            <button type="button" class="btn btn-sm btn-outline-success mt-2" id="copy-sortie-<?php echo $reservation['id']; ?>" onclick="copyToClipboard(document.getElementById('code-sortie-<?php echo $reservation['id']; ?>').textContent.trim())" style="<?php echo (!isset($reservation['code_sortie']) || empty($reservation['code_sortie'])) ? 'display:none;' : ''; ?>">
+                                                <i class="fas fa-copy me-1"></i>Copier
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -601,26 +601,79 @@ document.addEventListener('DOMContentLoaded', function() {
         // Attacher les événements aux modals
         reservationsData.forEach(function(reservation) {
             if (!reservation.id) return;
-            
+
             const modalElement = document.getElementById('codeModal' + reservation.id);
             if (modalElement) {
                 modalElement.addEventListener('shown.bs.modal', function() {
                     console.log('📱 Modal ouvert pour la réservation', reservation.id);
-                    
-                    // Générer QR code d'entrée
-                    if (reservation.codeAcces) {
-                        generateQRCode(reservation.codeAcces, 'qr-entry-code-' + reservation.id, '007bff');
-                    }
-                    
-                    // Générer QR code de sortie
-                    if (reservation.codeSortie) {
-                        generateQRCode(reservation.codeSortie, 'qr-exit-code-' + reservation.id, '198754');
-                    }
+
+                    // Vérifier et générer les codes manquants
+                    generateMissingCodes(reservation.id, reservation.codeAcces, reservation.codeSortie);
                 });
             } else {
                 console.warn('⚠️ Modal non trouvé pour la réservation', reservation.id);
             }
         });
+
+        // Fonction pour générer les codes manquants
+        function generateMissingCodes(reservationId, codeAcces, codeSortie) {
+            // Si les codes existent déjà, générer directement les QR codes
+            if (codeAcces && codeSortie) {
+                generateQRCode(codeAcces, 'qr-entry-code-' + reservationId, '007bff');
+                generateQRCode(codeSortie, 'qr-exit-code-' + reservationId, '198754');
+                return;
+            }
+
+            // Sinon, faire une requête AJAX pour générer les codes manquants
+            fetch('<?php echo BASE_URL; ?>reservation/generateCodes', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    reservation_id: reservationId
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Mettre à jour les codes dans l'interface
+                    if (data.code_acces) {
+                        const codeAccesElement = document.getElementById('code-acces-' + reservationId);
+                        const copyAccesButton = document.getElementById('copy-acces-' + reservationId);
+                        if (codeAccesElement) {
+                            codeAccesElement.textContent = data.code_acces;
+                            if (copyAccesButton) copyAccesButton.style.display = 'inline-block';
+                        }
+                        generateQRCode(data.code_acces, 'qr-entry-code-' + reservationId, '007bff');
+                    }
+
+                    if (data.code_sortie) {
+                        const codeSortieElement = document.getElementById('code-sortie-' + reservationId);
+                        const copySortieButton = document.getElementById('copy-sortie-' + reservationId);
+                        if (codeSortieElement) {
+                            codeSortieElement.textContent = data.code_sortie;
+                            if (copySortieButton) copySortieButton.style.display = 'inline-block';
+                        }
+                        generateQRCode(data.code_sortie, 'qr-exit-code-' + reservationId, '198754');
+                    }
+                } else {
+                    console.error('Erreur lors de la génération des codes:', data.message);
+                    // Afficher un message d'erreur dans l'interface
+                    const codeAccesElement = document.getElementById('code-acces-' + reservationId);
+                    const codeSortieElement = document.getElementById('code-sortie-' + reservationId);
+                    if (codeAccesElement && !codeAcces) codeAccesElement.textContent = 'Erreur';
+                    if (codeSortieElement && !codeSortie) codeSortieElement.textContent = 'Erreur';
+                }
+            })
+            .catch(error => {
+                console.error('Erreur réseau:', error);
+                const codeAccesElement = document.getElementById('code-acces-' + reservationId);
+                const codeSortieElement = document.getElementById('code-sortie-' + reservationId);
+                if (codeAccesElement && !codeAcces) codeAccesElement.textContent = 'Erreur réseau';
+                if (codeSortieElement && !codeSortie) codeSortieElement.textContent = 'Erreur réseau';
+            });
+        }
     <?php endif; ?>
 
     // Fonction pour copier dans le presse-papiers

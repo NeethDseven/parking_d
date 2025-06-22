@@ -320,6 +320,12 @@ if (availableCount) {
 availableCount.textContent = visibleCount;
 }
 }        setupPlacesCards() {
+// S'assurer que le container des places a les bonnes classes
+const placesContainer = document.querySelector('#places-container');
+if (placesContainer) {
+this.ensurePlacesContainerClasses(placesContainer);
+}
+
 const cards = document.querySelectorAll('.place-card');
 // Animation d'apparition
 cards.forEach((card, index) => {
@@ -606,6 +612,7 @@ retryDelay: 1000
 };
 this.setupPaginationHandlers();
 this.observePaginationChanges();
+this.setupBrowserNavigation();
 }        setupPaginationHandlers() {
 const paginationContainer = document.querySelector(this.paginationConfig.paginationContainerSelector);
 if (!paginationContainer) {
@@ -721,7 +728,12 @@ if (!data || typeof data !== 'object') {
 throw new Error('Format de réponse invalide');
 }
 // Traiter les données
-this.updatePageContent(data);                    // Réinitialiser les gestionnaires après la mise à jour du contenu
+this.updatePageContent(data);
+
+// Mettre à jour l'URL du navigateur
+this.updateBrowserUrl(page, type);
+
+// Réinitialiser les gestionnaires après la mise à jour du contenu
 setTimeout(() => {
 this.setupPaginationHandlers();
 this.reinitializeAfterAjax();
@@ -749,6 +761,10 @@ return;
 const placesContainer = document.querySelector(this.paginationConfig.placesContainerSelector);
 if (placesContainer && data.places_html) {
 placesContainer.innerHTML = data.places_html;
+
+// S'assurer que le container garde ses classes Bootstrap essentielles
+this.ensurePlacesContainerClasses(placesContainer);
+
 // Mettre à jour les attributs de données
 if (data.current_page) {
 placesContainer.dataset.currentPage = data.current_page;
@@ -784,6 +800,23 @@ progressBar.setAttribute('aria-valuenow', data.available_count);
 progressBar.setAttribute('aria-valuemax', data.total_count);
 }
 }
+ensurePlacesContainerClasses(placesContainer) {
+// S'assurer que le container a les classes Bootstrap nécessaires
+const requiredClasses = ['row', 'justify-content-center'];
+
+requiredClasses.forEach(className => {
+if (!placesContainer.classList.contains(className)) {
+placesContainer.classList.add(className);
+console.log(`✅ Classe '${className}' ajoutée au container des places`);
+}
+});
+
+// S'assurer que le style flex est correct
+placesContainer.style.display = 'flex';
+placesContainer.style.flexWrap = 'wrap';
+console.log('✅ Styles flex appliqués au container des places');
+}
+
 enhancePlaceCards() {
 // Animation CSS basique pour les nouvelles cartes
 const placeCards = document.querySelectorAll('.place-card');
@@ -868,6 +901,54 @@ console.error('[Pagination] Erreur lors de la création de l\'observateur:', e);
 setInterval(() => this.setupPaginationHandlers(), 2000);
 }
 }
+setupBrowserNavigation() {
+// Gérer les boutons Précédent/Suivant du navigateur
+window.addEventListener('popstate', (event) => {
+if (event.state && this.currentPage === 'places') {
+const { page, type } = event.state;
+console.log(`🔙 Navigation navigateur: page ${page}, type ${type}`);
+this.loadPageContent(page || 1, type || '');
+}
+});
+}
+
+updateBrowserUrl(page, type) {
+console.log(`🔗 updateBrowserUrl appelée avec: page=${page}, type="${type}"`);
+
+// Construire la nouvelle URL
+const baseUrl = this.getBaseUrl();
+let newUrl = `${baseUrl}home/places`;
+
+// Ajouter les paramètres de page et type si nécessaire
+const params = new URLSearchParams();
+if (page && page > 1) {
+params.append('page', page);
+console.log(`✅ Paramètre page ajouté: ${page}`);
+}
+if (type && type !== 'all' && type !== '') {
+params.append('type', type);
+console.log(`✅ Paramètre type ajouté: ${type}`);
+} else {
+console.log(`❌ Type ignoré: "${type}" (all=${type === 'all'}, empty=${type === ''})`);
+}
+
+// Ajouter les paramètres à l'URL si ils existent
+if (params.toString()) {
+newUrl += '?' + params.toString();
+console.log(`🔗 URL avec paramètres: ${newUrl}`);
+} else {
+console.log(`🔗 URL sans paramètres: ${newUrl}`);
+}
+
+// Mettre à jour l'URL du navigateur sans recharger la page
+if (window.history && window.history.pushState) {
+window.history.pushState({ page, type }, '', newUrl);
+console.log(`🔗 URL mise à jour: ${newUrl}`);
+} else {
+console.warn('⚠️ History API non supportée');
+}
+}
+
 getBaseUrl() {
 // Essayer d'obtenir l'URL de base depuis la balise meta
 const metaBaseUrl = document.querySelector('meta[name="base-url"]');

@@ -1,43 +1,63 @@
 <!-- Main content -->
 <meta name="current-page" content="admin_reservations">
 <div class="content">
-    <div class="container-fluid p-4">
-        <!-- Mobile toggle -->
-        <button class="btn btn-primary d-md-none mb-3" id="sidebarToggle">
-            <i class="fas fa-bars"></i>
-        </button>
+    <div class="container-fluid">
+        <!-- Container principal uniforme -->
+        <div class="admin-page-container">
 
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1>Gestion des réservations</h1>
-            <div>
-                <a href="<?php echo BASE_URL; ?>admin/dashboard" class="btn btn-outline-secondary">
-                    <i class="fas fa-arrow-left me-2"></i>Retour au tableau de bord
-                </a>
+            <!-- Header de page uniforme -->
+            <div class="admin-page-header">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h1 class="admin-page-title">
+                            <i class="fas fa-calendar-check"></i>
+                            Gestion des réservations
+                        </h1>
+                        <p class="text-muted mb-0">Gérez et suivez toutes les réservations de parking</p>
+                    </div>
+                    <div class="admin-page-actions">
+                        <a href="<?php echo BASE_URL; ?>admin/dashboard" class="admin-btn admin-btn-outline">
+                            <i class="fas fa-arrow-left"></i>
+                            Retour au tableau de bord
+                        </a>
+                    </div>
+                </div>
             </div>
-        </div>
 
-        <?php if (isset($_SESSION['success'])): ?>
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <?php echo $_SESSION['success']; ?>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-            <?php unset($_SESSION['success']); ?>
-        <?php endif; ?>
+            <!-- Alertes style uniforme -->
+            <?php if (isset($_SESSION['success'])): ?>
+                <div class="admin-content-card">
+                    <div class="admin-content-card-body">
+                        <div class="dashboard-alert alert-success">
+                            <i class="fas fa-check-circle"></i>
+                            <?php echo $_SESSION['success']; ?>
+                        </div>
+                    </div>
+                </div>
+                <?php unset($_SESSION['success']); ?>
+            <?php endif; ?>
 
-        <?php if (isset($_SESSION['error'])): ?>
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <?php echo $_SESSION['error']; ?>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-            <?php unset($_SESSION['error']); ?>
-        <?php endif; ?>
-        <div class="card mb-4">
-            <div class="card-header bg-white">
-                <div class="d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">Liste des réservations</h5>
-                    <div class="d-flex gap-2"> <!-- Dropdown de filtrage -->
+            <?php if (isset($_SESSION['error'])): ?>
+                <div class="admin-content-card">
+                    <div class="admin-content-card-body">
+                        <div class="dashboard-alert alert-danger">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <?php echo $_SESSION['error']; ?>
+                        </div>
+                    </div>
+                </div>
+                <?php unset($_SESSION['error']); ?>
+            <?php endif; ?>
+            <!-- Contenu principal style uniforme -->
+            <div class="admin-content-card">
+                <div class="admin-content-card-header">
+                    <h3 class="admin-content-card-title">
+                        <i class="fas fa-list me-2"></i>
+                        Liste des réservations
+                    </h3>
+                    <div class="d-flex gap-2">
                         <div class="dropdown">
-                            <button class="btn <?php echo (isset($currentStatusFilter) || isset($currentDateFilter)) ? 'btn-primary' : 'btn-outline-secondary'; ?> dropdown-toggle btn-sm" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <button class="admin-btn <?php echo (isset($currentStatusFilter) || isset($currentDateFilter)) ? 'admin-btn-primary' : 'admin-btn-outline'; ?> admin-btn-sm dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                                 <i class="fas fa-filter me-1"></i>
                                 <?php
                                 if (isset($currentStatusFilter)) {
@@ -118,11 +138,12 @@
                             </ul>
                         </div>
                     </div>
+                    </div>
                 </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0">
-                            <thead class="bg-light">
+                <div class="admin-content-card-body">
+                    <div class="admin-table-wrapper">
+                        <table class="admin-table">
+                            <thead>
                                 <tr>
                                     <th>ID</th>
                                     <th>Place</th>
@@ -138,8 +159,8 @@
                                 <?php if (isset($reservations) && count($reservations) > 0): ?>
                                     <?php foreach ($reservations as $reservation): ?>
                                         <tr>
-                                            <td><?php echo $reservation['id']; ?></td>
-                                            <td>
+                                            <td data-sort="<?php echo $reservation['id']; ?>"><?php echo $reservation['id']; ?></td>
+                                            <td data-sort="<?php echo $reservation['place_numero']; ?>">
                                                 <span class="badge bg-<?php echo $reservation['place_type'] == 'standard' ? 'secondary' : ($reservation['place_type'] == 'handicape' ? 'primary' : 'success'); ?> me-1">
                                                     <?php
                                                     if ($reservation['place_type'] == 'handicape') {
@@ -153,7 +174,7 @@
                                                 </span>
                                                 <?php echo $reservation['place_numero']; ?>
                                             </td>
-                                            <td>
+                                            <td data-sort="<?php echo $reservation['user_id'] > 0 ? htmlspecialchars($reservation['nom'] . ' ' . $reservation['prenom']) : htmlspecialchars($reservation['guest_name'] ?? 'Invité'); ?>">
                                                 <?php if ($reservation['user_id'] > 0): ?>
                                                     <a href="<?php echo BASE_URL; ?>admin/editUser/<?php echo $reservation['user_id']; ?>" data-bs-toggle="tooltip" title="Voir le profil">
                                                         <?php echo htmlspecialchars($reservation['nom'] . ' ' . $reservation['prenom']); ?>
@@ -164,9 +185,9 @@
                                                     </span>
                                                 <?php endif; ?>
                                             </td>
-                                            <td><?php echo date('d/m/Y H:i', strtotime($reservation['date_debut'])); ?></td>
-                                            <td><?php echo date('d/m/Y H:i', strtotime($reservation['date_fin'])); ?></td>
-                                            <td><?php echo number_format($reservation['montant_total'], 2); ?> €</td>
+                                            <td data-sort="<?php echo date('Y-m-d H:i:s', strtotime($reservation['date_debut'])); ?>"><?php echo date('d/m/Y H:i', strtotime($reservation['date_debut'])); ?></td>
+                                            <td data-sort="<?php echo date('Y-m-d H:i:s', strtotime($reservation['date_fin'])); ?>"><?php echo date('d/m/Y H:i', strtotime($reservation['date_fin'])); ?></td>
+                                            <td data-sort="<?php echo $reservation['montant_total']; ?>"><?php echo number_format($reservation['montant_total'], 2); ?> €</td>
                                             <td>
                                                 <?php                                                // Préparation et inclusion du composant pour afficher le badge de statut
                                                 $reservation['statut'] = $reservation['status']; // Compatibilité avec le component
@@ -174,12 +195,22 @@
                                                 ?>
                                             </td>
                                             <td class="reservation-actions">
-                                                <?php include FRONTEND_PATH . '/views/components/reservation_actions.php'; ?>
-
                                                 <!-- Actions spécifiques admin -->
-                                                <a href="<?php echo BASE_URL; ?>admin/viewReservation/<?php echo $reservation['id']; ?>" class="btn btn-sm btn-info" data-bs-toggle="tooltip" title="Voir détails">
-                                                    <i class="fas fa-eye"></i>
-                                                </a>
+                                                <div class="d-flex gap-1">
+                                                    <a href="<?php echo BASE_URL; ?>admin/viewReservation/<?php echo $reservation['id']; ?>" class="admin-btn-icon view" data-bs-toggle="tooltip" title="Voir détails">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+
+                                                    <?php if ($reservation['status'] !== 'annulée' && $reservation['status'] !== 'terminée'): ?>
+                                                        <a href="<?php echo BASE_URL; ?>admin/cancelReservation/<?php echo $reservation['id']; ?>"
+                                                           class="admin-btn-icon delete"
+                                                           data-bs-toggle="tooltip"
+                                                           title="Annuler la réservation"
+                                                           onclick="return confirm('Êtes-vous sûr de vouloir annuler cette réservation ?')">
+                                                            <i class="fas fa-times"></i>
+                                                        </a>
+                                                    <?php endif; ?>
+                                                </div>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
@@ -192,68 +223,66 @@
                         </table>
                     </div>
                 </div>
-                <div class="card-footer bg-white">
+
+                <!-- Footer avec pagination style uniforme -->
+                <div class="admin-content-card-header" style="border-top: 1px solid #e9ecef; border-bottom: none;">
                     <?php if (isset($totalPages) && $totalPages > 1): ?>
                         <nav aria-label="Pagination">
                             <ul class="pagination justify-content-center mb-0">
-                                <?php if ($currentPage > 1): ?>
-                                    <li class="page-item">
-                                        <a class="page-link" href="<?php echo BASE_URL; ?>admin/reservations/<?php echo $currentPage - 1; ?>" aria-label="Précédent">
-                                            <span aria-hidden="true">&laquo;</span>
-                                        </a>
-                                    </li>
-                                <?php else: ?>
-                                    <li class="page-item disabled">
-                                        <a class="page-link" href="#" aria-label="Précédent">
-                                            <span aria-hidden="true">&laquo;</span>
-                                        </a>
-                                    </li>
-                                <?php endif; ?>
+                                <!-- Bouton "Précédent" -->
+                                <li class="page-item <?php echo ($currentPage <= 1) ? 'disabled' : ''; ?>">
+                                    <a class="page-link ajax-page-link pagination-enhanced" href="<?php echo ($currentPage > 1) ? BASE_URL . 'admin/reservations/' . ($currentPage - 1) : 'javascript:void(0)'; ?>" data-page="<?php echo ($currentPage > 1) ? ($currentPage - 1) : 1; ?>" aria-label="Précédent" data-pagination-applied="true" role="button" tabindex="0" style="cursor: pointer;">
+                                        <span aria-hidden="true">«</span>
+                                        <span class="visually-hidden">Précédent</span>
+                                    </a>
+                                </li>
 
                                 <?php
-                                $startPage = max(1, $currentPage - 2);
-                                $endPage = min($startPage + 4, $totalPages);
+                                // Logique de pagination améliorée
+                                $range = 2;
+                                $startPage = max(1, $currentPage - $range);
+                                $endPage = min($totalPages, $currentPage + $range);
 
-                                if ($startPage > 1) {
-                                    echo '<li class="page-item"><a class="page-link" href="' . BASE_URL . 'admin/reservations/1">1</a></li>';
-                                    if ($startPage > 2) {
-                                        echo '<li class="page-item disabled"><span class="page-link">...</span></li>';
-                                    }
-                                }
-
-                                for ($i = $startPage; $i <= $endPage; $i++):
-                                ?>
-                                    <li class="page-item <?php echo $i == $currentPage ? 'active' : ''; ?>">
-                                        <a class="page-link" href="<?php echo BASE_URL; ?>admin/reservations/<?php echo $i; ?>"><?php echo $i; ?></a>
-                                    </li>
-                                <?php endfor;
-
-                                if ($endPage < $totalPages) {
-                                    if ($endPage < $totalPages - 1) {
-                                        echo '<li class="page-item disabled"><span class="page-link">...</span></li>';
-                                    }
-                                    echo '<li class="page-item"><a class="page-link" href="' . BASE_URL . 'admin/reservations/' . $totalPages . '">' . $totalPages . '</a></li>';
-                                }
-                                ?>
-
-                                <?php if ($currentPage < $totalPages): ?>
+                                // Première page toujours visible si on est loin
+                                if ($currentPage > $range + 1): ?>
                                     <li class="page-item">
-                                        <a class="page-link" href="<?php echo BASE_URL; ?>admin/reservations/<?php echo $currentPage + 1; ?>" aria-label="Suivant">
-                                            <span aria-hidden="true">&raquo;</span>
-                                        </a>
+                                        <a class="page-link ajax-page-link pagination-enhanced" href="<?php echo BASE_URL; ?>admin/reservations/1" data-page="1" data-pagination-applied="true" role="button" tabindex="0" style="cursor: pointer;">1</a>
                                     </li>
-                                <?php else: ?>
-                                    <li class="page-item disabled">
-                                        <a class="page-link" href="#" aria-label="Suivant">
-                                            <span aria-hidden="true">&raquo;</span>
-                                        </a>
+                                    <?php if ($currentPage > $range + 2): ?>
+                                        <li class="page-item disabled"><span class="page-link pagination-enhanced" data-pagination-applied="true" role="button" tabindex="0" style="cursor: pointer;">...</span></li>
+                                    <?php endif; ?>
+                                <?php endif; ?>
+
+                                <!-- Pages autour de la page courante -->
+                                <?php for ($i = $startPage; $i <= $endPage; $i++): ?>
+                                    <li class="page-item <?php echo ($i == $currentPage) ? 'active' : ''; ?>">
+                                        <a class="page-link ajax-page-link pagination-enhanced" href="<?php echo BASE_URL; ?>admin/reservations/<?php echo $i; ?>" data-page="<?php echo $i; ?>" data-pagination-applied="true" role="button" tabindex="0" style="cursor: pointer;"><?php echo $i; ?></a>
+                                    </li>
+                                <?php endfor; ?>
+
+                                <!-- Dernière page toujours visible -->
+                                <?php if ($currentPage < $totalPages - $range): ?>
+                                    <?php if ($currentPage < $totalPages - $range - 1): ?>
+                                        <li class="page-item disabled"><span class="page-link pagination-enhanced" data-pagination-applied="true" role="button" tabindex="0" style="cursor: pointer;">...</span></li>
+                                    <?php endif; ?>
+                                    <li class="page-item">
+                                        <a class="page-link ajax-page-link pagination-enhanced" href="<?php echo BASE_URL; ?>admin/reservations/<?php echo $totalPages; ?>" data-page="<?php echo $totalPages; ?>" data-pagination-applied="true" role="button" tabindex="0" style="cursor: pointer;"><?php echo $totalPages; ?></a>
                                     </li>
                                 <?php endif; ?>
+
+                                <!-- Bouton "Suivant" -->
+                                <li class="page-item <?php echo ($currentPage >= $totalPages) ? 'disabled' : ''; ?>">
+                                    <a class="page-link ajax-page-link pagination-enhanced" href="<?php echo ($currentPage < $totalPages) ? BASE_URL . 'admin/reservations/' . ($currentPage + 1) : 'javascript:void(0)'; ?>" data-page="<?php echo ($currentPage < $totalPages) ? ($currentPage + 1) : $totalPages; ?>" aria-label="Suivant" data-pagination-applied="true" role="button" tabindex="0" style="cursor: pointer;">
+                                        <span aria-hidden="true">»</span>
+                                        <span class="visually-hidden">Suivant</span>
+                                    </a>
+                                </li>
                             </ul>
                         </nav>
                     <?php endif; ?>
                 </div>
             </div>
-        </div>
+
+        </div> <!-- Fin admin-page-container -->
     </div>
 </div>

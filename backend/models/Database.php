@@ -73,24 +73,34 @@ class Database
 
     public function insert($table, $data)
     {
-        // Filtrer les données pour éviter les problèmes avec les clés primaires auto-incrémentées
-        $filteredData = [];
-        foreach ($data as $key => $value) {
-            // Ignorer les clés 'id' avec des valeurs nulles, 0 ou vides pour éviter les conflits AUTO_INCREMENT
-            if ($key === 'id' && (is_null($value) || $value === 0 || $value === '' || $value === '0')) {
-                continue;
+        try {
+            // Filtrer les données pour éviter les problèmes avec les clés primaires auto-incrémentées
+            $filteredData = [];
+            foreach ($data as $key => $value) {
+                // Ignorer les clés 'id' avec des valeurs nulles, 0 ou vides pour éviter les conflits AUTO_INCREMENT
+                if ($key === 'id' && (is_null($value) || $value === 0 || $value === '' || $value === '0')) {
+                    continue;
+                }
+                $filteredData[$key] = $value;
             }
-            $filteredData[$key] = $value;
+
+            $columns = implode(", ", array_keys($filteredData));
+            $values = ":" . implode(", :", array_keys($filteredData));
+
+            $sql = "INSERT INTO {$table} ({$columns}) VALUES ({$values})";
+            $stmt = $this->connection->prepare($sql);
+            $stmt->execute($filteredData);
+
+            return $this->connection->lastInsertId();
+        } catch (PDOException $e) {
+            error_log("Erreur lors de l'insertion dans $table: " . $e->getMessage());
+            if (defined('DEBUG') && DEBUG === true) {
+                echo "Erreur SQL: " . $e->getMessage() . "<br>";
+                echo "Table: $table<br>";
+                echo "Données: " . print_r($filteredData, true);
+            }
+            return false;
         }
-
-        $columns = implode(", ", array_keys($filteredData));
-        $values = ":" . implode(", :", array_keys($filteredData));
-
-        $sql = "INSERT INTO {$table} ({$columns}) VALUES ({$values})";
-        $stmt = $this->connection->prepare($sql);
-        $stmt->execute($filteredData);
-
-        return $this->connection->lastInsertId();
     }
 
     public function update($table, $data, $where, $whereParams = [])

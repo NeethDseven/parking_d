@@ -731,6 +731,49 @@
     margin-bottom: var(--spacing-xs);
 }
 
+/* ========== NORMALISATION DES IMAGES D'ÉQUIPE ========== */
+
+/* Images d'équipe avec taille uniforme */
+.img-square-150 {
+    width: 150px !important;
+    height: 150px !important;
+    object-fit: cover !important;
+    object-position: center !important;
+    border: 3px solid #fff !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1) !important;
+    transition: all 0.3s ease !important;
+}
+
+.img-square-150:hover {
+    transform: scale(1.05) !important;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Container pour les cartes d'équipe */
+.team-member-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+}
+
+.team-member-card:hover {
+    transform: translateY(-5px) !important;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Responsive pour les images d'équipe */
+@media (max-width: 768px) {
+    .img-square-150 {
+        width: 120px !important;
+        height: 120px !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .img-square-150 {
+        width: 100px !important;
+        height: 100px !important;
+    }
+}
+
 .member-role {
     color: var(--text-secondary);
     font-size: var(--font-size-sm);

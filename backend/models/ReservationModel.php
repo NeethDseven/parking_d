@@ -1594,6 +1594,28 @@ class ReservationModel
     }
 
     /**
+     * Génère ou met à jour le code de sortie d'une réservation
+     */
+    public function generateOrUpdateExitCode($reservationId)
+    {
+        if (!$reservationId) {
+            return false;
+        }
+
+        // Générer un code de sortie aléatoire plus long et plus visible
+        $newCode = strtoupper(substr(md5(uniqid(rand(), true)), 0, 8));
+
+        // Mettre à jour la réservation avec le nouveau code
+        $result = $this->db->update('reservations',
+            ['code_sortie' => $newCode],
+            'id = :id',
+            ['id' => $reservationId]
+        );
+
+        return $result ? $newCode : false;
+    }
+
+    /**
      * Vérifie si une place a une réservation immédiate active
      * @param int $placeId ID de la place
      * @return array|false Retourne les détails de la réservation immédiate ou false

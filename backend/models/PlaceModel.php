@@ -291,6 +291,41 @@ class PlaceModel
     /**
      * Compte le nombre de places avec filtres
      */
+    public function countFilteredPlaces($type = null, $status = null)
+    {
+        $conditions = [];
+        $params = [];
+
+        if ($type && $type !== '') {
+            $conditions[] = "type = :type";
+            $params['type'] = $type;
+        }
+
+        if ($status && $status !== '') {
+            $conditions[] = "status = :status";
+            $params['status'] = $status;
+        }
+
+        $whereClause = "";
+        if (!empty($conditions)) {
+            $whereClause = "WHERE " . implode(" AND ", $conditions);
+        }
+
+        $sql = "SELECT COUNT(*) as count FROM parking_spaces $whereClause";
+
+        $stmt = $this->db->getConnection()->prepare($sql);
+        foreach ($params as $key => $value) {
+            $stmt->bindValue(":$key", $value);
+        }
+        $stmt->execute();
+
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result['count'];
+    }
+
+    /**
+     * Compte le nombre total de places avec filtres (ancienne méthode)
+     */
     public function countFiltered($type = null, $status = null)
     {
         $conditions = [];

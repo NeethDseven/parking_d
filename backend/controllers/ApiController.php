@@ -128,160 +128,222 @@ class ApiController extends BaseController
     }
 
     /**
-     * Génère le HTML pour une carte de place de parking
+     * Génère le HTML pour une carte de place de parking (identique à la page PHP)
      */
     private function generatePlaceCardHtml($place, $tarif)
     {
-        // Définir les classes et styles selon le type de place
-        $typeClass = '';
-        $badgeClass = '';
-
-        if ($place['type'] === 'handicape') {
-            $badgeClass = 'bg-primary';
-        } elseif ($place['type'] === 'electrique') {
-            $badgeClass = 'bg-success';
-        } else {
-            $badgeClass = 'bg-light text-dark';
-        }
-
-        // Définir les images aléatoires pour les types de place
-        $standardImages = [
-            'standard1.webp',
-            'standard2.webp',
-            'standard3.webp'
-        ];
-        
-        $electricImages = [
-            'elec1.webp',
-            'elec2.webp',
-            'elec3.webp',
-            'elec4.webp',
-            'elec5.webp'
-        ];
-        
-        $randomIndex = array_rand($standardImages);
-        $randomIndexElec = array_rand($electricImages);
-
-        // Définir l'image selon le type de place
+        // Définir les images selon le type de place (identique à places.php)
         $placeImage = '';
         if ($place['type'] === 'standard') {
+            // Images pour les places standard
+            $standardImages = [
+                'standar.jpg',
+                'standar1.jpg',
+                'standar2.jpg',
+                'standar3.jpg',
+                'standar4.jpg',
+                'standar5.jpg',
+                'standar6.webp',
+                'standar7.jpg',
+                'standar8.jpg',
+                'standar9.jpg',
+                'standar10.jpg',
+                'standar11.webp',
+                'standar12.webp',
+                'standard1.webp',
+                'standard2.webp',
+                'standard3.webp'
+            ];
+            $randomIndex = array_rand($standardImages);
             $placeImage = BASE_URL . 'frontend/assets/img/' . $standardImages[$randomIndex];
         } elseif ($place['type'] === 'handicape') {
-            $placeImage = BASE_URL . 'frontend/assets/img/pmr1.webp';
-        } elseif ($place['type'] === 'electrique') {
-            $placeImage = BASE_URL . 'frontend/assets/img/' . $electricImages[$randomIndexElec];
-        } elseif ($place['type'] === 'moto' || $place['type'] === 'moto/scooter') {
-            $placeImage = BASE_URL . 'frontend/assets/img/parking-propre.webp';
+            // Images pour les places PMR/handicapé
+            $handicapImages = [
+                'pmr.jpg',
+                'pmr1.jpg',
+                'pmr1.webp',
+                'pmr2.jpg',
+                'pmr3.jpg',
+                'pmr4.jpg',
+                'pmr5.jpg',
+                'pmr6.jpg',
+                'pmr7.jpg',
+                'pmr8.jpg',
+                'pmr9.webp'
+            ];
+            $selectedHandicapImage = $handicapImages[$place['id'] % count($handicapImages)];
+            $placeImage = BASE_URL . 'frontend/assets/img/' . $selectedHandicapImage;
+        } elseif ($place['type'] === 'moto/scooter') {
+            // Images pour les places moto/scooter
+            $motoImages = [
+                'moto.jpg',
+                'moto1.jpg',
+                'moto2.jpg',
+                'moto3.jpg',
+                'moto4.jpg'
+            ];
+            $randomIndex = array_rand($motoImages);
+            $placeImage = BASE_URL . 'frontend/assets/img/' . $motoImages[$randomIndex];
         } elseif ($place['type'] === 'velo') {
-            $placeImage = BASE_URL . 'frontend/assets/img/1200x680_velo-stationnement-125.webp';
-        }
-
-        // Icône selon le type
-        $iconHtml = '';
-        if ($place['type'] === 'handicape') {
-            $iconHtml = '<i class="fas fa-wheelchair ms-1"></i>';
+            // Images pour les places vélo
+            $bikeImages = [
+                'velo.jpg',
+                'velo1.webp',
+                'velo2.jpg',
+                'velo4.jpg',
+                'velo5.jpg',
+                'velo6.webp',
+                'velo7.jpg'
+            ];
+            $randomIndex = array_rand($bikeImages);
+            $placeImage = BASE_URL . 'frontend/assets/img/' . $bikeImages[$randomIndex];
         } elseif ($place['type'] === 'electrique') {
-            $iconHtml = '<i class="fas fa-charging-station ms-1"></i>';
-        } elseif ($place['type'] === 'moto' || $place['type'] === 'moto/scooter') {
-            $iconHtml = '<i class="fas fa-motorcycle ms-1"></i>';
-        } elseif ($place['type'] === 'velo') {
-            $iconHtml = '<i class="fas fa-bicycle ms-1"></i>';
+            // Images pour les places électriques (elec1 à elec6)
+            $electricImages = [
+                'elec1.webp',
+                'elec2.webp',
+                'elec3.webp',
+                'elec4.webp',
+                'elec5.webp',
+                'elec6.webp'
+            ];
+            $randomIndex = array_rand($electricImages);
+            $placeImage = BASE_URL . 'frontend/assets/img/' . $electricImages[$randomIndex];
         }
 
         // Formater le prix
         $tarifFloat = floatval($tarif);
-        $tarifFormatted = number_format($tarifFloat, 2, ',', ' ') . ' €';
-        
-        // Générer le HTML de la carte
+
+        // Générer le HTML identique à places.php (nouvelle structure 3x2 grid)
         $html = '
-        <div class="col-lg-4 col-md-6 mb-4">
-            <div class="card h-100 place-card shadow-sm">
-                <div class="badge ' . $badgeClass . ' position-absolute top-0 end-0 m-2 py-2 px-3">
-                    ' . ucfirst($place['type']) . ' ' . $iconHtml . '
-                </div>
-                <img src="' . $placeImage . '" alt="Place ' . $place['numero'] . '" class="card-img-top">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h5 class="card-title mb-0">Place N°' . $place['numero'] . '</h5>
-                        <span class="badge ' . ($place['status'] === 'libre' ? 'bg-success' : 'bg-danger') . '">' 
-                            . ucfirst($place['status']) . 
-                        '</span>
-                    </div>                    <p class="card-text">Tarif horaire: <strong>' . $tarifFormatted . '</strong></p>
-                    <div class="d-grid gap-2">
-                        <button class="btn btn-primary reserve-btn" 
-                                data-bs-toggle="modal" 
-                                data-bs-target="#reservationModal" 
-                                data-place-id="' . $place['id'] . '" 
-                                data-place-numero="' . $place['numero'] . '" 
-                                data-place-type="' . $place['type'] . '" 
-                                data-place-tarif="' . $tarifFloat . '"
-                                ' . ($place['status'] !== 'libre' ? 'disabled' : '') . '>
-                            <i class="fas fa-calendar-check me-2"></i>' . ($place['status'] === 'libre' ? 'Réserver' : 'Non disponible') . '
-                        </button>';
-        
-        // Ajouter le bouton de réservation immédiate seulement si la place est libre
-        if ($place['status'] === 'libre') {
-            $html .= '
-                        <form action="' . BASE_URL . 'reservation/reserveImmediate" method="post" class="mt-2">
-                            <input type="hidden" name="place_id" value="' . $place['id'] . '">
-                            <button type="submit" class="btn-reserve-immediate">
-                                <i class="fas fa-stopwatch me-2"></i> Réserver immédiatement
-                            </button>
-                        </form>';
+                    <div class="place-card-item animate-on-scroll fade-in"
+                        data-type="' . htmlspecialchars($place['type']) . '"
+                        data-card-index="0">
+                        <div class="card h-100 shadow-sm hover-effect">
+                            <div class="place-card-image" style="background-image: url(\'' . $placeImage . '\');">
+                                <div class="card-header bg-transparent border-0">
+                                    <span class="badge ' .
+                                        ($place['type'] === 'handicape' ? 'bg-warning text-dark' :
+                                         ($place['type'] === 'electrique' ? 'bg-success text-white' :
+                                          ($place['type'] === 'moto/scooter' ? 'bg-secondary text-white' :
+                                           ($place['type'] === 'velo' ? 'bg-info text-white' : 'bg-secondary text-white')))) . '">
+                                        Place ' . htmlspecialchars($place['numero']);
+
+        // Ajouter l'icône selon le type
+        switch($place['type']) {
+            case 'handicape':
+                $html .= '<i class="fas fa-wheelchair ms-1"></i>';
+                break;
+            case 'electrique':
+                $html .= '<i class="fas fa-charging-station ms-1"></i>';
+                break;
+            case 'moto/scooter':
+                $html .= '<i class="fas fa-motorcycle ms-1"></i>';
+                break;
+            case 'velo':
+                $html .= '<i class="fas fa-bicycle ms-1"></i>';
+                break;
+            default:
+                $html .= '<i class="fas fa-car ms-1"></i>';
+                break;
         }
-        
+
         $html .= '
-                    </div>
-                </div>
-            </div>
-        </div>';
-        
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title">Type: ' . ucfirst($place['type']) . '</h5>
+                                <p class="card-text">';
+
+        // Statut de la place
+        if ($place['status'] === 'libre') {
+            $html .= '<span class="badge bg-success"><i class="fas fa-check me-1"></i> Disponible</span>';
+        } else {
+            $html .= '<span class="badge bg-warning text-dark"><i class="fas fa-clock me-1"></i> Occupée</span>';
+        }
+
+        $html .= '</p>
+                                <p class="card-text">
+                                    <strong>Tarif:</strong> ' . number_format($tarifFloat, 2) . ' € / heure
+                                </p>';
+
+        // Affichage du statut d'occupation
+        if ($place['status'] === 'occupe') {
+            $html .= '<p class="text-warning small"><i class="fas fa-clock me-1"></i>
+                                                Temporairement occupée
+                                            </p>';
+        } else {
+            $html .= '<p class="text-success small"><i class="fas fa-clock me-1"></i> Tous les créneaux sont disponibles</p>';
+        }
+
+        // Bouton de réservation (toujours présent)
+        $html .= '<button class="btn-reserve" data-bs-toggle="modal" data-bs-target="#reservationModal"
+                                    data-place-id="' . $place['id'] . '"
+                                    data-place-numero="' . htmlspecialchars($place['numero']) . '"
+                                    data-place-type="' . htmlspecialchars($place['type']) . '"
+                                    data-place-tarif="' . $tarifFloat . '">
+                                    <i class="fas fa-calendar-check me-2"></i> Réserver
+                                </button>
+                                <form action="' . BASE_URL . 'reservation/reserveImmediate" method="post" class="mt-2">
+                                    <input type="hidden" name="place_id" value="' . $place['id'] . '">
+                                    <button type="submit" class="btn-reserve-immediate">
+                                        <i class="fas fa-stopwatch me-2"></i> Réserver immédiatement
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>';
+
         return $html;
     }    /**
-     * Génère la pagination HTML pour les pages de places
+     * Génère la pagination HTML pour les pages de places avec support du filtrage par type
      */
     private function generateApiPaginationHtml($current_page, $total_pages, $type = null)
     {
         if ($total_pages <= 1) {
             return '';
         }
-        
-        $typeParam = $type ? '&type=' . $type : '';
+
+        // Attribut data-type pour les liens AJAX
+        $typeAttr = $type ? ' data-type="' . htmlspecialchars($type) . '"' : '';
         $html = '<nav aria-label="Page navigation"><ul class="pagination justify-content-center">';
-          // Bouton "Précédent"
+
+        // Bouton "Précédent"
         $prevDisabled = ($current_page <= 1) ? 'disabled' : '';
         $html .= '<li class="page-item ' . $prevDisabled . '">';
         if ($current_page <= 1) {
             $html .= '<span class="page-link">Précédent</span>';
         } else {
-            $html .= '<a class="page-link ajax-page-link" href="#" data-page="' . ($current_page - 1) . '">Précédent</a>';
+            $html .= '<a class="page-link ajax-page-link" href="#" data-page="' . ($current_page - 1) . '"' . $typeAttr . '>Précédent</a>';
         }
         $html .= '</li>';
-        
+
         // Pages numériques
         $start = max(1, $current_page - 2);
         $end = min($total_pages, $start + 4);
-        
+
         if ($end - $start < 4) {
             $start = max(1, $end - 4);
         }
-        
+
         for ($i = $start; $i <= $end; $i++) {
             $activeClass = ($i == $current_page) ? 'active' : '';
             $html .= '<li class="page-item ' . $activeClass . '">';
-            $html .= '<a class="page-link ajax-page-link" href="#" data-page="' . $i . '">' . $i . '</a>';
+            $html .= '<a class="page-link ajax-page-link" href="#" data-page="' . $i . '"' . $typeAttr . '>' . $i . '</a>';
             $html .= '</li>';
         }
-          // Bouton "Suivant"
+
+        // Bouton "Suivant"
         $nextDisabled = ($current_page >= $total_pages) ? 'disabled' : '';
         $html .= '<li class="page-item ' . $nextDisabled . '">';
         if ($current_page >= $total_pages) {
             $html .= '<span class="page-link">Suivant</span>';
         } else {
-            $html .= '<a class="page-link ajax-page-link" href="#" data-page="' . ($current_page + 1) . '">Suivant</a>';
+            $html .= '<a class="page-link ajax-page-link" href="#" data-page="' . ($current_page + 1) . '"' . $typeAttr . '>Suivant</a>';
         }
         $html .= '</li>';
-        
+
         $html .= '</ul></nav>';
         return $html;
     }

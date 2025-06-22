@@ -69,8 +69,8 @@ if (!isset($reservation) || !isset($place) || !isset($tarifHoraire)) {
                             <span id="duration-display">00:00:00</span>
                         </div>
                         <p class="text-muted">Heure de début: <?php echo date('d/m/Y H:i:s', strtotime($reservation['date_debut'])); ?></p>
-                    </div> <!-- Estimation du coût -->
-                    <div class="card bg-light mb-4">
+                    </div> <!-- Estimation du coût - MASQUÉE -->
+                    <div class="card bg-light mb-4" style="display: none;">
                         <div class="card-body">
                             <h5 class="card-title">Coût Estimé</h5> <?php if (isset($subscriptionBenefits) && $subscriptionBenefits): ?>
                                 <div class="alert alert-info mb-3">

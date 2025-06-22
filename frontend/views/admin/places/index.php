@@ -1,169 +1,215 @@
 <!-- Main content -->
 <meta name="current-page" content="admin_places">
 <div class="content">
-    <div class="container-fluid p-4">
-        <!-- Mobile toggle -->
-        <button class="btn btn-primary d-md-none mb-3" id="sidebarToggle">
-            <i class="fas fa-bars"></i>
-        </button>
+    <div class="container-fluid">
+        <!-- Container principal uniforme -->
+        <div class="admin-page-container">
 
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1>Gestion des places</h1>
-            <div>
-                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPlaceModal">
-                    <i class="fas fa-plus me-2"></i>Ajouter une place
-                </button>
-            </div>
-        </div>
-
-        <?php if (isset($_SESSION['success'])): ?>
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <?php echo $_SESSION['success']; ?>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-            <?php unset($_SESSION['success']); ?>
-        <?php endif; ?>
-
-        <?php if (isset($_SESSION['error'])): ?>
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <?php echo $_SESSION['error']; ?>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-            <?php unset($_SESSION['error']); ?>
-        <?php endif; ?>
-
-        <?php if (isset($_SESSION['warning'])): ?>
-            <div class="alert alert-warning alert-dismissible fade show" role="alert">
-                <?php echo $_SESSION['warning']; ?>
-                <div class="mt-3">
-                    <a href="<?php echo BASE_URL; ?>admin/deletePlace/<?php echo $_SESSION['confirm_delete']['id']; ?>?force=1" class="btn btn-danger">
-                        <i class="fas fa-exclamation-triangle me-2"></i>
-                        Oui, supprimer tout
-                    </a>
-                    <a href="<?php echo BASE_URL; ?>admin/places" class="btn btn-secondary ms-2">
-                        Annuler
-                    </a>
-                </div>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-            <?php
-            unset($_SESSION['warning']);
-            unset($_SESSION['confirm_delete']);
-            ?>
-        <?php endif; ?>
-
-        <!-- Stats Cards -->
-        <div class="row mb-4">
-            <div class="col-md-3 mb-3 mb-md-0">
-                <div class="card stat-card">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center">
-                            <div class="stat-icon bg-primary text-white me-3">
-                                <i class="fas fa-car"></i>
-                            </div>
-                            <div>
-                                <h5 class="stats-big-number mb-0"><?php echo $stats['total']; ?></h5>
-                                <p class="stats-label mb-0">Places totales</p>
-                            </div>
-                        </div>
+            <!-- Header de page uniforme -->
+            <div class="admin-page-header">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h1 class="admin-page-title">
+                            <i class="fas fa-car"></i>
+                            Gestion des places
+                        </h1>
+                        <p class="text-muted mb-0">Gérez les places de parking et leur disponibilité</p>
                     </div>
-                </div>
-            </div>
-            <div class="col-md-3 mb-3 mb-md-0">
-                <div class="card stat-card">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center">
-                            <div class="stat-icon bg-success text-white me-3">
-                                <i class="fas fa-check-circle"></i>
-                            </div>
-                            <div>
-                                <h5 class="stats-big-number mb-0"><?php echo isset($stats['libre']) ? $stats['libre'] : 0; ?></h5>
-                                <p class="stats-label mb-0">Places libres</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3 mb-3 mb-md-0">
-                <div class="card stat-card">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center">
-                            <div class="stat-icon bg-warning text-white me-3">
-                                <i class="fas fa-lock"></i>
-                            </div>
-                            <div>
-                                <h5 class="stats-big-number mb-0"><?php echo isset($stats['occupe']) ? $stats['occupe'] : 0; ?></h5>
-                                <p class="stats-label mb-0">Places occupées</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card stat-card">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center">
-                            <div class="stat-icon bg-danger text-white me-3">
-                                <i class="fas fa-tools"></i>
-                            </div>
-                            <div>
-                                <h5 class="stats-big-number mb-0"><?php echo isset($stats['maintenance']) ? $stats['maintenance'] : 0; ?></h5>
-                                <p class="stats-label mb-0">En maintenance</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Filtres -->
-        <div class="card mb-4">
-            <div class="card-body">
-                <form method="GET" action="<?php echo BASE_URL; ?>admin/places" class="row g-3 align-items-end">
-                    <div class="col-md-4"> <label for="filterType" class="form-label">Type de place</label>
-                        <select id="filterType" name="type" class="form-select">
-                            <option value="">Tous les types</option>
-                            <option value="standard" <?php echo isset($_GET['type']) && $_GET['type'] == 'standard' ? 'selected' : ''; ?>>Standard</option>
-                            <option value="handicape" <?php echo isset($_GET['type']) && $_GET['type'] == 'handicape' ? 'selected' : ''; ?>>Handicapé</option>
-                            <option value="electrique" <?php echo isset($_GET['type']) && $_GET['type'] == 'electrique' ? 'selected' : ''; ?>>Électrique</option>
-                            <option value="moto/scooter" <?php echo isset($_GET['type']) && $_GET['type'] == 'moto/scooter' ? 'selected' : ''; ?>>Moto/Scooter</option>
-                            <option value="velo" <?php echo isset($_GET['type']) && $_GET['type'] == 'velo' ? 'selected' : ''; ?>>Vélo</option>
-                        </select>
-                    </div>
-                    <div class="col-md-4">
-                        <label for="filterStatus" class="form-label">Statut</label>
-                        <select id="filterStatus" name="status" class="form-select">
-                            <option value="">Tous les statuts</option>
-                            <option value="libre" <?php echo isset($_GET['status']) && $_GET['status'] == 'libre' ? 'selected' : ''; ?>>Libre</option>
-                            <option value="occupe" <?php echo isset($_GET['status']) && $_GET['status'] == 'occupe' ? 'selected' : ''; ?>>Occupé</option>
-                            <option value="maintenance" <?php echo isset($_GET['status']) && $_GET['status'] == 'maintenance' ? 'selected' : ''; ?>>Maintenance</option>
-                        </select>
-                    </div>
-                    <div class="col-md-4">
-                        <button type="submit" class="btn btn-primary w-100">
-                            <i class="fas fa-filter me-2"></i>Filtrer
+                    <div class="admin-page-actions">
+                        <button type="button" class="admin-btn admin-btn-primary" data-bs-toggle="modal" data-bs-target="#addPlaceModal">
+                            <i class="fas fa-plus"></i>
+                            Ajouter une place
                         </button>
                     </div>
-                </form>
+                </div>
             </div>
-        </div>
 
-        <!-- Liste des places -->
-        <div class="card mb-4">
-            <div class="card-header bg-white">
-                <div class="d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">Liste des places</h5>
-                    <div>
-                        <a href="<?php echo BASE_URL; ?>admin/exportPlaces" class="btn btn-sm btn-outline-secondary">
-                            <i class="fas fa-download me-1"></i> Exporter
+            <!-- Alertes style uniforme -->
+            <?php if (isset($_SESSION['success'])): ?>
+                <div class="admin-content-card">
+                    <div class="admin-content-card-body">
+                        <div class="dashboard-alert alert-success">
+                            <i class="fas fa-check-circle"></i>
+                            <?php echo $_SESSION['success']; ?>
+                        </div>
+                    </div>
+                </div>
+                <?php unset($_SESSION['success']); ?>
+            <?php endif; ?>
+
+            <?php if (isset($_SESSION['error'])): ?>
+                <div class="admin-content-card">
+                    <div class="admin-content-card-body">
+                        <div class="dashboard-alert alert-danger">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <?php echo $_SESSION['error']; ?>
+                        </div>
+                    </div>
+                </div>
+                <?php unset($_SESSION['error']); ?>
+            <?php endif; ?>
+
+            <?php if (isset($_SESSION['warning'])): ?>
+                <div class="admin-content-card">
+                    <div class="admin-content-card-body">
+                        <div class="dashboard-alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <?php echo $_SESSION['warning']; ?>
+                            <div class="mt-3">
+                                <a href="<?php echo BASE_URL; ?>admin/deletePlace/<?php echo $_SESSION['confirm_delete']['id']; ?>?force=1" class="admin-btn admin-btn-danger">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    Oui, supprimer tout
+                                </a>
+                                <a href="<?php echo BASE_URL; ?>admin/places" class="admin-btn admin-btn-secondary">
+                                    Annuler
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <?php
+                unset($_SESSION['warning']);
+                unset($_SESSION['confirm_delete']);
+                ?>
+            <?php endif; ?>
+
+            <!-- Stats Cards style uniforme -->
+            <div class="dashboard-stats-row">
+                <div class="dashboard-stat-card primary">
+                    <div class="dashboard-stat-header">
+                        <div class="dashboard-stat-content">
+                            <h6>Places totales</h6>
+                            <h2><?php echo $stats['total']; ?></h2>
+                            <small>Toutes les places</small>
+                        </div>
+                        <div class="dashboard-stat-icon primary">
+                            <i class="fas fa-car"></i>
+                        </div>
+                    </div>
+                    <div class="dashboard-stat-footer">
+                        <a href="#placesList">
+                            <i class="fas fa-arrow-right"></i>
+                            Voir la liste
+                        </a>
+                    </div>
+                </div>
+
+                <div class="dashboard-stat-card success">
+                    <div class="dashboard-stat-header">
+                        <div class="dashboard-stat-content">
+                            <h6>Places libres</h6>
+                            <h2><?php echo isset($stats['libre']) ? $stats['libre'] : 0; ?></h2>
+                            <small>Disponibles maintenant</small>
+                        </div>
+                        <div class="dashboard-stat-icon success">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                    </div>
+                    <div class="dashboard-stat-footer">
+                        <a href="?status=libre">
+                            <i class="fas fa-arrow-right"></i>
+                            Voir libres
+                        </a>
+                    </div>
+                </div>
+
+                <div class="dashboard-stat-card warning">
+                    <div class="dashboard-stat-header">
+                        <div class="dashboard-stat-content">
+                            <h6>Places occupées</h6>
+                            <h2><?php echo isset($stats['occupe']) ? $stats['occupe'] : 0; ?></h2>
+                            <small>En cours d'utilisation</small>
+                        </div>
+                        <div class="dashboard-stat-icon warning">
+                            <i class="fas fa-lock"></i>
+                        </div>
+                    </div>
+                    <div class="dashboard-stat-footer">
+                        <a href="?status=occupe">
+                            <i class="fas fa-arrow-right"></i>
+                            Voir occupées
+                        </a>
+                    </div>
+                </div>
+
+                <div class="dashboard-stat-card info">
+                    <div class="dashboard-stat-header">
+                        <div class="dashboard-stat-content">
+                            <h6>En maintenance</h6>
+                            <h2><?php echo isset($stats['maintenance']) ? $stats['maintenance'] : 0; ?></h2>
+                            <small>Hors service</small>
+                        </div>
+                        <div class="dashboard-stat-icon info">
+                            <i class="fas fa-tools"></i>
+                        </div>
+                    </div>
+                    <div class="dashboard-stat-footer">
+                        <a href="?status=maintenance">
+                            <i class="fas fa-arrow-right"></i>
+                            Voir maintenance
                         </a>
                     </div>
                 </div>
             </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="bg-light">
+
+            <!-- Filtres style uniforme -->
+            <div class="admin-content-card">
+                <div class="admin-content-card-header">
+                    <h3 class="admin-content-card-title">
+                        <i class="fas fa-filter me-2"></i>
+                        Filtres et recherche
+                    </h3>
+                </div>
+                <div class="admin-content-card-body">
+                    <form method="GET" action="<?php echo BASE_URL; ?>admin/places" class="row g-3 align-items-end">
+                        <div class="col-md-4">
+                            <label for="filterType" class="form-label">Type de place</label>
+                            <select id="filterType" name="type" class="form-select">
+                                <option value="">Tous les types</option>
+                                <option value="standard" <?php echo isset($_GET['type']) && $_GET['type'] == 'standard' ? 'selected' : ''; ?>>Standard</option>
+                                <option value="handicape" <?php echo isset($_GET['type']) && $_GET['type'] == 'handicape' ? 'selected' : ''; ?>>Handicapé</option>
+                                <option value="electrique" <?php echo isset($_GET['type']) && $_GET['type'] == 'electrique' ? 'selected' : ''; ?>>Électrique</option>
+                                <option value="moto/scooter" <?php echo isset($_GET['type']) && $_GET['type'] == 'moto/scooter' ? 'selected' : ''; ?>>Moto/Scooter</option>
+                                <option value="velo" <?php echo isset($_GET['type']) && $_GET['type'] == 'velo' ? 'selected' : ''; ?>>Vélo</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="filterStatus" class="form-label">Statut</label>
+                            <select id="filterStatus" name="status" class="form-select">
+                                <option value="">Tous les statuts</option>
+                                <option value="libre" <?php echo isset($_GET['status']) && $_GET['status'] == 'libre' ? 'selected' : ''; ?>>Libre</option>
+                                <option value="occupe" <?php echo isset($_GET['status']) && $_GET['status'] == 'occupe' ? 'selected' : ''; ?>>Occupé</option>
+                                <option value="maintenance" <?php echo isset($_GET['status']) && $_GET['status'] == 'maintenance' ? 'selected' : ''; ?>>Maintenance</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <button type="submit" class="admin-btn admin-btn-primary w-100">
+                                <i class="fas fa-filter"></i>
+                                Filtrer
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Liste des places style uniforme -->
+            <div class="admin-content-card" id="placesList">
+                <div class="admin-content-card-header">
+                    <h3 class="admin-content-card-title">
+                        <i class="fas fa-list me-2"></i>
+                        Liste des places
+                    </h3>
+                    <div>
+                        <a href="<?php echo BASE_URL; ?>admin/exportPlaces" class="admin-btn admin-btn-outline admin-btn-sm">
+                            <i class="fas fa-download"></i>
+                            Exporter
+                        </a>
+                    </div>
+                </div>
+                <div class="admin-content-card-body">
+                    <div class="admin-table-wrapper">
+                        <table class="admin-table">
+                            <thead>
                             <tr>
                                 <th>ID</th>
                                 <th>Numéro</th>
@@ -177,9 +223,9 @@
                             <?php if (isset($places) && !empty($places)): ?>
                                 <?php foreach ($places as $place): ?>
                                     <tr>
-                                        <td><?php echo $place['id']; ?></td>
-                                        <td><?php echo htmlspecialchars($place['numero']); ?></td>
-                                        <td>
+                                        <td data-sort="<?php echo $place['id']; ?>"><?php echo $place['id']; ?></td>
+                                        <td data-sort="<?php echo htmlspecialchars($place['numero']); ?>"><?php echo htmlspecialchars($place['numero']); ?></td>
+                                        <td data-sort="<?php echo $place['type']; ?>">
                                             <?php switch ($place['type']) {
                                                 case 'standard': ?>
                                                     <span class="badge bg-secondary">Standard</span>
@@ -199,7 +245,7 @@
                                                     <span class="badge bg-dark"><?= !empty($place['type']) ? ucfirst(htmlspecialchars($place['type'])) : 'Non défini' ?></span>
                                             <?php } ?>
                                         </td>
-                                        <td>
+                                        <td data-sort="<?php echo $place['status']; ?>">
                                             <?php if ($place['status'] === 'libre'): ?>
                                                 <span class="badge bg-success">Libre</span>
                                             <?php elseif ($place['status'] === 'occupe'): ?>
@@ -208,12 +254,13 @@
                                                 <span class="badge bg-warning text-dark">Maintenance</span>
                                             <?php endif; ?>
                                         </td>
-                                        <td><?php echo date('d/m/Y H:i', strtotime($place['created_at'])); ?></td>
+                                        <td data-sort="<?php echo date('Y-m-d H:i:s', strtotime($place['created_at'])); ?>"><?php echo date('d/m/Y H:i', strtotime($place['created_at'])); ?></td>
                                         <td>
-                                            <div class="btn-group btn-group-sm">
-                                                <a href="<?php echo BASE_URL; ?>admin/editPlace/<?php echo $place['id']; ?>" class="btn btn-info" title="Modifier">
+                                            <div class="d-flex gap-1">
+                                                <a href="<?php echo BASE_URL; ?>admin/editPlace/<?php echo $place['id']; ?>" class="admin-btn-icon edit" title="Modifier">
                                                     <i class="fas fa-edit"></i>
-                                                </a> <button type="button" class="btn btn-danger delete-place-btn"
+                                                </a>
+                                                <button type="button" class="admin-btn-icon delete delete-place-btn"
                                                     data-id="<?php echo $place['id']; ?>"
                                                     data-numero="<?php echo htmlspecialchars($place['numero']); ?>"
                                                     data-base-url="<?php echo BASE_URL; ?>"
@@ -342,11 +389,12 @@
                                 </tr>
                             <?php endif; ?>
                         </tbody>
-                    </table>
+                        </table>
+                    </div>
                 </div>
-            </div>
-            <!-- Pagination -->
-            <div class="card-footer bg-white">
+
+                <!-- Footer avec pagination style uniforme -->
+                <div class="admin-content-card-header" style="border-top: 1px solid #e9ecef; border-bottom: none;">
                 <?php if (isset($totalPages) && $totalPages > 1): ?>
                     <nav aria-label="Pagination">
                         <ul class="pagination justify-content-center mb-0">
@@ -355,75 +403,74 @@
                             $queryParams = [];
                             if (!empty($type)) $queryParams['type'] = $type;
                             if (!empty($status)) $queryParams['status'] = $status;
-                            $queryString = !empty($queryParams) ? '?' . http_build_query($queryParams) : '';                            // Bouton précédent
-                            if ($currentPage > 1):
+                            $queryString = !empty($queryParams) ? '?' . http_build_query($queryParams) : '';
                             ?>
+
+                            <!-- Bouton "Précédent" -->
+                            <li class="page-item <?php echo ($currentPage <= 1) ? 'disabled' : ''; ?>">
+                                <a class="page-link ajax-page-link pagination-enhanced" href="<?php echo ($currentPage > 1) ? BASE_URL . 'admin/places/' . ($currentPage - 1) . $queryString : 'javascript:void(0)'; ?>" data-page="<?php echo ($currentPage > 1) ? ($currentPage - 1) : 1; ?>" aria-label="Précédent" data-pagination-applied="true" role="button" tabindex="0" style="cursor: pointer;">
+                                    <span aria-hidden="true">«</span>
+                                    <span class="visually-hidden">Précédent</span>
+                                </a>
+                            </li>
+
+                            <?php
+                            // Logique de pagination améliorée
+                            $range = 2;
+                            $startPage = max(1, $currentPage - $range);
+                            $endPage = min($totalPages, $currentPage + $range);
+
+                            // Première page toujours visible si on est loin
+                            if ($currentPage > $range + 1): ?>
                                 <li class="page-item">
-                                    <a class="page-link" href="<?php echo BASE_URL; ?>admin/places/<?php echo ($currentPage - 1) . $queryString; ?>" aria-label="Précédent">
-                                        <span aria-hidden="true">&laquo;</span>
-                                    </a>
+                                    <a class="page-link ajax-page-link pagination-enhanced" href="<?php echo BASE_URL; ?>admin/places/1<?php echo $queryString; ?>" data-page="1" data-pagination-applied="true" role="button" tabindex="0" style="cursor: pointer;">1</a>
                                 </li>
-                            <?php else: ?>
-                                <li class="page-item disabled">
-                                    <a class="page-link" href="#" aria-label="Précédent">
-                                        <span aria-hidden="true">&laquo;</span>
-                                    </a>
+                                <?php if ($currentPage > $range + 2): ?>
+                                    <li class="page-item disabled"><span class="page-link pagination-enhanced" data-pagination-applied="true" role="button" tabindex="0" style="cursor: pointer;">...</span></li>
+                                <?php endif; ?>
+                            <?php endif; ?>
+
+                            <!-- Pages autour de la page courante -->
+                            <?php for ($i = $startPage; $i <= $endPage; $i++): ?>
+                                <li class="page-item <?php echo ($i == $currentPage) ? 'active' : ''; ?>">
+                                    <a class="page-link ajax-page-link pagination-enhanced" href="<?php echo BASE_URL; ?>admin/places/<?php echo $i . $queryString; ?>" data-page="<?php echo $i; ?>" data-pagination-applied="true" role="button" tabindex="0" style="cursor: pointer;"><?php echo $i; ?></a>
+                                </li>
+                            <?php endfor; ?>
+
+                            <!-- Dernière page toujours visible -->
+                            <?php if ($currentPage < $totalPages - $range): ?>
+                                <?php if ($currentPage < $totalPages - $range - 1): ?>
+                                    <li class="page-item disabled"><span class="page-link pagination-enhanced" data-pagination-applied="true" role="button" tabindex="0" style="cursor: pointer;">...</span></li>
+                                <?php endif; ?>
+                                <li class="page-item">
+                                    <a class="page-link ajax-page-link pagination-enhanced" href="<?php echo BASE_URL; ?>admin/places/<?php echo $totalPages . $queryString; ?>" data-page="<?php echo $totalPages; ?>" data-pagination-applied="true" role="button" tabindex="0" style="cursor: pointer;"><?php echo $totalPages; ?></a>
                                 </li>
                             <?php endif; ?>
 
-                            <?php                            // Pages numérotées
-                            $startPage = max(1, $currentPage - 2);
-                            $endPage = min($startPage + 4, $totalPages);
-
-                            // Première page et ellipsis
-                            if ($startPage > 1) {
-                                echo '<li class="page-item"><a class="page-link" href="' . BASE_URL . 'admin/places/1' . $queryString . '">1</a></li>';
-                                if ($startPage > 2) {
-                                    echo '<li class="page-item disabled"><span class="page-link">...</span></li>';
-                                }
-                            }
-
-                            // Pages autour de la page courante
-                            for ($i = $startPage; $i <= $endPage; $i++):
-                            ?>
-                                <li class="page-item <?php echo $i == $currentPage ? 'active' : ''; ?>">
-                                    <a class="page-link" href="<?php echo BASE_URL; ?>admin/places/<?php echo $i . $queryString; ?>"><?php echo $i; ?></a>
-                                </li>
-                            <?php endfor;
-
-                            // Dernière page et ellipsis
-                            if ($endPage < $totalPages) {
-                                if ($endPage < $totalPages - 1) {
-                                    echo '<li class="page-item disabled"><span class="page-link">...</span></li>';
-                                }
-                                echo '<li class="page-item"><a class="page-link" href="' . BASE_URL . 'admin/places/' . $totalPages . $queryString . '">' . $totalPages . '</a></li>';
-                            }
-                            ?> <!-- Bouton suivant -->
-                            <?php if ($currentPage < $totalPages): ?>
-                                <li class="page-item">
-                                    <a class="page-link" href="<?php echo BASE_URL; ?>admin/places/<?php echo ($currentPage + 1) . $queryString; ?>" aria-label="Suivant">
-                                        <span aria-hidden="true">&raquo;</span>
-                                    </a>
-                                </li>
-                            <?php else: ?>
-                                <li class="page-item disabled">
-                                    <a class="page-link" href="#" aria-label="Suivant">
-                                        <span aria-hidden="true">&raquo;</span>
-                                    </a>
-                                </li>
-                            <?php endif; ?>
+                            <!-- Bouton "Suivant" -->
+                            <li class="page-item <?php echo ($currentPage >= $totalPages) ? 'disabled' : ''; ?>">
+                                <a class="page-link ajax-page-link pagination-enhanced" href="<?php echo ($currentPage < $totalPages) ? BASE_URL . 'admin/places/' . ($currentPage + 1) . $queryString : 'javascript:void(0)'; ?>" data-page="<?php echo ($currentPage < $totalPages) ? ($currentPage + 1) : $totalPages; ?>" aria-label="Suivant" data-pagination-applied="true" role="button" tabindex="0" style="cursor: pointer;">
+                                    <span aria-hidden="true">»</span>
+                                    <span class="visually-hidden">Suivant</span>
+                                </a>
+                            </li>
                         </ul>
                     </nav>
                 <?php endif; ?>
+                </div>
             </div>
-        </div> <!-- Statistiques --> <!-- Données pour le service de graphiques -->
-        <div id="chart-data" class="d-none"
-            data-places-stats="true"
-            data-standard="<?php echo isset($typeStats['standard']) ? $typeStats['standard'] : 0; ?>"
-            data-handicape="<?php echo isset($typeStats['handicape']) ? $typeStats['handicape'] : 0; ?>"
-            data-electrique="<?php echo isset($typeStats['electrique']) ? $typeStats['electrique'] : 0; ?>"
-            data-moto="<?php echo isset($typeStats['moto/scooter']) ? $typeStats['moto/scooter'] : 0; ?>" data-velo="<?php echo isset($typeStats['velo']) ? $typeStats['velo'] : 0; ?>">
-        </div>
+
+            <!-- Données pour le service de graphiques -->
+            <div id="chart-data" class="d-none"
+                data-places-stats="true"
+                data-standard="<?php echo isset($typeStats['standard']) ? $typeStats['standard'] : 0; ?>"
+                data-handicape="<?php echo isset($typeStats['handicape']) ? $typeStats['handicape'] : 0; ?>"
+                data-electrique="<?php echo isset($typeStats['electrique']) ? $typeStats['electrique'] : 0; ?>"
+                data-moto="<?php echo isset($typeStats['moto/scooter']) ? $typeStats['moto/scooter'] : 0; ?>"
+                data-velo="<?php echo isset($typeStats['velo']) ? $typeStats['velo'] : 0; ?>">
+            </div>
+
+        </div> <!-- Fin admin-page-container -->
     </div>
 </div>
 

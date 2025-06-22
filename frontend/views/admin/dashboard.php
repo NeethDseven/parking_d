@@ -1,13 +1,15 @@
 <!-- Main content -->
 <meta name="current-page" content="admin_dashboard">
 <div class="content">
-    <div class="container-fluid p-4">
-        <!-- Mobile toggle -->
-        <button class="btn btn-primary d-md-none mb-3" id="sidebarToggle">
-            <i class="fas fa-bars"></i>
-        </button>
-
-        <h1 class="mb-4">Tableau de bord</h1>
+    <div class="container-fluid">
+        <!-- Header du dashboard style navbar -->
+        <div class="dashboard-header">
+            <h1 class="dashboard-title">
+                <i class="fas fa-tachometer-alt"></i>
+                Tableau de bord
+            </h1>
+            <p class="dashboard-subtitle">Vue d'ensemble de votre système de parking</p>
+        </div>
 
         <?php if (isset($_SESSION['success'])): ?>
             <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -25,267 +27,176 @@
             <?php unset($_SESSION['error']); ?>
         <?php endif; ?>
 
-        <!-- Stats cards -->
-        <div class="row mb-4">
-            <div class="col-xl-3 col-md-6 mb-3">
-                <div class="card bg-primary text-white stat-card h-100">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="card-title">Utilisateurs</h6>
-                                <h2 class="mb-0"><?php echo $userStats['total']; ?></h2>
-                                <small><?php echo isset($userStats['new_this_month']) ? $userStats['new_this_month'] : 0; ?> nouveaux ce mois</small>
-                            </div>
-                            <div class="stat-icon">
-                                <i class="fas fa-users"></i>
-                            </div>
-                        </div>
+        <!-- Layout ultra-compact : Stats + Graphiques + Tableaux en une seule ligne -->
+        <div class="dashboard-ultra-compact-layout">
+            <!-- Colonne 1 : Stats compactes -->
+            <div class="dashboard-stats-compact">
+                <div class="stat-mini primary">
+                    <div class="stat-mini-content">
+                        <h6>Utilisateurs</h6>
+                        <h3><?php echo $userStats['total']; ?></h3>
+                        <small><?php echo isset($userStats['new_this_month']) ? $userStats['new_this_month'] : 0; ?> nouveaux</small>
                     </div>
-                    <div class="card-footer d-flex align-items-center justify-content-between">
-                        <a href="<?php echo BASE_URL; ?>admin/users" class="text-white text-decoration-none">
-                            <small>Voir détails</small>
-                        </a>
-                        <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                    <div class="stat-mini-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                </div>
+
+                <div class="stat-mini success">
+                    <div class="stat-mini-content">
+                        <h6>Revenus</h6>
+                        <h3><?php echo number_format($revenueStats['total'], 2); ?> €</h3>
+                        <small><?php echo number_format(isset($revenueStats['this_month']) ? $revenueStats['this_month'] : 0, 2); ?> € ce mois</small>
+                    </div>
+                    <div class="stat-mini-icon">
+                        <i class="fas fa-euro-sign"></i>
+                    </div>
+                </div>
+
+                <div class="stat-mini warning">
+                    <div class="stat-mini-content">
+                        <h6>Réservations</h6>
+                        <h3><?php echo $reservationStats['total']; ?></h3>
+                        <small><?php echo $reservationStats['today']; ?> aujourd'hui</small>
+                    </div>
+                    <div class="stat-mini-icon">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                </div>
+
+                <div class="stat-mini info">
+                    <div class="stat-mini-content">
+                        <h6>Places libres</h6>
+                        <h3><?php echo isset($placeStats['libre']) ? $placeStats['libre'] : 0; ?></h3>
+                        <small>sur <?php echo $placeStats['total']; ?> places</small>
+                    </div>
+                    <div class="stat-mini-icon">
+                        <i class="fas fa-car"></i>
                     </div>
                 </div>
             </div>
 
-            <div class="col-xl-3 col-md-6 mb-3">
-                <div class="card bg-success text-white stat-card h-100">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="card-title">Revenus</h6>
-                                <h2 class="mb-0"><?php echo number_format($revenueStats['total'], 2); ?> €</h2>
-                                <small><?php echo number_format(isset($revenueStats['this_month']) ? $revenueStats['this_month'] : 0, 2); ?> € ce mois</small>
-                            </div>
-                            <div class="stat-icon">
-                                <i class="fas fa-euro-sign"></i>
-                            </div>
-                        </div>
+            <!-- Colonne 2 : Graphiques ultra-compacts -->
+            <div class="dashboard-charts-ultra-compact">
+                <div class="chart-mini">
+                    <h6><i class="fas fa-chart-line"></i> Revenus</h6>
+                    <div class="chart-mini-container">
+                        <canvas id="revenueChart"></canvas>
                     </div>
-                    <div class="card-footer d-flex align-items-center justify-content-between">
-                        <a href="<?php echo BASE_URL; ?>admin/reservations" class="text-white text-decoration-none">
-                            <small>Voir détails</small>
-                        </a>
-                        <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                </div>
+
+                <div class="chart-mini">
+                    <h6><i class="fas fa-chart-pie"></i> Places</h6>
+                    <div class="chart-mini-container">
+                        <canvas id="placesChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-mini">
+                    <h6><i class="fas fa-chart-donut"></i> Abonnements</h6>
+                    <div class="chart-mini-container">
+                        <canvas id="subscriptionsChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-mini">
+                    <h6><i class="fas fa-chart-bar"></i> Statut</h6>
+                    <div class="chart-mini-container">
+                        <canvas id="placeStatusChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-mini">
+                    <h6><i class="fas fa-chart-bar"></i> Types</h6>
+                    <div class="chart-mini-container">
+                        <canvas id="placeTypeChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-mini chart-detailed">
+                    <h6><i class="fas fa-chart-donut"></i> Abonnements détaillés</h6>
+                    <div class="chart-mini-container">
+                        <canvas id="subscriptionsChartDetailed"></canvas>
+                    </div>
+                    <div class="chart-mini-legend" id="subscriptionsLegendDetailed">
+                        <!-- La légende sera générée par JavaScript -->
                     </div>
                 </div>
             </div>
 
-            <div class="col-xl-3 col-md-6 mb-3">
-                <div class="card bg-warning text-white stat-card h-100">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="card-title">Réservations</h6>
-                                <h2 class="mb-0"><?php echo $reservationStats['total']; ?></h2>
-                                <small><?php echo $reservationStats['today']; ?> aujourd'hui</small>
-                            </div>
-                            <div class="stat-icon">
-                                <i class="fas fa-calendar-check"></i>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card-footer d-flex align-items-center justify-content-between">
-                        <a href="<?php echo BASE_URL; ?>admin/reservations" class="text-white text-decoration-none">
-                            <small>Voir détails</small>
-                        </a>
-                        <div class="small text-white"><i class="fas fa-angle-right"></i></div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-xl-3 col-md-6 mb-3">
-                <div class="card bg-info text-white stat-card h-100">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="card-title">Places disponibles</h6>
-                                <h2 class="mb-0"><?php echo isset($placeStats['libre']) ? $placeStats['libre'] : 0; ?></h2>
-                                <small>sur <?php echo $placeStats['total']; ?> places</small>
-                            </div>
-                            <div class="stat-icon">
-                                <i class="fas fa-car"></i>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card-footer d-flex align-items-center justify-content-between">
-                        <a href="<?php echo BASE_URL; ?>admin/places" class="text-white text-decoration-none">
-                            <small>Voir détails</small>
-                        </a>
-                        <div class="small text-white"><i class="fas fa-angle-right"></i></div>
-                    </div>
-                </div>
-            </div>
-        </div> <!-- Charts -->
-        <div class="row mb-4">
-            <div class="col-xl-6 mb-4">
-                <div class="card h-100">
-                    <div class="card-header bg-light">
-                        <h5 class="mb-0">Revenus mensuels</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="chart-container">
-                            <canvas id="revenueChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-xl-3 mb-4">
-                <div class="card h-100">
-                    <div class="card-header bg-light">
-                        <h5 class="mb-0">Répartition des places</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="chart-container">
-                            <canvas id="placesChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-xl-3 mb-4">
-                <div class="card h-100">
-                    <div class="card-header bg-light">
-                        <h5 class="mb-0">Répartition des abonnements</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="chart-container">
-                            <canvas id="subscriptionsChart"></canvas>
-                        </div>
-                        <div class="mt-3 text-center small" id="subscriptionsLegend">
-                            <!-- La légende sera générée par JavaScript -->
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Nouveaux graphiques pour places -->
-        <div class="row mb-4">
-            <div class="col-xl-6 mb-4">
-                <div class="card h-100">
-                    <div class="card-header bg-light">
-                        <h5 class="mb-0">Statut des places</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="chart-container">
-                            <canvas id="placeStatusChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-xl-6 mb-4">
-                <div class="card h-100">
-                    <div class="card-header bg-light">
-                        <h5 class="mb-0">Répartition des places par type</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="chart-container">
-                            <canvas id="placeTypeChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="row mb-4">
-            <div class="col-xl-6 mb-4">
-                <div class="card h-100">
-                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">Réservations actives</h5>
-                        <a href="<?php echo BASE_URL; ?>admin/reservations" class="btn btn-sm btn-primary">
-                            Toutes les réservations
+            <!-- Colonne 3 : Tableaux compacts -->
+            <div class="dashboard-tables-compact">
+                <div class="table-mini">
+                    <div class="table-mini-header">
+                        <h6><i class="fas fa-calendar-check"></i> Réservations actives</h6>
+                        <a href="<?php echo BASE_URL; ?>admin/reservations" class="btn-mini">
+                            <i class="fas fa-list"></i>
                         </a>
                     </div>
-                    <div class="card-body">
+                    <div class="table-mini-body">
                         <?php if (count($activeReservations) > 0): ?>
-                            <div class="table-responsive">
-                                <table class="table table-sm table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th>Place</th>
-                                            <th>Client</th>
-                                            <th>Début</th>
-                                            <th>Fin</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <?php foreach ($activeReservations as $reservation): ?>
-                                            <tr>
-                                                <td><?php echo htmlspecialchars($reservation['numero']); ?></td>
-                                                <td>
-                                                    <?php echo htmlspecialchars($reservation['nom']); ?>
-                                                    <?php echo htmlspecialchars($reservation['prenom']); ?>
-                                                </td>
-                                                <td><?php echo date('d/m/Y H:i', strtotime($reservation['date_debut'])); ?></td>
-                                                <td><?php echo date('d/m/Y H:i', strtotime($reservation['date_fin'])); ?></td>
-                                                <td>
-                                                    <a href="<?php echo BASE_URL; ?>admin/viewReservation/<?php echo $reservation['id']; ?>" class="btn btn-sm btn-info">
-                                                        <i class="fas fa-eye"></i>
-                                                    </a>
-                                                </td>
-                                            </tr>
-                                        <?php endforeach; ?>
-                                    </tbody>
-                                </table>
+                            <div class="table-mini-scroll">
+                                <?php foreach (array_slice($activeReservations, 0, 3) as $reservation): ?>
+                                    <div class="table-mini-row">
+                                        <div class="table-mini-cell">
+                                            <strong><?php echo htmlspecialchars($reservation['numero']); ?></strong>
+                                        </div>
+                                        <div class="table-mini-cell">
+                                            <?php echo htmlspecialchars($reservation['nom']); ?>
+                                        </div>
+                                        <div class="table-mini-cell">
+                                            <?php echo date('H:i', strtotime($reservation['date_debut'])); ?>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
                             </div>
                         <?php else: ?>
-                            <div class="alert alert-info">
-                                <i class="fas fa-info-circle me-2"></i> Aucune réservation active pour le moment
+                            <div class="table-mini-empty">
+                                <i class="fas fa-info-circle"></i>
+                                Aucune réservation
                             </div>
                         <?php endif; ?>
                     </div>
                 </div>
-            </div>
 
-            <div class="col-xl-6 mb-4">
-                <div class="card h-100">
-                    <div class="card-header bg-light">
-                        <h5 class="mb-0">Dernières actions</h5>
+                <div class="table-mini">
+                    <div class="table-mini-header">
+                        <h6><i class="fas fa-history"></i> Dernières actions</h6>
                     </div>
-                    <div class="card-body">
+                    <div class="table-mini-body">
                         <?php if (count($recentLogs) > 0): ?>
-                            <div class="table-responsive">
-                                <table class="table table-sm">
-                                    <thead>
-                                        <tr>
-                                            <th>Date</th>
-                                            <th>Utilisateur</th>
-                                            <th>Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <?php foreach ($recentLogs as $log): ?>
-                                            <tr>
-                                                <td><?php echo date('d/m/Y H:i', strtotime($log['created_at'])); ?></td>
-                                                <td>
-                                                    <?php if ($log['nom'] && $log['prenom']): ?>
-                                                        <?php echo htmlspecialchars($log['prenom']); ?>
-                                                        <?php echo htmlspecialchars($log['nom']); ?>
-                                                    <?php else: ?>
-                                                        Invité
-                                                    <?php endif; ?>
-                                                </td>
-                                                <td><?php echo htmlspecialchars($log['description']); ?></td>
-                                            </tr>
-                                        <?php endforeach; ?>
-                                    </tbody>
-                                </table>
+                            <div class="table-mini-scroll">
+                                <?php foreach (array_slice($recentLogs, 0, 3) as $log): ?>
+                                    <div class="table-mini-row">
+                                        <div class="table-mini-cell">
+                                            <?php echo date('H:i', strtotime($log['created_at'])); ?>
+                                        </div>
+                                        <div class="table-mini-cell">
+                                            <?php if ($log['nom'] && $log['prenom']): ?>
+                                                <?php echo htmlspecialchars($log['prenom']); ?>
+                                            <?php else: ?>
+                                                <em>Invité</em>
+                                            <?php endif; ?>
+                                        </div>
+                                        <div class="table-mini-cell">
+                                            <?php echo substr(htmlspecialchars($log['description']), 0, 20); ?>...
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
                             </div>
                         <?php else: ?>
-                            <div class="alert alert-info">
-                                <i class="fas fa-info-circle me-2"></i> Aucune action récente
+                            <div class="table-mini-empty">
+                                <i class="fas fa-info-circle"></i>
+                                Aucune action
                             </div>
                         <?php endif; ?>
                     </div>
                 </div>
             </div>
         </div>
+
+
+
 
 
 
@@ -353,14 +264,59 @@
                         existingChart.destroy();
                     }
 
+                    // Normaliser la taille du canvas
+                    normalizeCanvasSize(canvas);
+
                     try {
-                        const chart = new Chart(canvas, config);
+                        // Configuration par défaut pour tous les graphiques
+                        const defaultConfig = {
+                            ...config,
+                            options: {
+                                ...config.options,
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    ...config.options?.plugins,
+                                    legend: {
+                                        ...config.options?.plugins?.legend,
+                                        position: 'bottom',
+                                        labels: {
+                                            ...config.options?.plugins?.legend?.labels,
+                                            usePointStyle: true,
+                                            padding: 10,
+                                            font: {
+                                                size: 11
+                                            },
+                                            boxWidth: 12,
+                                            boxHeight: 12
+                                        }
+                                    }
+                                },
+                                // Configuration spéciale pour les graphiques en macaron
+                                ...(config.type === 'doughnut' || config.type === 'pie' ? {
+                                    cutout: config.type === 'doughnut' ? '60%' : 0,
+                                    radius: '80%'
+                                } : {})
+                            }
+                        };
+
+                        const chart = new Chart(canvas, defaultConfig);
                         console.log(`✅ Graphique ${chartName} créé`);
                         return chart;
                     } catch (error) {
                         console.error(`❌ Erreur lors de la création du graphique ${chartName}:`, error);
                         return null;
                     }
+                }
+
+                // Fonction pour normaliser la taille des canvas
+                function normalizeCanvasSize(canvas) {
+                    // Supprimer les attributs de style inline qui peuvent interférer
+                    canvas.removeAttribute('style');
+                    canvas.style.width = '100%';
+                    canvas.style.height = '100%';
+                    canvas.style.maxWidth = '100%';
+                    canvas.style.maxHeight = '280px';
                 }
 
                 function getStatusLabel(status) {
@@ -689,6 +645,86 @@
                         console.log('⚠️ Canvas revenueChart ou données non disponibles');
                     }
                 }, 500);
+
+                // Graphique détaillé des abonnements
+                setTimeout(() => {
+                    const subscriptionsDetailedCanvas = document.getElementById('subscriptionsChartDetailed');
+                    if (subscriptionsDetailedCanvas && subscriptionStats && subscriptionStats.length > 0) {
+                        const labels = [];
+                        const values = [];
+                        const backgroundColors = [];
+
+                        let colorIndex = 0;
+                        subscriptionStats.forEach(sub => {
+                            const count = parseInt(sub.count || sub.active_count || 0);
+                            const name = sub.name || sub.nom || 'Inconnu';
+
+                            if (count >= 0) { // Afficher même les 0 pour montrer tous les types
+                                labels.push(name);
+                                values.push(count);
+                                backgroundColors.push(colors[colorIndex % colors.length]);
+                                colorIndex++;
+                            }
+                        });
+
+                        if (labels.length > 0) {
+                            // Détruire le graphique existant s'il existe
+                            const existingChart = Chart.getChart(subscriptionsDetailedCanvas);
+                            if (existingChart) {
+                                console.log('🗑️ Destruction du graphique d\'abonnements détaillé existant');
+                                existingChart.destroy();
+                            }
+
+                            try {
+                                new Chart(subscriptionsDetailedCanvas, {
+                                    type: 'doughnut',
+                                    data: {
+                                        labels: labels,
+                                        datasets: [{
+                                            data: values,
+                                            backgroundColor: backgroundColors,
+                                            hoverBackgroundColor: backgroundColors,
+                                            hoverBorderColor: "rgba(234, 236, 244, 1)",
+                                            borderWidth: 2,
+                                            borderColor: '#fff'
+                                        }],
+                                    },
+                                    options: {
+                                        responsive: true,
+                                        maintainAspectRatio: false,
+                                        plugins: {
+                                            legend: {
+                                                position: 'bottom',
+                                                labels: {
+                                                    usePointStyle: true,
+                                                    padding: 15,
+                                                    font: {
+                                                        size: 12
+                                                    }
+                                                }
+                                            },
+                                            tooltip: {
+                                                callbacks: {
+                                                    label: function(context) {
+                                                        return context.label + ': ' + context.parsed + ' abonnements';
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                });
+                                console.log('✅ Graphique détaillé des abonnements créé avec', labels.length, 'éléments');
+                            } catch (error) {
+                                console.error('❌ Erreur lors de la création du graphique détaillé d\'abonnements:', error);
+                            }
+                        } else {
+                            subscriptionsDetailedCanvas.parentNode.innerHTML = '<div class="alert alert-info text-center">Aucun abonnement disponible</div>';
+                            console.log('⚠️ Aucune donnée d\'abonnement détaillé à afficher');
+                        }
+                    } else {
+                        console.log('⚠️ Canvas subscriptionsChartDetailed ou données non disponibles');
+                    }
+                }, 600);
 
                 console.log('=== FIN INITIALISATION DASHBOARD ===');
             });

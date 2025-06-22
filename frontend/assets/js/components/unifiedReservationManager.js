@@ -68,43 +68,47 @@
         // ===========================================
 
         setupModal() {
-            this.reservationModal = document.getElementById('reservationModal');
-            if (!this.reservationModal) {
-                console.warn('⚠️ Modal de réservation non trouvée');
-                return;
-            }
+            // Attendre que la modal soit disponible
+            const waitForModal = () => {
+                this.reservationModal = document.getElementById('reservationModal');
+                if (!this.reservationModal) {
+                    setTimeout(waitForModal, 100);
+                    return;
+                }
 
-            // Événements de la modal
-            this.reservationModal.addEventListener('show.bs.modal', (event) => {
-                this.handleModalShow(event);
-            });
+                // Événements de la modal
+                this.reservationModal.addEventListener('show.bs.modal', (event) => {
+                    this.handleModalShow(event);
+                });
 
-            this.reservationModal.addEventListener('shown.bs.modal', (event) => {
-                this.handleModalShown(event);
-            });
+                this.reservationModal.addEventListener('shown.bs.modal', (event) => {
+                    this.handleModalShown(event);
+                });
+            };
 
-            // Modal de réservation configurée
+            waitForModal();
         }
 
         handleModalShow(event) {
             this.formSubmitted = false;
-            
+
             if (event.relatedTarget) {
                 const button = event.relatedTarget;
+
                 const placeData = {
                     id: button.getAttribute('data-place-id'),
                     numero: button.getAttribute('data-place-numero'),
                     type: button.getAttribute('data-place-type'),
                     tarif: parseFloat(button.getAttribute('data-place-tarif')) || 2.0
                 };
-                
+
                 this.currentPlaceData = placeData;
                 this.reservationModal._placeData = placeData;
                 this.reservationModal._relatedTarget = button;
-                
+
                 this.updateModalFields(placeData);
                 this.setPlaceId(placeData.id);
-                
+
                 console.log('📖 Modal ouverte pour place:', placeData);
             }
         }
@@ -158,14 +162,12 @@
                     placeIdInput.name = 'place_id';
                     placeIdInput.id = 'place_id';
                     form.appendChild(placeIdInput);
-                    // Champ place_id créé
                 }
             }
 
             if (placeIdInput) {
                 placeIdInput.value = id;
                 this.placeIdInput = placeIdInput;
-                // place_id défini
             }
 
             // Rechercher ou créer le champ place_id pour le formulaire invité
@@ -179,14 +181,12 @@
                     guestPlaceIdInput.name = 'place_id';
                     guestPlaceIdInput.id = 'guest_place_id';
                     guestForm.appendChild(guestPlaceIdInput);
-                    // Champ guest_place_id créé
                 }
             }
 
             if (guestPlaceIdInput) {
                 guestPlaceIdInput.value = id;
                 this.guestPlaceIdInput = guestPlaceIdInput;
-                // guest_place_id défini
             }
 
             // Backup global
@@ -275,7 +275,6 @@
 
             // Réinitialiser la configuration
             this.setupGuestPriceCalculation(newGuestForm);
-            console.log('✅ Gestionnaire de formulaire invité configuré');
         }
 
         async handleFormSubmit(event) {
@@ -471,13 +470,12 @@
             this.ensurePlaceIdSet();
 
             const guestPlaceIdInput = document.getElementById('guest_place_id');
+
             if (!guestPlaceIdInput || !guestPlaceIdInput.value) {
-                console.error('❌ guest_place_id manquant');
                 alert("Erreur: Place non sélectionnée. Veuillez fermer cette fenêtre et cliquer à nouveau sur 'Réserver' pour une place.");
                 return false;
             }
 
-            // guest_place_id validé
             return true;
         }
 
@@ -741,34 +739,12 @@
         }
 
         // ===========================================
-        // GESTION DES ALERTES
+        // GESTION DES ALERTES - DÉSACTIVÉE
         // ===========================================
 
         setupAlertHandlers() {
-            const createAlertBtn = document.getElementById('create-alert-btn');
-            if (createAlertBtn) {
-                createAlertBtn.addEventListener('click', (event) => {
-                    this.handleCreateAlert(event);
-                });
-            }
-        }
-
-        handleCreateAlert(event) {
-            event.preventDefault();
-            
-            const formData = this.getReservationFormData();
-            if (!formData) return;
-            
-            // Remplir le formulaire d'alerte
-            const alertForm = document.getElementById('alert-form');
-            if (alertForm) {
-                alertForm.querySelector('#alert_place_id').value = formData.placeId;
-                alertForm.querySelector('#alert_date_debut').value = formData.dateDebut;
-                alertForm.querySelector('#alert_duree').value = formData.duree;
-                
-                // Soumettre le formulaire d'alerte
-                alertForm.submit();
-            }
+            // Fonctionnalité d'alertes désactivée
+            console.log('🚫 Gestion des alertes désactivée');
         }
 
         getReservationFormData() {

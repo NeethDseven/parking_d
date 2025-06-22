@@ -98,21 +98,7 @@ a.btn.btn-sm.btn-info.action-button:hover {
     box-shadow: 0 2px 8px rgba(44,62,80,0.10);
 }
 
-.navbar .navbar-nav .nav-link {
-    display: flex;
-    align-items: center;
-    height: 48px;
-    line-height: 1.2;
-    padding-top: 0;
-    padding-bottom: 0;
-    font-size: 1rem;
-}
-.navbar .navbar-nav .nav-item {
-    margin-right: 0.75rem;
-}
-.navbar .navbar-nav .nav-item:last-child {
-    margin-right: 0;
-}
+/* Styles navbar déplacés vers components.css */
 
 .pagination-info {
     display: none !important;

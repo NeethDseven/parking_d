@@ -33,10 +33,10 @@
                         </div>
 
                         <div class="mb-3">
-                            <label for="telephone" class="form-label">Téléphone</label>
+                            <label for="telephone" class="form-label">Téléphone <span class="text-muted">(optionnel)</span></label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="fas fa-phone"></i></span>
-                                <input type="tel" class="form-control" id="telephone" name="telephone" required value="<?php echo isset($_POST['telephone']) ? htmlspecialchars($_POST['telephone']) : ''; ?>">
+                                <input type="tel" class="form-control" id="telephone" name="telephone" value="<?php echo isset($_POST['telephone']) ? htmlspecialchars($_POST['telephone']) : ''; ?>">
                             </div>
                         </div>
 

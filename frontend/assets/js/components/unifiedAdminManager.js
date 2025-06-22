@@ -3,7 +3,6 @@
  * ===================
  * 
  * Consolide tous les composants d'administration :
- * - adminCharts.js
  * - adminDashboard.js
  * - adminPlaces.js
  * - adminReservations.js
@@ -28,7 +27,6 @@
 
     class UnifiedAdminManager {
         constructor() {
-            this.charts = {};
             this.currentPage = this.detectCurrentPage();
             this.init();
         }
@@ -40,7 +38,6 @@
                 this.setup();
             }
         } setup() {
-            this.setupCharts();
             this.setupForms();
             this.setupDataTables();
             this.setupModalHandlers();
@@ -61,246 +58,10 @@
             if (path.includes('/admin')) return 'dashboard';
             return 'unknown';
         }        // ===========================================
-        // GESTION DES GRAPHIQUES
+        // GESTION DES FORMULAIRES
         // ===========================================
 
-        setupCharts() {
-            if (!window.Chart) {
-                console.warn('⚠️ Chart.js non disponible');
-                return;
-            }
 
-            // Détruire les anciens graphiques si ils existent
-            this.destroyExistingCharts();
-
-            // Graphique des types de places
-            this.setupTypeChart();
-
-            // Graphique des réservations
-            this.setupReservationChart();
-
-            // Graphique des revenus
-            this.setupRevenueChart();
-
-            // Graphique des abonnements
-            this.setupSubscriptionChart();
-        }
-
-        destroyExistingCharts() {
-            // Détruire les anciens graphiques pour éviter les conflits
-            const canvasIds = ['typeChart', 'reservationStatusChart', 'revenueChart', 'subscriptionChart'];
-
-            canvasIds.forEach(canvasId => {
-                const canvas = document.getElementById(canvasId);
-                if (canvas) {
-                    // Récupérer l'instance Chart.js si elle existe
-                    const chartInstance = Chart.getChart(canvas);
-                    if (chartInstance) {
-                        chartInstance.destroy();
-                    }
-                }
-            });
-        }
-
-        setupTypeChart() {
-            const canvas = document.getElementById('typeChart');
-            if (!canvas) return;
-
-            const ctx = canvas.getContext('2d');
-
-            // Récupérer les données depuis les attributs data-*
-            const data = this.getTypeChartData();
-
-            this.charts.typeChart = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Standard', 'Handicapé', 'Électrique', 'Moto/Scooter', 'Vélo'],
-                    datasets: [{
-                        data: data,
-                        backgroundColor: [
-                            '#007bff', '#28a745', '#ffc107', '#fd7e14', '#6f42c1'
-                        ]
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom'
-                        }
-                    }
-                }
-            });
-
-            console.log('✅ Graphique des types de places configuré');
-        }
-
-        getTypeChartData() {
-            const data = [0, 0, 0, 0, 0];
-
-            // Méthode 1: Depuis les spans cachés
-            const counts = [
-                'count-standard', 'count-handicape', 'count-electrique',
-                'count-moto', 'count-velo'
-            ];
-
-            counts.forEach((id, index) => {
-                const element = document.getElementById(id);
-                if (element) {
-                    data[index] = parseInt(element.textContent) || 0;
-                }
-            });
-
-            // Méthode 2: Depuis les attributs data-*
-            const canvas = document.getElementById('typeChart');
-            if (canvas) {
-                ['standard', 'handicape', 'electrique', 'moto', 'velo'].forEach((type, index) => {
-                    const value = canvas.dataset[type];
-                    if (value !== undefined) {
-                        data[index] = parseInt(value) || 0;
-                    }
-                });
-            }
-
-            return data;
-        }
-
-        setupReservationChart() {
-            const canvas = document.getElementById('reservationChart');
-            if (!canvas) return;
-
-            const ctx = canvas.getContext('2d');
-
-            this.charts.reservationChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: this.getLast7Days(),
-                    datasets: [{
-                        label: 'Réservations',
-                        data: this.getReservationData(),
-                        borderColor: '#007bff',
-                        backgroundColor: 'rgba(0, 123, 255, 0.1)',
-                        fill: true
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
-                }
-            });
-
-            console.log('✅ Graphique des réservations configuré');
-        }
-
-        setupRevenueChart() {
-            const canvas = document.getElementById('revenueChart');
-            if (!canvas) return;
-
-            const ctx = canvas.getContext('2d');
-
-            this.charts.revenueChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: this.getLast12Months(),
-                    datasets: [{
-                        label: 'Revenus (€)',
-                        data: this.getRevenueData(),
-                        backgroundColor: '#28a745'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
-                }
-            });
-
-            console.log('✅ Graphique des revenus configuré');
-        }
-
-        setupSubscriptionChart() {
-            const canvas = document.getElementById('subscriptionChart');
-            if (!canvas) return;
-
-            const ctx = canvas.getContext('2d');
-
-            this.charts.subscriptionChart = new Chart(ctx, {
-                type: 'pie',
-                data: {
-                    labels: ['Basique', 'Premium', 'VIP'],
-                    datasets: [{
-                        data: this.getSubscriptionData(),
-                        backgroundColor: ['#17a2b8', '#ffc107', '#dc3545']
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom'
-                        }
-                    }
-                }
-            });
-
-            console.log('✅ Graphique des abonnements configuré');
-        }
-
-        // Méthodes utilitaires pour les données des graphiques
-        getLast7Days() {
-            const days = [];
-            for (let i = 6; i >= 0; i--) {
-                const date = new Date();
-                date.setDate(date.getDate() - i);
-                days.push(date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' }));
-            }
-            return days;
-        }
-
-        getLast12Months() {
-            const months = [];
-            const monthNames = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'];
-            for (let i = 11; i >= 0; i--) {
-                const date = new Date();
-                date.setMonth(date.getMonth() - i);
-                months.push(monthNames[date.getMonth()]);
-            }
-            return months;
-        }
-
-        getReservationData() {
-            // Données factices - à remplacer par de vraies données depuis le serveur
-            return [12, 19, 15, 8, 22, 18, 25];
-        }
-
-        getRevenueData() {
-            // Données factices - à remplacer par de vraies données depuis le serveur
-            return [1200, 1400, 1100, 1600, 1800, 1500, 2000, 1900, 2200, 2400, 2100, 2600];
-        }
-
-        getSubscriptionData() {
-            // Récupérer depuis les attributs data-* ou spans
-            const canvas = document.getElementById('subscriptionChart');
-            if (canvas) {
-                return [
-                    parseInt(canvas.dataset.basique) || 0,
-                    parseInt(canvas.dataset.premium) || 0,
-                    parseInt(canvas.dataset.vip) || 0
-                ];
-            }
-            return [45, 25, 15]; // Valeurs par défaut
-        }
 
         // ===========================================
         // GESTION DES FORMULAIRES
@@ -980,22 +741,164 @@
         // ===========================================
 
         setupDataTables() {
-            if (typeof DataTable === 'undefined') return;
+            // Configuration des tableaux admin avec tri simple
+            this.setupAdminTableSorting();
 
-            const tables = document.querySelectorAll('.data-table');
+            // Configuration des modales
+            this.setupModalsFix();
 
-            tables.forEach(table => {
-                if (!table.dataset.initialized) {
-                    new DataTable(table, {
-                        language: {
-                            url: '//cdn.datatables.net/plug-ins/1.11.5/i18n/fr-FR.json'
-                        },
-                        pageLength: 25,
-                        responsive: true
+            // DataTables pour les tableaux spéciaux (si disponible)
+            if (typeof DataTable !== 'undefined') {
+                const tables = document.querySelectorAll('.data-table');
+
+                tables.forEach(table => {
+                    if (!table.dataset.initialized) {
+                        new DataTable(table, {
+                            language: {
+                                url: '//cdn.datatables.net/plug-ins/1.11.5/i18n/fr-FR.json'
+                            },
+                            pageLength: 25,
+                            responsive: true
+                        });
+                        table.dataset.initialized = 'true';
+                    }
+                });
+            }
+        }
+
+        /**
+         * Configuration du tri pour les tableaux admin
+         */
+        setupAdminTableSorting() {
+            const adminTables = document.querySelectorAll('.admin-table');
+
+            adminTables.forEach(table => {
+                if (table.dataset.sortingInitialized) return;
+
+                const headers = table.querySelectorAll('thead th');
+
+                headers.forEach((header, index) => {
+                    // Ignorer la colonne Actions
+                    if (header.textContent.toLowerCase().includes('action')) return;
+
+                    // Ajouter les styles et icônes de tri
+                    header.style.cursor = 'pointer';
+                    header.style.userSelect = 'none';
+                    header.style.position = 'relative';
+
+                    // Ajouter l'icône de tri
+                    const sortIcon = document.createElement('i');
+                    sortIcon.className = 'fas fa-sort ms-2';
+                    sortIcon.style.opacity = '0.5';
+                    header.appendChild(sortIcon);
+
+                    // Ajouter l'événement de clic
+                    header.addEventListener('click', () => {
+                        this.sortTable(table, index, header);
                     });
-                    table.dataset.initialized = 'true';
+                });
+
+                table.dataset.sortingInitialized = 'true';
+            });
+        }
+
+        /**
+         * Fonction de tri des tableaux
+         */
+        sortTable(table, columnIndex, header) {
+            const tbody = table.querySelector('tbody');
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+
+            // Déterminer la direction du tri
+            const currentSort = header.dataset.sort || 'none';
+            const newSort = currentSort === 'asc' ? 'desc' : 'asc';
+
+            // Réinitialiser tous les headers
+            table.querySelectorAll('thead th').forEach(th => {
+                const icon = th.querySelector('i');
+                if (icon) {
+                    icon.className = 'fas fa-sort ms-2';
+                    icon.style.opacity = '0.5';
+                }
+                th.dataset.sort = 'none';
+            });
+
+            // Mettre à jour le header actuel
+            header.dataset.sort = newSort;
+            const icon = header.querySelector('i');
+            if (icon) {
+                icon.className = `fas fa-sort-${newSort === 'asc' ? 'up' : 'down'} ms-2`;
+                icon.style.opacity = '1';
+            }
+
+            // Trier les lignes
+            rows.sort((a, b) => {
+                const aCell = a.cells[columnIndex];
+                const bCell = b.cells[columnIndex];
+
+                if (!aCell || !bCell) return 0;
+
+                let aValue = this.getCellValue(aCell);
+                let bValue = this.getCellValue(bCell);
+
+                // Tri numérique si possible
+                const aNum = parseFloat(aValue);
+                const bNum = parseFloat(bValue);
+
+                if (!isNaN(aNum) && !isNaN(bNum)) {
+                    return newSort === 'asc' ? aNum - bNum : bNum - aNum;
+                }
+
+                // Tri alphabétique
+                aValue = aValue.toLowerCase();
+                bValue = bValue.toLowerCase();
+
+                if (newSort === 'asc') {
+                    return aValue.localeCompare(bValue, 'fr');
+                } else {
+                    return bValue.localeCompare(aValue, 'fr');
                 }
             });
+
+            // Réorganiser les lignes dans le DOM
+            rows.forEach(row => tbody.appendChild(row));
+
+            // Animation subtile
+            tbody.style.opacity = '0.7';
+            setTimeout(() => {
+                tbody.style.opacity = '1';
+            }, 150);
+        }
+
+        /**
+         * Extraire la valeur de tri d'une cellule
+         */
+        getCellValue(cell) {
+            // Chercher d'abord un attribut data-sort
+            if (cell.dataset.sort) {
+                return cell.dataset.sort;
+            }
+
+            // Extraire le texte en ignorant les badges et icônes
+            let text = cell.textContent || cell.innerText || '';
+
+            // Nettoyer le texte
+            text = text.trim();
+
+            // Gérer les prix (enlever € et espaces)
+            if (text.includes('€')) {
+                text = text.replace(/[€\s]/g, '').replace(',', '.');
+            }
+
+            // Gérer les dates (format dd/mm/yyyy)
+            if (text.match(/^\d{2}\/\d{2}\/\d{4}/)) {
+                const parts = text.split('/');
+                if (parts.length >= 3) {
+                    return `${parts[2]}-${parts[1]}-${parts[0]}`;
+                }
+            }
+
+            return text;
         }
 
         // ===========================================
@@ -1060,23 +963,9 @@
             }, 5000);
         }
 
-        updateCharts() {
-            Object.values(this.charts).forEach(chart => {
-                if (chart && typeof chart.update === 'function') {
-                    chart.update();
-                }
-            });
-        }
-
         destroy() {
-            // Détruire tous les graphiques
-            Object.values(this.charts).forEach(chart => {
-                if (chart && typeof chart.destroy === 'function') {
-                    chart.destroy();
-                }
-            });
-
-            this.charts = {};
+            // Nettoyage des gestionnaires d'événements si nécessaire
+            console.log('🧹 UnifiedAdminManager: Nettoyage terminé');
         }
 
         /**
@@ -1113,6 +1002,66 @@
         }
 
         /**
+         * Configuration des modales - désactivée temporairement
+         */
+        setupModalsFix() {
+            // Désactivé pour éviter les conflits avec le script simplifié
+            console.log('🚫 setupModalsFix désactivé - utilisation du script simplifié');
+            return;
+
+            // Écouter la fermeture des modales
+            document.addEventListener('hidden.bs.modal', (event) => {
+                // Nettoyer les z-index personnalisés
+                const modal = event.target;
+                modal.style.zIndex = '';
+
+                // Nettoyer les backdrops orphelins
+                const backdrops = document.querySelectorAll('.modal-backdrop');
+                backdrops.forEach(backdrop => {
+                    if (!document.querySelector('.modal.show')) {
+                        backdrop.remove();
+                    }
+                });
+            });
+
+            // Correction spécifique pour les modales existantes
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                // Ajouter des attributs pour Bootstrap
+                if (!modal.hasAttribute('tabindex')) {
+                    modal.setAttribute('tabindex', '-1');
+                }
+
+                // S'assurer que la modale a les bonnes classes
+                if (!modal.classList.contains('fade')) {
+                    modal.classList.add('fade');
+                }
+
+                // Forcer le positionnement
+                modal.style.position = 'fixed';
+                modal.style.top = '0';
+                modal.style.left = '0';
+                modal.style.width = '100%';
+                modal.style.height = '100%';
+            });
+
+            // Correction pour les boutons qui ouvrent les modales
+            const modalTriggers = document.querySelectorAll('[data-bs-toggle="modal"]');
+            modalTriggers.forEach(trigger => {
+                trigger.addEventListener('click', (e) => {
+                    // Petit délai pour s'assurer que Bootstrap a initialisé la modale
+                    setTimeout(() => {
+                        const targetModal = document.querySelector(trigger.getAttribute('data-bs-target'));
+                        if (targetModal) {
+                            targetModal.style.zIndex = '1055';
+                            targetModal.style.display = 'block';
+                        }
+                    }, 50);
+                });
+            });
+        }
+
+        /**
          * Configure les gestionnaires spécifiques selon la page admin active
          */
         setupPageSpecificHandlers() {
@@ -1120,7 +1069,7 @@
 
             switch (currentPage) {
                 case 'admin_dashboard':
-                    // Graphiques déjà configurés dans setupCharts()
+                    // Dashboard configuré
                     break;
 
                 case 'admin_users':
