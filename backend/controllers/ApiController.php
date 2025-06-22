@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Contrôleur API consolidé et optimisé
  * Gère toutes les requêtes AJAX et endpoints API du système
@@ -17,11 +18,11 @@ class ApiController extends BaseController
         $this->homeModel = new HomeModel();
         $this->placeModel = new PlaceModel();
         $this->reservationModel = new ReservationModel();
-        
+
         // Définir l'en-tête de réponse comme JSON
         header('Content-Type: application/json');
     }
-    
+
     /**
      * Marque une notification comme lue
      */
@@ -51,10 +52,42 @@ class ApiController extends BaseController
     {
         $places = $this->homeModel->getAvailablePlaces();
         $this->jsonResponse([
-            'success' => true, 
-            'places' => $places, 
+            'success' => true,
+            'places' => $places,
             'count' => count($places)
         ]);
+    }
+
+    /**
+     * Vérifie s'il y a des changements de statut des places
+     */
+    public function getPlacesStatus()
+    {
+        try {
+            // Récupérer le timestamp de la dernière vérification depuis la session
+            $lastCheck = $_SESSION['last_places_check'] ?? 0;
+            $currentTime = time();
+
+            // Vérifier s'il y a eu des changements dans les réservations récemment
+            require_once BACKEND_PATH . '/models/ReservationModel.php';
+            $reservationModel = new ReservationModel();
+
+            // Chercher les réservations modifiées depuis la dernière vérification
+            $recentChanges = $reservationModel->getRecentStatusChanges($lastCheck);
+
+            // Mettre à jour le timestamp de vérification
+            $_SESSION['last_places_check'] = $currentTime;
+
+            $this->jsonResponse([
+                'success' => true,
+                'hasChanges' => !empty($recentChanges),
+                'changesCount' => count($recentChanges),
+                'lastCheck' => $lastCheck,
+                'currentTime' => $currentTime
+            ]);
+        } catch (Exception $e) {
+            $this->jsonError('Erreur lors de la vérification des statuts: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -68,8 +101,8 @@ class ApiController extends BaseController
 
         $places = $this->homeModel->getPlacesByType($type);
         $this->jsonResponse([
-            'success' => true, 
-            'places' => $places, 
+            'success' => true,
+            'places' => $places,
             'count' => count($places)
         ]);
     }
@@ -94,7 +127,7 @@ class ApiController extends BaseController
             $places = $this->homeModel->getAvailablePlaces($page, $items_per_page);
             $total_places_available = $this->homeModel->countAvailablePlaces();
         }
-          // Récupérer les tarifs pour les places
+        // Récupérer les tarifs pour les places
         $tarifsData = $this->homeModel->getTarifs();
         $tarifs = array_column($tarifsData, null, 'type_place');
 
@@ -103,7 +136,7 @@ class ApiController extends BaseController
 
         // Calculer le nombre de pages basé sur les places filtrées/disponibles
         $total_pages = ceil($total_places_available / $items_per_page);
-        
+
         // Générer le HTML pour les places
         $placesHtml = '';
         foreach ($places as $place) {
@@ -223,14 +256,11 @@ class ApiController extends BaseController
                             <div class="place-card-image" style="background-image: url(\'' . $placeImage . '\');">
                                 <div class="card-header bg-transparent border-0">
                                     <span class="badge ' .
-                                        ($place['type'] === 'handicape' ? 'bg-warning text-dark' :
-                                         ($place['type'] === 'electrique' ? 'bg-success text-white' :
-                                          ($place['type'] === 'moto/scooter' ? 'bg-secondary text-white' :
-                                           ($place['type'] === 'velo' ? 'bg-info text-white' : 'bg-secondary text-white')))) . '">
+            ($place['type'] === 'handicape' ? 'bg-warning text-dark' : ($place['type'] === 'electrique' ? 'bg-success text-white' : ($place['type'] === 'moto/scooter' ? 'bg-secondary text-white' : ($place['type'] === 'velo' ? 'bg-info text-white' : 'bg-secondary text-white')))) . '">
                                         Place ' . htmlspecialchars($place['numero']);
 
         // Ajouter l'icône selon le type
-        switch($place['type']) {
+        switch ($place['type']) {
             case 'handicape':
                 $html .= '<i class="fas fa-wheelchair ms-1"></i>';
                 break;
@@ -296,7 +326,9 @@ class ApiController extends BaseController
                     </div>';
 
         return $html;
-    }    /**
+    }
+
+    /**
      * Génère la pagination HTML pour les pages de places avec support du filtrage par type
      */
     private function generateApiPaginationHtml($current_page, $total_pages, $type = null)
@@ -354,17 +386,17 @@ class ApiController extends BaseController
     public function getTarifInfo()
     {
         $type = $_GET['type'] ?? null;
-        
+
         if (!$type) {
             $this->jsonError('Type de place non spécifié', 400);
         }
-        
+
         $tarif = $this->homeModel->getTarifByType($type);
-        
+
         if (!$tarif) {
             $this->jsonError('Tarif non trouvé pour ce type de place', 404);
         }
-        
+
         $this->jsonResponse([
             'success' => true,
             'tarif' => $tarif
@@ -379,22 +411,22 @@ class ApiController extends BaseController
         if (!$reservationId) {
             $this->jsonError('ID de réservation non spécifié', 400);
         }
-        
+
         $reservation = $this->reservationModel->getReservationById($reservationId);
-        
+
         if (!$reservation) {
             $this->jsonError('Réservation non trouvée', 404);
         }
-        
+
         // Vérifier si l'utilisateur a le droit d'accéder à cette réservation
         $isOwner = isset($_SESSION['user']) && $_SESSION['user']['id'] == $reservation['user_id'];
         $isGuest = isset($_SESSION['guest_token']) && $_SESSION['guest_token'] == $reservation['guest_token'];
         $isAdmin = isset($_SESSION['user']) && $_SESSION['user']['role'] == 'admin';
-        
+
         if (!$isOwner && !$isGuest && !$isAdmin) {
             $this->jsonError('Vous n\'avez pas l\'autorisation d\'accéder à cette réservation', 403);
         }
-        
+
         $this->jsonResponse([
             'success' => true,
             'status' => $reservation['status'],
@@ -416,20 +448,20 @@ class ApiController extends BaseController
         $placeId = intval($_GET['place_id'] ?? 0);
         $dateDebut = $_GET['date_debut'] ?? null;
         $dateFin = $_GET['date_fin'] ?? null;
-        
+
         if (!$placeId || !$dateDebut) {
             $this->jsonError('Paramètres manquants', 400);
         }
-        
+
         // Si date_fin n'est pas spécifiée, utiliser date_debut + 1 heure par défaut
         if (!$dateFin) {
             $dateObj = new DateTime($dateDebut);
             $dateObj->modify('+1 hour');
             $dateFin = $dateObj->format('Y-m-d H:i:s');
         }
-        
+
         $isAvailable = $this->reservationModel->isPlaceAvailableForTimeSlot($placeId, $dateDebut, $dateFin);
-        
+
         $this->jsonResponse([
             'success' => true,
             'available' => $isAvailable,

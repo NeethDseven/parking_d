@@ -241,6 +241,14 @@ section.classList.add('animate-on-scroll');
 });
 window.addEventListener('scroll', () => this.animateOnScroll());
 this.animateOnScroll(); // Vérification initiale
+
+// Vérification spéciale pour les cartes de places
+if (this.currentPage === 'places') {
+    setTimeout(() => {
+        this.animateOnScroll();
+        this.ensurePlacesVisibility();
+    }, 500);
+}
 }
 animateOnScroll() {
 const elements = document.querySelectorAll('.animate-on-scroll');
@@ -252,11 +260,16 @@ element.classList.add('animated');
 }
 isElementInViewport(el) {
 const rect = el.getBoundingClientRect();
+const windowHeight = window.innerHeight || document.documentElement.clientHeight;
+const windowWidth = window.innerWidth || document.documentElement.clientWidth;
+
+// Élément visible s'il est au moins partiellement dans la fenêtre
+// Plus tolérant que la version précédente
 return (
-rect.top >= 0 &&
-rect.left >= 0 &&
-rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
-rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+rect.bottom > 0 &&
+rect.right > 0 &&
+rect.top < windowHeight &&
+rect.left < windowWidth
 );
 }
 // ===========================================
@@ -286,27 +299,10 @@ this.filterPlacesByType(typeFilter.value);
 };
 typeFilter.addEventListener('change', this.handleTypeFilterChange);
 }
-const showFeesCheckbox = document.getElementById('show-fees');
-if (showFeesCheckbox) {
-// Supprimer l'ancien gestionnaire s'il existe
-showFeesCheckbox.removeEventListener('change', this.handleFeesCheckboxChange);
-// Créer le nouveau gestionnaire
-this.handleFeesCheckboxChange = () => {
-const tarifsInfo = document.querySelector('.tarifs-info');
-if (tarifsInfo) {
-tarifsInfo.classList.toggle('hidden', !showFeesCheckbox.checked);
-}
-};
-showFeesCheckbox.addEventListener('change', this.handleFeesCheckboxChange);
-// Vérifier l'état initial de la checkbox au chargement/rechargement
-const tarifsInfo = document.querySelector('.tarifs-info');
-if (tarifsInfo) {
-tarifsInfo.classList.toggle('hidden', !showFeesCheckbox.checked);
-}
-}
+// Gestion des tarifs déléguée à placesManager.js pour éviter les conflits
 }
 filterPlacesByType(type) {
-const placeCards = document.querySelectorAll('.place-card');
+const placeCards = document.querySelectorAll('.place-card-item');
 let visibleCount = 0;
 placeCards.forEach(card => {
 const cardType = card.dataset.type;
@@ -326,13 +322,21 @@ if (placesContainer) {
 this.ensurePlacesContainerClasses(placesContainer);
 }
 
-const cards = document.querySelectorAll('.place-card');
+const cards = document.querySelectorAll('.place-card-item');
+console.log(`🎯 setupPlacesCards: ${cards.length} cartes trouvées`);
+
 // Animation d'apparition
 cards.forEach((card, index) => {
 setTimeout(() => {
 card.classList.add('fade-in');
 }, index * 100);
 });
+
+// Solution de secours : forcer l'affichage des cartes après un délai
+setTimeout(() => {
+this.ensurePlacesVisibility();
+}, 1000);
+
 // Égaliser les hauteurs
 this.equalizeCardHeights();
 window.addEventListener('resize', () => this.equalizeCardHeights());
@@ -386,7 +390,7 @@ this.style.boxShadow = '0 2px 8px rgba(255, 107, 107, 0.3)';
 console.log(`✅ Configuration terminée pour ${immediateButtons.length} boutons`);
 }
 equalizeCardHeights() {
-const cards = document.querySelectorAll('.place-card .card-body');
+const cards = document.querySelectorAll('.place-card-item .card-body');
 let maxHeight = 0;
 // Reset des hauteurs
 cards.forEach(card => {
@@ -555,8 +559,8 @@ console.log(' UnifiedUIManager: Réinitialisation après AJAX...');
 if (this.currentPage === 'places') {
 this.setupPlacesFilter();
 this.setupPlacesCards();
-// Restaurer l'état de la checkbox "Afficher les tarifs"
-this.restoreFeesDisplayState();
+// Restaurer l'état de la checkbox "Afficher les tarifs" - non nécessaire
+// this.restoreFeesDisplayState();
 }
 // Réinitialiser les animations pour les nouveaux éléments
 this.setupAnimations();
@@ -584,17 +588,7 @@ new bootstrap.Tooltip(element);
 });
 }
 }
-/**
-* Restaure l'état d'affichage des tarifs après AJAX
-*/
-restoreFeesDisplayState() {
-const showFeesCheckbox = document.getElementById('show-fees');
-const tarifsInfo = document.querySelector('.tarifs-info');
-if (showFeesCheckbox && tarifsInfo) {
-// Appliquer l'état actuel de la checkbox
-tarifsInfo.classList.toggle('hidden', !showFeesCheckbox.checked);
-}
-}
+// Fonction supprimée - gestion déléguée à placesManager.js
 // ===========================================
 // PAGINATION AJAX
 // ===========================================
@@ -818,19 +812,46 @@ console.log('✅ Styles flex appliqués au container des places');
 }
 
 enhancePlaceCards() {
-// Animation CSS basique pour les nouvelles cartes
-const placeCards = document.querySelectorAll('.place-card');
+// Ne pas interférer avec les animations CSS existantes
+const placeCards = document.querySelectorAll('.place-card-item');
 placeCards.forEach((card, index) => {
-card.style.opacity = '0';
-card.style.transform = 'translateY(20px)';
-setTimeout(() => {
-card.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
-card.style.opacity = '1';
-card.style.transform = 'translateY(0)';
-}, index * 100);
+    // S'assurer que les cartes sont visibles (ne pas forcer opacity: 0)
+    if (!card.classList.contains('fade-in')) {
+        card.classList.add('fade-in');
+    }
 });
 // Égaliser les hauteurs des nouvelles cartes
 this.equalizeCardHeights();
+}
+
+/**
+ * Solution de secours pour s'assurer que les cartes de places sont visibles
+ */
+ensurePlacesVisibility() {
+const cards = document.querySelectorAll('.place-card-item');
+let hiddenCards = 0;
+
+cards.forEach((card, index) => {
+    const computedStyle = window.getComputedStyle(card);
+    const isHidden = computedStyle.opacity === '0' || computedStyle.display === 'none';
+
+    if (isHidden) {
+        hiddenCards++;
+        console.log(`🔧 Carte ${index + 1} cachée, forçage de l'affichage...`);
+
+        // Forcer l'affichage
+        card.classList.add('animated', 'fade-in');
+        card.style.opacity = '1';
+        card.style.transform = 'translateY(0)';
+        card.style.display = 'block';
+    }
+});
+
+if (hiddenCards > 0) {
+    console.log(`✅ ${hiddenCards} cartes forcées à l'affichage`);
+} else {
+    console.log(`✅ Toutes les cartes (${cards.length}) sont visibles`);
+}
 }
 showPaginationLoading(isLoading) {
 const spinner = document.querySelector(this.paginationConfig.loadingSpinnerSelector);
@@ -966,11 +987,11 @@ return '/' + pathParts.slice(1, projectIndex + 2).join('/') + '/';
 return '/';
 }
 reinitializeAfterAjax() {
-console.log(' Réinitialisation après AJAX...');
+console.log('🔄 Réinitialisation après AJAX...');
 // Réinitialiser les composants UI d'abord
 this.setupPlacesFilter();
 this.setupPlacesCards(); // Ajouter la réinitialisation des cartes de places
-this.restoreFeesDisplayState();
+// MÉTHODE SUPPRIMÉE: this.restoreFeesDisplayState(); - Non nécessaire
 this.setupAnimations();
 this.initTooltips();
 // Réinitialiser les gestionnaires de réservation avec une vérification robuste

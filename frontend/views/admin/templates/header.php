@@ -43,7 +43,6 @@ function getBaseUrl()
     
     <!-- CSS Files -->
     <link href="<?php echo getBaseUrl(); ?>frontend/assets/css/app.css?v=<?php echo time(); ?>" rel="stylesheet">
-    <link href="<?php echo getBaseUrl(); ?>frontend/assets/css/components.css?v=<?php echo time(); ?>" rel="stylesheet">
     <link href="<?php echo getBaseUrl(); ?>frontend/assets/css/admin.css?v=<?php echo time(); ?>" rel="stylesheet">
 
     <!-- Scripts -->

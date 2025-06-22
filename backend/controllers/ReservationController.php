@@ -12,7 +12,6 @@ class ReservationController extends BaseController
     private $subscriptionModel;
     private $logModel;
     private $homeModel;
-    private $notificationService;
     public function __construct()
     {
         parent::__construct();
@@ -22,7 +21,6 @@ class ReservationController extends BaseController
         $this->subscriptionModel = new SubscriptionModel();
         $this->logModel = new LogModel();
         $this->homeModel = new HomeModel();
-        $this->notificationService = new NotificationService();
     }
     /**
      * Crée une nouvelle réservation pour un utilisateur connecté
@@ -92,7 +90,7 @@ class ReservationController extends BaseController
             $dateFinObj = clone $dateDebutObj;
             $dateFinObj->modify("+{$dureeMinutes} minutes");
             $dateFin = $dateFinObj->format('Y-m-d H:i:s');
-        } catch (Exception $e) {
+        } catch (Exception) {
             $this->jsonResponse(['success' => false, 'error' => 'Format de date invalide.'], 400);
             return;
         }
@@ -130,7 +128,7 @@ class ReservationController extends BaseController
             $reservation = $this->reservationModel->getReservationById($reservationId);
             // Envoyer une notification de confirmation de réservation
             if ($reservation && $place) {
-                $this->notificationService->sendReservationReminderNotification(
+                $this->userModel->sendReservationReminderNotification(
                     $_SESSION['user']['id'],
                     $reservationId,
                     'Place ' . $place['numero'],
@@ -275,10 +273,10 @@ class ReservationController extends BaseController
                     $paymentId = $this->reservationModel->createPayment($id, $montant, $modePayment);
 
                     if ($paymentId) {
-                        // Générer une facture
-                        $invoiceId = $this->reservationModel->generateInvoice($paymentId);
+                        /* Générer une facture */
+                        $this->reservationModel->generateInvoice($paymentId);
 
-                        // Journaliser l'action
+                        /* Journaliser l'action */
                         $this->logModel->addLog($_SESSION['user']['id'], 'payment_create', 'Paiement effectué: ' . $paymentId);
 
                         // Nettoyer les données de session pour le paiement immédiat
@@ -601,7 +599,7 @@ class ReservationController extends BaseController
             $dateFinObj = clone $dateDebutObj;
             $dateFinObj->modify("+{$dureeMinutes} minutes");
             $dateFin = $dateFinObj->format('Y-m-d H:i:s');
-        } catch (Exception $e) {
+        } catch (Exception) {
             $this->jsonResponse(['success' => false, 'error' => 'Format de date invalide.'], 400);
             return;
         }
@@ -637,10 +635,7 @@ class ReservationController extends BaseController
             $reservationId = $result['reservation_id'];
             $guestToken = $result['guest_token'];
 
-            // Récupérer la réservation complète
-            $reservation = $this->reservationModel->getReservationById($reservationId);
-
-            // Journaliser l'action
+            /* Journaliser l'action */
             $this->logModel->addLog(1, 'guest_reservation_create', 'Réservation invité créée: ' . $reservationId);
 
             // Définir le jeton invité dans la session pour le paiement
@@ -704,10 +699,10 @@ class ReservationController extends BaseController
                 $paymentId = $this->reservationModel->createGuestPayment($id, $montant, $modePayment);
 
                 if ($paymentId) {
-                    // Générer une facture
-                    $invoiceId = $this->reservationModel->generateInvoice($paymentId);
+                    /* Générer une facture */
+                    $this->reservationModel->generateInvoice($paymentId);
 
-                    // Journaliser l'action
+                    /* Journaliser l'action */
                     $this->logModel->addLog(1, 'guest_payment_create', 'Paiement invité effectué: ' . $paymentId);
 
                     $this->redirect('reservation/guestConfirmation/' . $id . '/' . $token);
@@ -916,7 +911,7 @@ class ReservationController extends BaseController
             $this->logModel->addLog($_SESSION['user']['id'], 'immediate_reservation_create', 'Réservation immédiate créée: ' . $reservationId);
             // Envoyer une notification de début de réservation immédiate
             if ($reservation && isset($reservation['code_acces'])) {
-                $this->notificationService->sendImmediateReservationStartNotification(
+                $this->userModel->sendImmediateReservationStartNotification(
                     $_SESSION['user']['id'],
                     $reservationId,
                     'Place ' . $place['numero'],
@@ -924,26 +919,19 @@ class ReservationController extends BaseController
                 );
             }
 
-            if ($isAjax) {
-                // Réponse AJAX avec URL de redirection
-                $this->jsonResponse([
-                    'success' => true,
-                    'reservation_id' => $reservationId,
-                    'redirect_url' => buildUrl('reservation/immediate/' . $reservationId)
-                ]);
-            } else {
-                // Redirection directe pour les requêtes normales
-                header('Location: ' . buildUrl('reservation/immediate/' . $reservationId));
-                exit;
-            }
+            $this->handleResponse(
+                $isAjax,
+                ['success' => true, 'reservation_id' => $reservationId, 'redirect_url' => buildUrl('reservation/immediate/' . $reservationId)],
+                'Erreur lors de la création de la réservation immédiate.',
+                buildUrl('home/places')
+            );
         } else {
-            if ($isAjax) {
-                $this->jsonResponse(['success' => false, 'error' => 'Erreur lors de la création de la réservation immédiate.'], 500);
-            } else {
-                $_SESSION['error'] = 'Erreur lors de la création de la réservation immédiate.';
-                header('Location: ' . buildUrl('places'));
-                exit;
-            }
+            $this->handleResponse(
+                $isAjax,
+                null,
+                'Erreur lors de la création de la réservation immédiate.',
+                buildUrl('home/places')
+            );
         }
     }
     /**
@@ -1076,27 +1064,16 @@ class ReservationController extends BaseController
             $dureeMinutes = (strtotime($reservation['date_fin']) - strtotime($reservation['date_debut'])) / 60;
 
             if ($montantTotal > 0) {
-                $_SESSION['immediate_payment'] = [
-                    'reservation_id' => $reservationId,
-                    'montant' => $montantTotal,
-                    'duree' => ceil($dureeMinutes),
-                    'needs_payment' => true
-                ];
+                $this->preparePaymentSession($reservationId, $montantTotal, $dureeMinutes);
+                $response = $this->createReservationResponse($reservation, true);
+                $response['duree_minutes'] = $dureeMinutes;
 
-                if ($isAjax) {
-                    $this->jsonResponse([
-                        'success' => true,
-                        'reservation_id' => $reservationId,
-                        'montant' => number_format($montantTotal, 2),
-                        'duree_minutes' => $dureeMinutes,
-                        'requires_payment' => true,
-                        'redirect_url' => buildUrl('reservation/payment/' . $reservationId),
-                        'message' => 'Réservation terminée. Paiement requis.',
-                        'code_sortie' => $reservation['code_sortie']
-                    ]);
-                } else {
-                    $this->redirect('reservation/payment/' . $reservationId);
-                }
+                $this->handleResponse(
+                    $isAjax,
+                    $response,
+                    'Erreur lors du traitement du paiement',
+                    buildUrl('reservation/payment/' . $reservationId)
+                );
             } else {
                 if ($isAjax) {
                     $this->jsonResponse([
@@ -1128,10 +1105,12 @@ class ReservationController extends BaseController
             if ($updatedReservation) {
                 $place = $this->placeModel->getById($updatedReservation['place_id']);
                 if ($place) {
-                    $this->notificationService->sendImmediateReservationEndNotification(
+                    // Envoyer une notification de fin de réservation
+                    $this->userModel->createNotification(
                         $_SESSION['user']['id'],
-                        $reservationId,
-                        'Place ' . $place['numero']
+                        '✅ Réservation terminée',
+                        'Votre réservation immédiate pour la place ' . $place['numero'] . ' a été terminée avec succès.',
+                        'reservation'
                     );
                 }
             }
@@ -1140,30 +1119,18 @@ class ReservationController extends BaseController
             $montantTotal = $result['montant_total'];
             $dureeMinutes = $result['duree_minutes'];
 
-            // Si le montant est supérieur à 0, préparer les données de paiement
+            /* Si le montant est supérieur à 0, préparer les données de paiement */
             if ($montantTotal > 0) {
-                // Préparer les données de paiement pour la session
-                $_SESSION['immediate_payment'] = [
-                    'reservation_id' => $reservationId,
-                    'montant' => $montantTotal,
-                    'duree' => ceil($dureeMinutes), // durée en minutes
-                    'needs_payment' => true
-                ];
+                $this->preparePaymentSession($reservationId, $montantTotal, $dureeMinutes);
+                $response = $this->createReservationResponse(['id' => $reservationId, 'montant_total' => $montantTotal, 'code_sortie' => $result['code_sortie']], true);
+                $response['duree_minutes'] = $dureeMinutes;
 
-                if ($isAjax) {
-                    $this->jsonResponse([
-                        'success' => true,
-                        'reservation_id' => $reservationId,
-                        'montant' => number_format($montantTotal, 2),
-                        'duree_minutes' => $dureeMinutes,
-                        'requires_payment' => true,
-                        'redirect_url' => buildUrl('reservation/payment/' . $reservationId),
-                        'message' => 'Réservation terminée. Paiement requis.',
-                        'code_sortie' => $result['code_sortie']
-                    ]);
-                } else {
-                    $this->redirect('reservation/payment/' . $reservationId);
-                }
+                $this->handleResponse(
+                    $isAjax,
+                    $response,
+                    'Erreur lors du traitement du paiement',
+                    buildUrl('reservation/payment/' . $reservationId)
+                );
             } else {
                 // Montant de 0€, pas besoin de paiement
                 $_SESSION['immediate_payment'] = [
@@ -1331,9 +1298,9 @@ class ReservationController extends BaseController
         try {
             $place_id = intval($_POST['place_id']);
             $date_debut = $_POST['date_debut'];
-            $duree = intval($_POST['duree']);
-            $include_similar = isset($_POST['include_similar_places']) ? intval($_POST['include_similar_places']) : 0;
-            $user_id = $_SESSION['user']['id'];            // Vérifier que la place existe
+            $user_id = $_SESSION['user']['id'];
+
+            /* Vérifier que la place existe */
             $place = $this->placeModel->getById($place_id);
             if (!$place) {
                 $this->jsonResponse(['success' => false, 'error' => 'Place non trouvée.'], 404);
@@ -1354,19 +1321,7 @@ class ReservationController extends BaseController
             // TODO: Implémenter la logique de stockage d'alerte
             // $alertId = $this->alertModel->createAlert($user_id, $place_id, $date_debut, $duree, $include_similar);
 
-            // Envoyer une notification par email (optionnel)
-            $userEmail = $_SESSION['user']['email'];
-            $placeName = "Place N°" . $place['numero'];
-
-            // Simuler la création d'alerte
-            $alertData = [
-                'user_id' => $user_id,
-                'place_id' => $place_id,
-                'date_debut' => $date_debut,
-                'duree' => $duree,
-                'include_similar' => $include_similar,
-                'created_at' => date('Y-m-d H:i:s')
-            ];
+            /* TODO: Implémenter la logique de stockage d'alerte */
 
             // Log de l'action
             $this->logModel->addLog($user_id, 'CREATE_ALERT', 'Alerte créée pour place ' . $place_id);

@@ -1,9 +1,6 @@
 <?php
 
-/**
- * Contrôleur d'administration consolidé et optimisé
- * Centralise la gestion des utilisateurs, places, réservations et tarifs
- */
+// Contrôleur d'administration - Gestion centralisée des utilisateurs, places, réservations et tarifs
 class AdminController extends BaseController
 {
     private $userModel;
@@ -18,7 +15,7 @@ class AdminController extends BaseController
         parent::__construct();
         $this->requireAdmin();
 
-        // Initialisation optimisée des modèles
+        // Initialise tous les modèles nécessaires
         $this->userModel = new UserModel();
         $this->reservationModel = new ReservationModel();
         $this->placeModel = new PlaceModel();
@@ -26,28 +23,21 @@ class AdminController extends BaseController
         $this->logModel = new LogModel();
         $this->subscriptionModel = new SubscriptionModel();
     }
-    /**
-     * Tableau de bord d'administration consolidé
-     */
+
+    // Tableau de bord d'administration avec statistiques
     public function dashboard()
     {
-        // Obtenir les statistiques de base
         $placeStats = $this->getPlaceStatistics();
         $reservationStats = $this->getReservationStatistics();
-
-        // Préparer les données spécifiques pour les graphiques
-        $placeTypeStats = $this->placeModel->countByType();
-        $reservationByStatus = $reservationStats['by_status'];
-        $subscriptionStats = $this->subscriptionModel->getSubscriptionStats();
 
         $data = $this->setActiveMenu('dashboard') + [
             'title' => 'Tableau de bord - Administration',
             'userStats' => $this->getUserStatistics(),
             'placeStats' => $placeStats,
-            'placeTypeStats' => $placeTypeStats,
+            'placeTypeStats' => $this->placeModel->countByType(),
             'reservationStats' => $reservationStats,
-            'reservationByStatus' => $reservationByStatus,
-            'subscriptionStats' => $subscriptionStats,
+            'reservationByStatus' => $reservationStats['by_status'],
+            'subscriptionStats' => $this->subscriptionModel->getSubscriptionStats(),
             'revenueStats' => $this->getRevenueStatistics(),
             'activeReservations' => $this->reservationModel->getActiveReservations(),
             'recentLogs' => $this->logModel->getAllLogs(10)
@@ -58,20 +48,18 @@ class AdminController extends BaseController
 
     // ====== GESTION DES UTILISATEURS ======
 
-    /**
-     * Liste des utilisateurs avec pagination consolidée
-     */
+    // Liste des utilisateurs avec pagination et filtres
     public function users($page = 1)
     {
         $limit = 10;
         $offset = ($page - 1) * $limit;
 
-        // Récupérer les filtres de l'URL
+        // Récupère les filtres de l'URL
         $roleFilter = $_GET['role'] ?? null;
         $statusFilter = $_GET['status'] ?? null;
         $sortFilter = $_GET['sort'] ?? 'created_at_desc';
 
-        // Récupérer les utilisateurs avec filtres
+        // Applique les filtres si nécessaire
         if ($roleFilter || $statusFilter || $sortFilter !== 'created_at_desc') {
             $users = $this->userModel->getFilteredUsers($roleFilter, $statusFilter, $sortFilter, $offset, $limit);
             $totalCount = $this->userModel->countFilteredUsers($roleFilter, $statusFilter);
@@ -88,7 +76,6 @@ class AdminController extends BaseController
             'totalUsers' => $this->userModel->countUsers(),
             'newUsers' => $this->userModel->countNewUsersThisMonth(),
             'activeUsers' => $this->userModel->countActiveUsersLastMonth(),
-            // Filtres actuels
             'role' => $roleFilter,
             'status' => $statusFilter,
             'sort' => $sortFilter
@@ -97,9 +84,7 @@ class AdminController extends BaseController
         $this->renderView('admin/users/index', $data, 'admin');
     }
 
-    /**
-     * Formulaire d'ajout d'utilisateur consolidé
-     */
+    // Formulaire d'ajout d'utilisateur
     public function addUserForm()
     {
         $data = $this->setActiveMenu('users') + [
@@ -109,9 +94,7 @@ class AdminController extends BaseController
         $this->renderView('admin/users/add', $data, 'admin');
     }
 
-    /**
-     * Traitement d'ajout d'utilisateur optimisé
-     */
+    // Traitement d'ajout d'utilisateur avec validation
     public function addUser()
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -128,29 +111,27 @@ class AdminController extends BaseController
         ]);
 
         if (!$validated) {
-            $this->redirectWithError(BASE_URL . 'admin/addUserForm', 'Tous les champs obligatoires doivent être remplis.');
             return;
         }
 
-        // Validation email
+        // Valide l'email et la correspondance des mots de passe
         if (!$this->isValidEmail($validated['email'])) {
             $this->redirectWithError(BASE_URL . 'admin/addUserForm', 'L\'adresse email est invalide.');
             return;
         }
 
-        // Validation mot de passe
         if ($validated['password'] !== $validated['confirm_password']) {
             $this->redirectWithError(BASE_URL . 'admin/addUserForm', 'Les mots de passe ne correspondent pas.');
             return;
         }
 
-        // Vérifier unicité email
+        // Vérifie l'unicité de l'email
         if ($this->userModel->getUserByEmail($validated['email'])) {
             $this->redirectWithError(BASE_URL . 'admin/addUserForm', 'Un utilisateur avec cette adresse email existe déjà.');
             return;
         }
 
-        // Créer utilisateur
+        // Crée l'utilisateur
         $userData = [
             'nom' => $validated['nom'],
             'prenom' => $validated['prenom'],
@@ -169,21 +150,11 @@ class AdminController extends BaseController
         }
     }
 
-    /**
-     * Édition d'utilisateur consolidée
-     */
+    // Formulaire d'édition d'utilisateur
     public function editUser($userId = null)
     {
-        if (!$userId) {
-            $this->redirectWithError(BASE_URL . 'admin/users', 'L\'ID utilisateur est requis.');
-            return;
-        }
-
-        $user = $this->userModel->getUserById($userId);
-        if (!$user) {
-            $this->redirectWithError(BASE_URL . 'admin/users', 'Utilisateur non trouvé.');
-            return;
-        }
+        $user = $this->validateAndGetUser($userId);
+        if (!$user) return;
 
         $data = $this->setActiveMenu('users') + [
             'title' => 'Modifier un utilisateur - Administration',
@@ -193,9 +164,7 @@ class AdminController extends BaseController
         $this->renderView('admin/users/edit', $data, 'admin');
     }
 
-    /**
-     * Mise à jour d'utilisateur optimisée
-     */
+    // Mise à jour d'utilisateur avec validation
     public function updateUser()
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -210,17 +179,14 @@ class AdminController extends BaseController
         }
 
         $validated = $this->validateRequiredFields(['nom', 'prenom', 'email']);
-        if (!$validated) {
-            $this->redirectWithError(BASE_URL . 'admin/editUser/' . $userId, 'Tous les champs obligatoires doivent être remplis.');
-            return;
-        }
+        if (!$validated) return;
 
         if (!$this->isValidEmail($validated['email'])) {
             $this->redirectWithError(BASE_URL . 'admin/editUser/' . $userId, 'L\'adresse email est invalide.');
             return;
         }
 
-        // Vérifier si l'email existe pour un autre utilisateur
+        // Vérifie l'unicité de l'email pour un autre utilisateur
         $existingUser = $this->userModel->getUserByEmail($validated['email']);
         if ($existingUser && $existingUser['id'] != $userId) {
             $this->redirectWithError(BASE_URL . 'admin/editUser/' . $userId, 'Un autre utilisateur utilise déjà cette adresse email.');
@@ -244,21 +210,10 @@ class AdminController extends BaseController
         }
     }
 
-    /**
-     * Suppression d'utilisateur consolidée
-     */
+    // Suppression d'utilisateur avec vérifications
     public function deleteUser($id = null)
     {
-        if (!$id) {
-            $this->redirectWithError(BASE_URL . 'admin/users', 'ID utilisateur manquant.');
-            return;
-        }
-
-        // Empêcher la suppression de son propre compte
-        if ($id == $_SESSION['user']['id']) {
-            $this->redirectWithError(BASE_URL . 'admin/users', 'Vous ne pouvez pas supprimer votre propre compte.');
-            return;
-        }
+        if (!$this->validateUserDeletion($id)) return;
 
         if ($this->userModel->deleteUser($id)) {
             $this->redirectWithSuccess(BASE_URL . 'admin/users', 'Utilisateur supprimé avec succès.');
@@ -794,7 +749,7 @@ class AdminController extends BaseController
      */
     private function getPlaceStatistics()
     {
-        $byStatus = $this->placeModel->countByStatus();
+        $byStatus = $this->placeModel->getPlacesByStatus();
         return [
             'total' => $this->placeModel->countTotal(),
             'by_status' => $byStatus,
@@ -864,10 +819,7 @@ class AdminController extends BaseController
         }
     }
 
-    /**
-     * Statistiques des revenus
-     * @return array Tableau associatif des revenus par période
-     */
+    // Statistiques des revenus par période
     private function getRevenueStatistics()
     {
         return [
@@ -877,5 +829,41 @@ class AdminController extends BaseController
             'year' => $this->reservationModel->calculateRevenue('year'),
             'total' => $this->reservationModel->calculateRevenue('total')
         ];
+    }
+
+    // ====== MÉTHODES UTILITAIRES ======
+
+    // Valide et récupère un utilisateur par ID
+    private function validateAndGetUser($userId)
+    {
+        if (!$userId) {
+            $this->redirectWithError(BASE_URL . 'admin/users', 'L\'ID utilisateur est requis.');
+            return false;
+        }
+
+        $user = $this->userModel->getUserById($userId);
+        if (!$user) {
+            $this->redirectWithError(BASE_URL . 'admin/users', 'Utilisateur non trouvé.');
+            return false;
+        }
+
+        return $user;
+    }
+
+    // Valide les conditions de suppression d'un utilisateur
+    private function validateUserDeletion($id)
+    {
+        if (!$id) {
+            $this->redirectWithError(BASE_URL . 'admin/users', 'ID utilisateur manquant.');
+            return false;
+        }
+
+        // Empêche la suppression de son propre compte
+        if ($id == $_SESSION['user']['id']) {
+            $this->redirectWithError(BASE_URL . 'admin/users', 'Vous ne pouvez pas supprimer votre propre compte.');
+            return false;
+        }
+
+        return true;
     }
 }

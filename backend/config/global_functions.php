@@ -1,13 +1,8 @@
 <?php
 
-/**
- * Fonctions globales disponibles partout dans l'application
- */
+// Fonctions globales disponibles partout dans l'application
 
-/**
- * Récupère la réservation immédiate active pour l'utilisateur connecté
- * @return array|null Informations sur la réservation immédiate active
- */
+// Récupère la réservation immédiate active avec cache pour éviter les requêtes multiples
 function getActiveImmediateReservation()
 {
     static $activeReservation = null;
@@ -15,7 +10,7 @@ function getActiveImmediateReservation()
     static $tarifHoraire = null;
     static $alreadyChecked = false;
 
-    // Si déjà vérifié, retourner les résultats en cache
+    // Utilise le cache si déjà vérifié
     if ($alreadyChecked) {
         return [
             'reservation' => $activeReservation,
@@ -24,7 +19,7 @@ function getActiveImmediateReservation()
         ];
     }
 
-    // Si l'utilisateur est connecté
+    // Vérifie seulement si utilisateur connecté
     if (isset($_SESSION['user'])) {
         $reservationModel = new ReservationModel();
         $activeReservation = $reservationModel->getActiveImmediateReservation($_SESSION['user']['id']);
@@ -46,21 +41,14 @@ function getActiveImmediateReservation()
     ];
 }
 
-/**
- * Détermine si la requête actuelle est une requête AJAX
- * @return bool True si c'est une requête AJAX, false sinon
- */
+// Détecte les requêtes AJAX
 function isAjaxRequest()
 {
     return isset($_SERVER['HTTP_X_REQUESTED_WITH']) &&
         strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
 }
 
-/**
- * Envoie une réponse JSON et termine l'exécution du script
- * @param array $data Données à encoder en JSON
- * @param int $status Code de statut HTTP
- */
+// Envoie une réponse JSON et termine l'exécution
 function sendJsonResponse($data, $status = 200)
 {
     http_response_code($status);
@@ -69,11 +57,7 @@ function sendJsonResponse($data, $status = 200)
     exit;
 }
 
-/**
- * Normalise une URL en évitant les doublons de chemins
- * @param string $path Le chemin à ajouter au BASE_URL
- * @return string L'URL complète normalisée
- */
+// Normalise une URL pour éviter les doublons de chemins
 function normalizeUrl($path)
 {
     $baseUrl = rtrim(BASE_URL, '/');
@@ -81,11 +65,7 @@ function normalizeUrl($path)
     return $baseUrl . '/' . $path;
 }
 
-/**
- * Génère une URL sécurisée avec le bon préfixe
- * @param string $path Le chemin relatif
- * @return string L'URL complète
- */
+// Génère une URL sécurisée avec fallback
 function buildUrl($path = '')
 {
     $baseUrl = defined('BASE_URL') ? BASE_URL : '/projet/parking_d/';

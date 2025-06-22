@@ -6,7 +6,7 @@ if (!isset($reservation) || !isset($place) || !isset($tarifHoraire)) {
 }
 ?>
 
-<div class="container py-5">
+<div class="container py-5" style="background: transparent !important;">
     <div class="row justify-content-center">
         <div class="col-lg-8">
             <div class="card shadow-lg">

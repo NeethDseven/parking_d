@@ -146,6 +146,12 @@
             data-current-page="<?php echo isset($current_page) ? $current_page : 1; ?>"
             data-selected-type="<?php echo $selected_type ?? 'all'; ?>">
             <?php
+            // DEBUG: Afficher les informations de debug
+            echo "<!-- DEBUG: places = " . (isset($places) ? (is_array($places) ? count($places) . ' items' : 'SET but not array') : 'NOT SET') . " -->\n";
+            echo "<!-- DEBUG: tarifs = " . (isset($tarifs) ? (is_array($tarifs) ? count($tarifs) . ' items' : 'SET but not array') : 'NOT SET') . " -->\n";
+            echo "<!-- DEBUG: current_page = " . (isset($current_page) ? $current_page : 'NOT SET') . " -->\n";
+            echo "<!-- DEBUG: total_pages = " . (isset($total_pages) ? $total_pages : 'NOT SET') . " -->\n";
+
             // Vérifier que $places et $tarifs sont bien définis
             if (isset($places) && !empty($places) && isset($tarifs)):
                 // Pagination côté serveur : 6 places par page (3x2 grid)
@@ -153,6 +159,11 @@
                 $currentPage = isset($current_page) ? $current_page : 1;
                 $startIndex = ($currentPage - 1) * $placesPerPage;
                 $paginatedPlaces = array_slice($places, $startIndex, $placesPerPage);
+
+                // Si la page demandée n'a pas de places, afficher la première page
+                if (empty($paginatedPlaces) && $currentPage > 1) {
+                    $paginatedPlaces = array_slice($places, 0, $placesPerPage);
+                }
 
                 foreach ($paginatedPlaces as $key => $place):
                     // Vérifier que le type de place existe dans le tableau des tarifs
@@ -163,7 +174,7 @@
                     <div class="place-card-item animate-on-scroll fade-in"
                         data-type="<?php echo htmlspecialchars($place['type']); ?>"
                         data-card-index="<?php echo $key; ?>">
-                        <div class="card h-100 shadow-sm hover-effect"
+                        <div class="card h-100 shadow-sm hover-effect">
                             <!-- Image différente selon le type de place -->
                             <?php
                             $placeImage = '';
@@ -328,12 +339,21 @@
                                     <i class="fas fa-calendar-check me-2"></i> Réserver
                                 </button>
 
-                                <form action="<?php echo BASE_URL; ?>reservation/reserveImmediate" method="post" class="mt-2">
-                                    <input type="hidden" name="place_id" value="<?php echo $place['id']; ?>">
-                                    <button type="submit" class="btn-reserve-immediate">
-                                        <i class="fas fa-stopwatch me-2"></i> Réserver immédiatement
-                                    </button>
-                                </form>
+                                <?php if (isset($_SESSION['user'])): ?>
+                                    <form action="<?php echo BASE_URL; ?>reservation/reserveImmediate" method="post" class="mt-2">
+                                        <input type="hidden" name="place_id" value="<?php echo $place['id']; ?>">
+                                        <button type="submit" class="btn-reserve-immediate">
+                                            <i class="fas fa-stopwatch me-2"></i> Réserver immédiatement
+                                        </button>
+                                    </form>
+                                <?php else: ?>
+                                    <div class="mt-2">
+                                        <a href="<?php echo BASE_URL; ?>auth/login?redirect=<?php echo urlencode('home/places'); ?>" class="btn-reserve-immediate" style="text-decoration: none; display: block; text-align: center;">
+                                            <i class="fas fa-stopwatch me-2"></i> Réserver immédiatement
+                                        </a>
+                                        <small class="text-muted d-block mt-1 text-center">Connexion requise</small>
+                                    </div>
+                                <?php endif; ?>
                             </div>
                         </div>
                     </div>
@@ -520,114 +540,31 @@
             </div> <!-- Fermeture du places-page-background -->
         <!-- Tous les scripts inline ont été transférés vers unifiedReservationManager.js -->
 
-        <!-- Script de correction pour les formulaires de réservation -->
-        <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('🔧 Script de correction formulaires chargé');
-
-            // Vérifier si l'utilisateur est connecté
-            const isUserLoggedIn = <?php echo isset($_SESSION['user']) ? 'true' : 'false'; ?>;
-            console.log('👤 Utilisateur connecté:', isUserLoggedIn);
-
-            // Attendre que la modal soit disponible et que le JavaScript principal soit chargé
-            setTimeout(function() {
-                if (isUserLoggedIn) {
-                    // Utilisateur connecté - vérifier le formulaire utilisateur
-                    const userForm = document.getElementById('reservation-form');
-                    console.log('🔍 Formulaire utilisateur trouvé:', userForm);
-
-                    if (userForm) {
-                        console.log('✅ Formulaire utilisateur disponible - pas de correction nécessaire');
-                    } else {
-                        console.warn('⚠️ Formulaire utilisateur non trouvé');
-                    }
-                } else {
-                    // Utilisateur non connecté - gérer le formulaire invité
-                    const guestForm = document.getElementById('guest-reservation-form');
-                    console.log('🔍 Formulaire invité trouvé:', guestForm);
-
-                    if (guestForm) {
-                        // Vérifier si le gestionnaire est déjà attaché
-                        if (!guestForm.dataset.handlerAttached) {
-                            console.log('🔧 Ajout du gestionnaire AJAX au formulaire invité');
-
-                            // Marquer comme traité
-                            guestForm.dataset.handlerAttached = 'true';
-
-                            // Ajouter un gestionnaire AJAX
-                            guestForm.addEventListener('submit', function(event) {
-                                event.preventDefault();
-                                event.stopPropagation();
-                                console.log('🚀 Formulaire invité soumis via AJAX (script de correction)');
-
-                                // Vérifier le place_id
-                                const placeIdField = document.getElementById('guest_place_id');
-                                console.log('🔍 Champ place_id:', placeIdField, 'Valeur:', placeIdField?.value);
-
-                                if (!placeIdField || !placeIdField.value) {
-                                    alert('Erreur: Place non sélectionnée. Veuillez fermer cette fenêtre et cliquer à nouveau sur "Réserver" pour une place.');
-                                    return;
-                                }
-
-                                // Désactiver le bouton de soumission
-                                const submitButton = guestForm.querySelector('button[type="submit"]');
-                                if (submitButton) {
-                                    submitButton.disabled = true;
-                                    submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Traitement...';
-                                }
-
-                                // Créer FormData
-                                const formData = new FormData(guestForm);
-                                console.log('📋 Données du formulaire:');
-                                for (let [key, value] of formData.entries()) {
-                                    console.log(`  ${key}: ${value}`);
-                                }
-
-                                // Envoyer la requête AJAX
-                                fetch('<?php echo BASE_URL; ?>reservation/guestReserve', {
-                                    method: 'POST',
-                                    body: formData
-                                })
-                                .then(response => response.json())
-                                .then(data => {
-                                    console.log('📡 Réponse du serveur:', data);
-                                    if (data.success) {
-                                        console.log('✅ Redirection vers:', data.redirect_url);
-                                        window.location.href = data.redirect_url;
-                                    } else {
-                                        alert('Erreur: ' + (data.error || 'Une erreur est survenue'));
-                                        // Réactiver le bouton
-                                        if (submitButton) {
-                                            submitButton.disabled = false;
-                                            submitButton.innerHTML = '<i class="fas fa-check me-2"></i> Réserver en tant qu\'invité';
-                                        }
-                                    }
-                                })
-                                .catch(error => {
-                                    console.error('❌ Erreur:', error);
-                                    alert('Erreur de communication avec le serveur');
-                                    // Réactiver le bouton
-                                    if (submitButton) {
-                                        submitButton.disabled = false;
-                                        submitButton.innerHTML = '<i class="fas fa-check me-2"></i> Réserver en tant qu\'invité';
-                                    }
-                                });
-                            });
-
-                            console.log('✅ Gestionnaire AJAX ajouté au formulaire invité');
-                        } else {
-                            console.log('ℹ️ Gestionnaire déjà attaché au formulaire invité');
-                        }
-                    } else {
-                        console.log('ℹ️ Formulaire invité non trouvé (normal pour utilisateur non connecté)');
-                    }
-                }
-            }, 1500); // Attendre 1.5 secondes pour que tout soit chargé
-        });
-        </script>
+        <!-- Script de correction chargé automatiquement via places.js -->
 
         <!-- Correctif anti-conflit pour les cartes et le spinner -->
         <!-- <script src="<?php echo BASE_URL; ?>frontend/assets/js/components/places-fix.js"></script> -->
 
         <!-- Gestionnaire des places - Logique fonctionnelle séparée -->
         <script src="<?php echo BASE_URL; ?>frontend/assets/js/components/placesManager.js"></script>
+
+        <!-- Solution de secours pour l'affichage des cartes -->
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Solution de secours immédiate pour les cartes de places
+            setTimeout(function() {
+                const cards = document.querySelectorAll('.place-card-item');
+                console.log('🔧 Vérification des cartes de places:', cards.length);
+
+                cards.forEach(function(card, index) {
+                    const style = window.getComputedStyle(card);
+                    if (style.opacity === '0') {
+                        console.log('🎯 Forçage affichage carte', index + 1);
+                        card.classList.add('animated', 'fade-in');
+                        card.style.opacity = '1';
+                        card.style.transform = 'translateY(0)';
+                    }
+                });
+            }, 100);
+        });
+        </script>

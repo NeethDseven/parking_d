@@ -128,27 +128,12 @@ if (typeof window.CoreAdminService !== 'undefined') {
             if (!chartDataElement) {
                 console.warn('Élément chart-data non trouvé');
                 return;
-            } try {
+            try {
                 // Données depuis les attributs data
                 const placeTypesData = JSON.parse(chartDataElement.dataset.placeTypes || '{}');
                 const placeStatusData = JSON.parse(chartDataElement.dataset.placeStatus || '{}');
                 const subscriptionData = JSON.parse(chartDataElement.dataset.subscriptionStats || '[]');
                 const revenueData = JSON.parse(chartDataElement.dataset.revenueStats || '{}');
-
-                console.log('=== DEBUG GRAPHIQUES DASHBOARD ===');
-                console.log('Données placeTypes:', placeTypesData);
-                console.log('Données placeStatus:', placeStatusData);
-                console.log('Données subscriptions:', subscriptionData);
-                console.log('Données revenue:', revenueData);
-                console.log('Element chart-data datasets:', chartDataElement.dataset);
-
-                // Vérifier si les canvas existent
-                console.log('Canvas placesChart existe:', !!document.getElementById('placesChart'));
-                console.log('Canvas subscriptionsChart existe:', !!document.getElementById('subscriptionsChart'));
-                console.log('Canvas revenueChart existe:', !!document.getElementById('revenueChart'));
-                console.log('Canvas placeStatusChart existe:', !!document.getElementById('placeStatusChart'));
-                console.log('Canvas placeTypeChart existe:', !!document.getElementById('placeTypeChart'));
-                console.log('==================================');
 
                 // Créer tous les graphiques
                 await this.createPlacesChart(placeTypesData);

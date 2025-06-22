@@ -1102,6 +1102,124 @@ div[id*="Modal"] .modal-content {
     pointer-events: auto !important;
 }
 
+/* ========== MODALS ADMIN SIMPLIFIÉES ========== */
+/* Approche simple : masquer le modal-dialog et centrer le modal-content */
+
+/* Rendre le modal-dialog transparent mais fonctionnel */
+.modal .modal-dialog {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    margin: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    max-width: none !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 1rem !important;
+}
+
+/* Le modal-content centré et stylé */
+.modal .modal-content {
+    position: relative !important;
+    width: 90vw !important;
+    max-width: 600px !important;
+    max-height: 90vh !important;
+    margin: 0 !important;
+    border-radius: 12px !important;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3) !important;
+    overflow: hidden !important;
+    background: white !important;
+    border: none !important;
+}
+
+/* Structure du modal-content avec form à l'intérieur */
+.modal .modal-content form {
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100% !important;
+}
+
+/* Styles pour les éléments à l'intérieur du modal-content */
+.modal .modal-content .modal-header {
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%) !important;
+    color: white !important;
+    border-bottom: none !important;
+    border-radius: 12px 12px 0 0 !important;
+    padding: 1.5rem !important;
+    flex-shrink: 0 !important;
+}
+
+.modal .modal-content .modal-body {
+    padding: 2rem !important;
+    overflow-y: auto !important;
+    flex: 1 !important;
+    max-height: calc(90vh - 140px) !important;
+    background: white !important;
+}
+
+.modal .modal-content .modal-footer {
+    background: #f8f9fa !important;
+    border-top: 1px solid #e9ecef !important;
+    border-radius: 0 0 12px 12px !important;
+    padding: 1.5rem !important;
+    flex-shrink: 0 !important;
+}
+
+/* Responsive pour modal-dialog et modal-content */
+@media (max-width: 768px) {
+    .modal .modal-dialog {
+        padding: 0.5rem !important;
+    }
+
+    .modal .modal-content {
+        width: 95vw !important;
+        max-height: 95vh !important;
+        border-radius: 8px !important;
+    }
+
+    .modal .modal-content .modal-body {
+        max-height: calc(95vh - 140px) !important;
+        padding: 1.5rem !important;
+    }
+
+    .modal .modal-content .modal-header {
+        border-radius: 8px 8px 0 0 !important;
+    }
+
+    .modal .modal-content .modal-footer {
+        border-radius: 0 0 8px 8px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .modal .modal-dialog {
+        padding: 0.25rem !important;
+    }
+
+    .modal .modal-content {
+        width: 98vw !important;
+        max-height: 98vh !important;
+        border-radius: 6px !important;
+    }
+
+    .modal .modal-content .modal-body {
+        max-height: calc(98vh - 140px) !important;
+        padding: 1rem !important;
+    }
+
+    .modal .modal-content .modal-header {
+        border-radius: 6px 6px 0 0 !important;
+        padding: 1rem !important;
+    }
+
+    .modal .modal-content .modal-footer {
+        border-radius: 0 0 6px 6px !important;
+        padding: 1rem !important;
+    }
+}
+
 /* Forcer le centrage horizontal et vertical */
 .modal-dialog .modal-content {
     width: 100% !important;
@@ -3200,4 +3318,37 @@ body .badge.bg-secondary i {
     font-size: 0.7rem !important;
     opacity: 0.9 !important;
     color: white !important;
+}
+
+/* ========== LÉGENDES PERSONNALISÉES POUR GRAPHIQUES ========== */
+.chart-mini-legend {
+    margin-top: 0.75rem;
+    padding: 0.5rem;
+    background: #f8f9fa;
+    border-radius: 6px;
+    border: 1px solid #e9ecef;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.25rem;
+    font-size: 0.75rem;
+}
+
+.legend-item:last-child {
+    margin-bottom: 0;
+}
+
+.legend-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 0.5rem;
+    flex-shrink: 0;
+}
+
+.legend-label {
+    color: #495057;
+    font-weight: 500;
 }

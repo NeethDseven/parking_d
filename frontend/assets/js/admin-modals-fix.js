@@ -1,31 +1,31 @@
-/**
- * Script de correction simplifié pour les modales admin
- * Utilise Bootstrap natif avec corrections minimales
- */
+/* Gestionnaire unifié des modales admin et masquage des breadcrumbs */
 
 (function() {
     'use strict';
 
     let isInitialized = false;
 
-    // Initialisation unique
+    /* Initialise une seule fois pour éviter les doublons */
     function initOnce() {
         if (isInitialized) return;
         isInitialized = true;
 
-        console.log('🔧 Correction simplifiée des modales admin');
+        console.log('🔧 Gestionnaire unifié des modales admin');
 
-        // Nettoyer d'abord
+        /* Attend Bootstrap avant d'initialiser */
+        if (typeof bootstrap === 'undefined') {
+            setTimeout(initOnce, 100);
+            return;
+        }
+
         cleanupAll();
-
-        // Laisser Bootstrap gérer les modales naturellement
-        setupMinimalFixes();
-
-        // Masquer les breadcrumbs
+        setupModals();
+        setupEventListeners();
         hideBreadcrumbs();
+        addGlobalFunctions();
     }
 
-    // Initialisation
+    /* Lance l'initialisation selon l'état du DOM */
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', initOnce);
     } else {
@@ -33,15 +33,15 @@
     }
 
     function cleanupAll() {
-        // Supprimer tous les backdrops existants
+        // Supprime tous les backdrops orphelins
         document.querySelectorAll('.modal-backdrop').forEach(backdrop => backdrop.remove());
 
-        // Nettoyer les classes du body
+        // Nettoie les classes du body
         document.body.classList.remove('modal-open');
         document.body.style.overflow = '';
         document.body.style.paddingRight = '';
 
-        // Fermer toutes les modales ouvertes
+        // Ferme toutes les modales ouvertes
         document.querySelectorAll('.modal.show').forEach(modal => {
             modal.classList.remove('show');
             modal.style.display = 'none';
@@ -49,28 +49,24 @@
         });
     }
 
-    function setupMinimalFixes() {
-        // Vérifier que Bootstrap est disponible
-        if (typeof bootstrap === 'undefined') {
-            console.error('❌ Bootstrap n\'est pas chargé');
-            return;
-        }
+    function setupModals() {
+        const modals = document.querySelectorAll('.modal');
 
-        console.log('✅ Bootstrap détecté, initialisation des modales');
+        modals.forEach(modal => {
+            // Configure les attributs requis pour l'accessibilité
+            modal.setAttribute('tabindex', '-1');
+            modal.setAttribute('role', 'dialog');
+            modal.setAttribute('aria-hidden', 'true');
 
-        // S'assurer que toutes les modales ont les bons attributs
-        document.querySelectorAll('.modal').forEach(modal => {
-            if (!modal.hasAttribute('tabindex')) {
-                modal.setAttribute('tabindex', '-1');
-            }
-            if (!modal.hasAttribute('role')) {
-                modal.setAttribute('role', 'dialog');
-            }
-            if (!modal.hasAttribute('aria-hidden')) {
-                modal.setAttribute('aria-hidden', 'true');
-            }
+            // Nettoie les styles inline qui peuvent causer des problèmes
+            modal.style.position = '';
+            modal.style.top = '';
+            modal.style.left = '';
+            modal.style.width = '';
+            modal.style.height = '';
+            modal.style.zIndex = '';
 
-            // Initialiser Bootstrap Modal si pas déjà fait
+            // Initialise Bootstrap Modal si pas déjà fait
             if (!bootstrap.Modal.getInstance(modal)) {
                 try {
                     new bootstrap.Modal(modal, {
@@ -78,110 +74,226 @@
                         keyboard: true,
                         focus: true
                     });
-                    console.log(`✅ Modal Bootstrap initialisée: ${modal.id}`);
+                    console.log(`✅ Modal configurée: ${modal.id}`);
                 } catch (error) {
                     console.error(`❌ Erreur initialisation modal ${modal.id}:`, error);
                 }
             }
         });
+    }
 
-        // Écouter uniquement les événements de nettoyage
+    function setupEventListeners() {
+        // Nettoyage après fermeture
         document.addEventListener('hidden.bs.modal', function(event) {
             setTimeout(() => {
                 cleanupOrphanedBackdrops();
             }, 100);
         });
 
-        // Écouter les erreurs d'ouverture
+        // Correction z-index lors des événements Bootstrap
         document.addEventListener('show.bs.modal', function(event) {
-            console.log(`🔓 Ouverture modal: ${event.target.id}`);
+            const modal = event.target;
+            console.log(`🔓 Ouverture: ${modal.id}`);
+
+            // Forcer les z-index immédiatement
+            modal.style.zIndex = '1055';
+            const dialog = modal.querySelector('.modal-dialog');
+            const content = modal.querySelector('.modal-content');
+
+            if (dialog) {
+                dialog.style.zIndex = '1056';
+                dialog.style.position = 'relative';
+            }
+
+            if (content) {
+                content.style.zIndex = '1057';
+                content.style.position = 'relative';
+            }
         });
 
         document.addEventListener('shown.bs.modal', function(event) {
-            console.log(`✅ Modal ouverte: ${event.target.id}`);
+            const modal = event.target;
+            console.log(`✅ Ouverte: ${modal.id}`);
+
+            // Double vérification des z-index après ouverture
+            setTimeout(() => {
+                modal.style.zIndex = '1055';
+                const dialog = modal.querySelector('.modal-dialog');
+                const content = modal.querySelector('.modal-content');
+
+                if (dialog) {
+                    dialog.style.zIndex = '1056';
+                    dialog.style.position = 'relative';
+                }
+
+                if (content) {
+                    content.style.zIndex = '1057';
+                    content.style.position = 'relative';
+                }
+
+                // S'assurer que le backdrop est derrière
+                const backdrop = document.querySelector('.modal-backdrop');
+                if (backdrop) {
+                    backdrop.style.zIndex = '1050';
+                }
+            }, 50);
         });
+
+        // Gestion des clics sur les triggers
+        document.addEventListener('click', function(event) {
+            const trigger = event.target.closest('[data-bs-toggle="modal"]');
+            if (trigger) {
+                event.preventDefault();
+                event.stopPropagation();
+
+                const targetId = trigger.getAttribute('data-bs-target');
+                const modal = document.querySelector(targetId);
+
+                if (modal) {
+                    openModal(modal);
+                }
+            }
+        });
+    }
+
+    function openModal(modal) {
+        // Nettoyer avant d'ouvrir
+        cleanupOrphanedBackdrops();
+
+        // Forcer les z-index avant l'ouverture
+        modal.style.zIndex = '1055';
+        const dialog = modal.querySelector('.modal-dialog');
+        const content = modal.querySelector('.modal-content');
+
+        if (dialog) {
+            dialog.style.zIndex = '1056';
+            dialog.style.position = 'relative';
+        }
+
+        if (content) {
+            content.style.zIndex = '1057';
+            content.style.position = 'relative';
+        }
+
+        // Essayer Bootstrap d'abord
+        setTimeout(() => {
+            let bsModal = bootstrap.Modal.getInstance(modal);
+            if (!bsModal) {
+                bsModal = new bootstrap.Modal(modal);
+            }
+
+            try {
+                bsModal.show();
+                // Double vérification après ouverture
+                setTimeout(() => {
+                    modal.style.zIndex = '1055';
+                    if (dialog) dialog.style.zIndex = '1056';
+                    if (content) content.style.zIndex = '1057';
+                }, 50);
+            } catch (error) {
+                console.error('Erreur ouverture modal:', error);
+                openModalManually(modal);
+            }
+        }, 10);
     }
 
     function cleanupOrphanedBackdrops() {
         const backdrops = document.querySelectorAll('.modal-backdrop');
         const openModals = document.querySelectorAll('.modal.show');
 
-        if (backdrops.length > 0 && openModals.length === 0) {
-            backdrops.forEach(backdrop => backdrop.remove());
+        if (backdrops.length > openModals.length) {
+            backdrops.forEach((backdrop, index) => {
+                if (index >= openModals.length) {
+                    backdrop.remove();
+                }
+            });
+        }
+
+        // Nettoyer le body si aucune modal ouverte
+        if (openModals.length === 0) {
             document.body.classList.remove('modal-open');
             document.body.style.overflow = '';
             document.body.style.paddingRight = '';
-            console.log('🧹 Backdrops orphelins nettoyés');
         }
     }
 
-    // Fonction de débogage simple
-    window.debugModals = function() {
-        console.log('🔍 État des modales:');
-        const modals = document.querySelectorAll('.modal');
-        modals.forEach(modal => {
-            console.log(`Modal ${modal.id}:`, {
-                visible: modal.classList.contains('show'),
-                display: modal.style.display,
-                classes: modal.className,
-                hasBootstrapInstance: !!bootstrap.Modal.getInstance(modal)
-            });
-        });
-
-        const backdrops = document.querySelectorAll('.modal-backdrop');
-        console.log(`Backdrops: ${backdrops.length}`);
-        console.log('Body modal-open:', document.body.classList.contains('modal-open'));
-    };
-
-    // Fonction pour forcer l'ouverture d'une modale
-    window.forceOpenModal = function(modalId) {
-        const modal = document.getElementById(modalId);
-        if (!modal) {
-            console.error(`❌ Modal ${modalId} non trouvée`);
-            return;
-        }
-
-        console.log(`🚀 Forçage ouverture modal: ${modalId}`);
+    function openModalManually(modal) {
+        console.log(`⚠️ Ouverture manuelle: ${modal.id}`);
 
         // Nettoyer d'abord
-        cleanupAll();
+        cleanupOrphanedBackdrops();
 
-        // Essayer Bootstrap d'abord
-        try {
-            let bsModal = bootstrap.Modal.getInstance(modal);
-            if (!bsModal) {
-                bsModal = new bootstrap.Modal(modal);
-            }
-            bsModal.show();
-            console.log(`✅ Modal ${modalId} ouverte avec Bootstrap`);
-        } catch (error) {
-            console.error(`❌ Erreur Bootstrap:`, error);
+        // Ouvrir manuellement avec z-index forcé
+        modal.style.display = 'block';
+        modal.style.zIndex = '1055';
+        modal.classList.add('show');
+        modal.setAttribute('aria-hidden', 'false');
 
-            // Fallback manuel
-            modal.style.display = 'block';
-            modal.classList.add('show');
-            modal.setAttribute('aria-hidden', 'false');
-            document.body.classList.add('modal-open');
+        // Forcer le z-index du dialog et content
+        const dialog = modal.querySelector('.modal-dialog');
+        const content = modal.querySelector('.modal-content');
 
-            // Créer backdrop
-            if (!document.querySelector('.modal-backdrop')) {
-                const backdrop = document.createElement('div');
-                backdrop.className = 'modal-backdrop fade show';
-                backdrop.style.zIndex = '1050';
-                document.body.appendChild(backdrop);
-
-                backdrop.addEventListener('click', () => {
-                    modal.style.display = 'none';
-                    modal.classList.remove('show');
-                    modal.setAttribute('aria-hidden', 'true');
-                    backdrop.remove();
-                    document.body.classList.remove('modal-open');
-                });
-            }
-
-            console.log(`⚠️ Modal ${modalId} ouverte manuellement`);
+        if (dialog) {
+            dialog.style.zIndex = '1056';
+            dialog.style.position = 'relative';
         }
-    };
+
+        if (content) {
+            content.style.zIndex = '1057';
+            content.style.position = 'relative';
+        }
+
+        // Ajouter backdrop avec z-index correct
+        const backdrop = document.createElement('div');
+        backdrop.className = 'modal-backdrop fade show';
+        backdrop.style.zIndex = '1050';
+        document.body.appendChild(backdrop);
+
+        // Ajouter classe au body
+        document.body.classList.add('modal-open');
+
+        // Fermeture sur backdrop
+        backdrop.addEventListener('click', () => {
+            closeModalManually(modal);
+        });
+
+        // Fermeture sur bouton close
+        const closeButtons = modal.querySelectorAll('[data-bs-dismiss="modal"]');
+        closeButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                closeModalManually(modal);
+            });
+        });
+    }
+
+    function closeModalManually(modal) {
+        modal.style.display = 'none';
+        modal.classList.remove('show');
+        modal.setAttribute('aria-hidden', 'true');
+
+        const backdrop = document.querySelector('.modal-backdrop');
+        if (backdrop) {
+            backdrop.remove();
+        }
+
+        document.body.classList.remove('modal-open');
+        document.body.style.overflow = '';
+        document.body.style.paddingRight = '';
+
+        console.log(`🔒 Fermée manuellement: ${modal.id}`);
+    }
+
+    function addGlobalFunctions() {
+        /* Fonction de nettoyage pour les modales orphelines */
+        window.cleanupModals = function() {
+            document.querySelectorAll('.modal.show').forEach(modal => {
+                closeModalManually(modal);
+            });
+            cleanupOrphanedBackdrops();
+        };
+
+
+    }
 
     // Fonction pour masquer tous les breadcrumbs
     function hideBreadcrumbs() {
@@ -266,12 +378,14 @@
         console.log('👁️ Observer des breadcrumbs activé');
     }
 
-    console.log('📋 Script simplifié de correction des modales admin chargé');
-    console.log('💡 Utilisez debugModals() pour déboguer');
+    // Réessayer après un délai si Bootstrap n'est pas encore chargé
+    setTimeout(initOnce, 500);
 
     // Activer l'observer des breadcrumbs
     observeBreadcrumbs();
 
     // Fonction globale pour masquer manuellement les breadcrumbs
     window.hideBreadcrumbs = hideBreadcrumbs;
+
+    console.log('📋 Gestionnaire unifié des modales admin chargé');
 })();

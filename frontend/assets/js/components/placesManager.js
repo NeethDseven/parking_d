@@ -39,7 +39,8 @@ class PlacesManager {
         this.initTarifsToggle();
         this.initLoadingSpinner();
         this.setupUtilityFunctions();
-        
+        this.setupAutoRefresh();
+
         this.isInitialized = true;
         console.log('✅ PlacesManager initialisé avec succès');
     }
@@ -59,24 +60,32 @@ class PlacesManager {
     initTarifsToggle() {
         if (this.tarifsInfo && this.showFeesCheckbox) {
             // État initial de la grille tarifaire
-            if (!this.showFeesCheckbox.checked) {
-                this.tarifsInfo.style.display = 'none';
-                console.log('✅ Grille tarifaire cachée par défaut');
-            } else {
-                this.tarifsInfo.style.display = 'block';
-                console.log('✅ Grille tarifaire affichée selon checkbox');
-            }
+            this.updateTarifsDisplay(!this.showFeesCheckbox.checked);
+            console.log('✅ État initial grille tarifaire configuré');
 
             // Gestionnaire d'événement pour la checkbox
             this.showFeesCheckbox.addEventListener('change', (e) => {
-                if (e.target.checked) {
-                    this.tarifsInfo.style.display = 'block';
-                    console.log('📋 Grille tarifaire affichée');
-                } else {
-                    this.tarifsInfo.style.display = 'none';
-                    console.log('📋 Grille tarifaire cachée');
-                }
+                this.updateTarifsDisplay(!e.target.checked);
+                console.log(`📋 Grille tarifaire ${e.target.checked ? 'affichée' : 'cachée'}`);
             });
+        }
+    }
+
+    /**
+     * Met à jour l'affichage de la grille tarifaire
+     * @param {boolean} hide - true pour cacher, false pour afficher
+     */
+    updateTarifsDisplay(hide) {
+        if (!this.tarifsInfo) return;
+
+        if (hide) {
+            // Cacher la grille
+            this.tarifsInfo.style.display = 'none';
+            this.tarifsInfo.classList.add('hidden');
+        } else {
+            // Afficher la grille
+            this.tarifsInfo.style.display = 'block';
+            this.tarifsInfo.classList.remove('hidden');
         }
     }
 
@@ -124,10 +133,90 @@ class PlacesManager {
     }
 
     /**
+     * Configuration de la mise à jour automatique des créneaux
+     */
+    setupAutoRefresh() {
+        // Vérifier les changements de statut toutes les 30 secondes
+        this.refreshInterval = setInterval(() => {
+            this.checkForUpdates();
+        }, 30000);
+
+        console.log('✅ Auto-refresh des créneaux configuré (30s)');
+    }
+
+    /**
+     * Vérifie s'il y a des mises à jour de statut des places
+     */
+    async checkForUpdates() {
+        try {
+            const baseUrl = document.querySelector('meta[name="base-url"]')?.content || '/';
+            const response = await fetch(`${baseUrl}api/getPlacesStatus`, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success && data.hasChanges) {
+                    console.log('🔄 Changements détectés, actualisation des créneaux...');
+                    this.refreshPlacesData();
+                }
+            }
+        } catch (error) {
+            console.warn('⚠️ Erreur lors de la vérification des mises à jour:', error);
+        }
+    }
+
+    /**
+     * Actualise les données des places sans recharger la page
+     */
+    async refreshPlacesData() {
+        try {
+            const baseUrl = document.querySelector('meta[name="base-url"]')?.content || '/';
+            const currentUrl = new URL(window.location);
+            const params = new URLSearchParams(currentUrl.search);
+
+            // Ajouter un paramètre pour indiquer que c'est une requête AJAX
+            params.set('ajax', '1');
+
+            const response = await fetch(`${baseUrl}home/places?${params.toString()}`, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            if (response.ok) {
+                const html = await response.text();
+
+                // Extraire et remplacer seulement la section des places
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const newPlacesContainer = doc.querySelector('#places-container');
+                const currentPlacesContainer = document.querySelector('#places-container');
+
+                if (newPlacesContainer && currentPlacesContainer) {
+                    currentPlacesContainer.innerHTML = newPlacesContainer.innerHTML;
+                    console.log('✅ Créneaux mis à jour automatiquement');
+
+                    // Réinitialiser les événements après la mise à jour
+                    if (window.app && window.app.uiManager) {
+                        window.app.uiManager.setupPlacesCards();
+                    }
+                }
+            }
+        } catch (error) {
+            console.warn('⚠️ Erreur lors de l\'actualisation des places:', error);
+        }
+    }
+
+    /**
      * Méthode pour rafraîchir l'affichage des places
      */
     refreshPlacesDisplay() {
-        console.log('🔄 Rafraîchissement de l'affichage des places');
+        console.log('🔄 Rafraîchissement de l\'affichage des places');
         // Le CSS Grid gère automatiquement la disposition
         // Réinitialiser les éléments si nécessaire
         this.initElements();
@@ -152,9 +241,9 @@ class PlacesManager {
 }
 
 // Initialisation automatique seulement si on est sur la page des places
-if (window.location.pathname.includes('/places')) {
+if (window.location.pathname.includes('/home/places')) {
     const placesManager = new PlacesManager();
-    
+
     // Exposer l'instance pour utilisation par d'autres scripts
     window.placesManager = placesManager;
 }

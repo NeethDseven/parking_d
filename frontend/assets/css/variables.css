@@ -1,13 +1,9 @@
-/* Variables CSS Uniformes - Basées sur le style header élégant */
+/* Variables CSS uniformes basées sur le style header élégant */
 :root {
-  /* ========== COULEURS PRINCIPALES ========== */
-  /* Basé sur votre nouvelle couleur #2c3e50 */
-  --primary-dark: #1a252f;
-  /* Footer et éléments sombres */
-  --primary-main: #2c3e50;
-  /* Couleur principale - #2c3e50 */
-  --primary-light: #34495e;
-  /* Variation claire */
+  /* Couleurs principales basées sur #2c3e50 */
+  --primary-dark: #1a252f; /* Footer et éléments sombres */
+  --primary-main: #2c3e50; /* Couleur principale */
+  --primary-light: #34495e; /* Variation claire */
   --header-bg: #2c3e50;
   /* Header couleur #2c3e50 */
   /* ========== BACKGROUNDS (Basé sur la page places) ========== */

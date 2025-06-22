@@ -1,10 +1,9 @@
 <?php
-// Démarrer la session
+// Point d'entrée principal de l'application
 session_start();
 
-// Charger la configuration
 require_once 'backend/config/config.php';
 
-// Charger le routeur
+// Route la requête vers le bon contrôleur
 $router = new Router();
 $router->route();

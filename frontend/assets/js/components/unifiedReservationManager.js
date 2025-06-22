@@ -1,31 +1,20 @@
-// @ts-nocheck
 /**
  * RESERVATION MANAGER UNIFIÉ
  * =========================
- * 
- * Ce fichier consolide et remplace tous les composants de réservation suivants :
- * - reservationModal.js
- * - reservationForm.js  
- * - placeIdValidator.js
- * - reservationConverter.js
- * - alertHandler.js
- * - similarPlacesHandler.js
- * - initializeReserveButtons.js
- * - modalTimerUpdater.js
- * - immediateReservationTracker.js
- * 
- * Version consolidée pour éliminer les redondances et conflits
+ *
+ * Consolide tous les composants de réservation pour éliminer les redondances
  */
 
 (function() {
     'use strict';
-    
-    // Protection contre le double chargement
+
+    /* Protection contre le double chargement */
     if (window.UnifiedReservationManager) {
         console.log('⚠️ UnifiedReservationManager déjà chargé');
         return;
     }
-      console.log('🚀 UnifiedReservationManager: Initialisation...');
+
+    console.log('🚀 UnifiedReservationManager: Initialisation...');
 
     class UnifiedReservationManager {
         constructor() {

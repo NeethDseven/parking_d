@@ -28,7 +28,7 @@
             <button class="nav-link" id="reservations-tab" data-bs-toggle="tab" data-bs-target="#reservations" type="button" role="tab" aria-controls="reservations" aria-selected="false">
                 <i class="fas fa-ticket-alt me-2"></i>Mes réservations
                 <?php if (!empty($reservations)): ?>
-                    <span class="badge rounded-pill bg-primary"><?php echo count($reservations); ?></span>
+                    <span class="badge rounded-pill bg-electric-blue"><?php echo count($reservations); ?></span>
                 <?php endif; ?>
             </button>
         </li>
@@ -481,353 +481,68 @@
 <?php endif; ?>
 
 
-<!-- CSS spécifique pour les QR codes et les notifications -->
-<style>
-.qr-code-container {
-    min-height: 170px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: #f8f9fa;
-    border: 2px dashed #dee2e6;
-    border-radius: 8px;
-    transition: all 0.3s ease;
-}
+<!-- Styles chargés automatiquement via profile.css -->
 
-.qr-code-container:has(img) {
-    background-color: white;
-    border-style: solid;
-    border-color: #e9ecef;
-}
+<!-- JavaScript chargé automatiquement via profile.js -->
 
-.qr-code-container img {
-    transition: transform 0.2s ease;
-}
+<!-- Gestion des onglets chargée automatiquement via profile.js -->
 
-.qr-code-container img:hover {
-    transform: scale(1.05);
-}
-
-.copy-notification {
-    animation: slideInRight 0.3s ease-out;
-}
-
-@keyframes slideInRight {
-    from {
-        transform: translateX(100%);
-        opacity: 0;
-    }
-    to {
-        transform: translateX(0);
-        opacity: 1;
-    }
-}
-
-.modal-body .card {
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    transition: transform 0.2s ease;
-}
-
-.modal-body .card:hover {
-    transform: translateY(-2px);
-}
-
-.font-monospace {
-    letter-spacing: 2px;
-    font-weight: 600;
-}
-
-.btn-outline-primary:hover,
-.btn-outline-success:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-}
-</style>
-
-<!-- JavaScript pour la gestion des QR codes et des fonctionnalités du profil -->
+<!-- Script de secours pour l'activation des onglets -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('✅ Initialisation de la page profil');
-    
-    // Fonction pour générer les QR codes avec l'API QR Server
-    function generateQRCode(text, containerId, color = '000000') {
-        const container = document.getElementById(containerId);
-        if (!container || !text) {
-            console.warn('⚠️ Conteneur ou texte manquant pour le QR code:', containerId, text);
-            return;
-        }
+    console.log('🔧 Script de secours pour les onglets du profil');
 
-        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(text)}&color=${color}&bgcolor=ffffff&margin=10`;
-        const img = document.createElement('img');
-        img.src = qrUrl;
-        img.alt = 'QR Code: ' + text;
-        img.style.width = '150px';
-        img.style.height = '150px';
-        img.style.border = '1px solid #ddd';
-        img.style.borderRadius = '5px';
-        img.className = 'img-fluid';
-        
-        img.onload = function() {
-            console.log('✅ QR code généré pour:', containerId);
-        };
-        
-        img.onerror = function() {
-            console.error('❌ Erreur lors de la génération du QR code pour:', containerId);
-            container.innerHTML = '<div class="text-muted small"><i class="fas fa-exclamation-triangle"></i> QR code indisponible</div>';
-        };
-        
-        container.innerHTML = '';
-        container.appendChild(img);
-    }    // Génération des QR codes pour chaque réservation quand les modals s'ouvrent
-    // Utilisation d'un sélecteur générique pour éviter les erreurs de variables dynamiques    <?php if (!empty($reservations)): ?>
-        // Données des réservations pour JavaScript
-        const reservationsData = [
-            <?php 
-            $reservationDataArray = [];
-            foreach ($reservations as $reservation): 
-                if (isset($reservation['code_sortie']) && !empty($reservation['code_sortie'])): 
-                    $reservationDataArray[] = sprintf(
-                        '{id: %d, codeAcces: "%s", codeSortie: "%s"}',
-                        $reservation['id'],
-                        isset($reservation['code_acces']) ? addslashes($reservation['code_acces']) : '',
-                        isset($reservation['code_sortie']) ? addslashes($reservation['code_sortie']) : ''
-                    );
-                endif;
-            endforeach;
-            echo implode(',', $reservationDataArray);
-            ?>
-        ];
+    // Fonction pour activer un onglet
+    function forceActivateTab(tabId) {
+        console.log('🎯 Activation forcée de l\'onglet:', tabId);
 
-        // Attacher les événements aux modals
-        reservationsData.forEach(function(reservation) {
-            if (!reservation.id) return;
-
-            const modalElement = document.getElementById('codeModal' + reservation.id);
-            if (modalElement) {
-                modalElement.addEventListener('shown.bs.modal', function() {
-                    console.log('📱 Modal ouvert pour la réservation', reservation.id);
-
-                    // Vérifier et générer les codes manquants
-                    generateMissingCodes(reservation.id, reservation.codeAcces, reservation.codeSortie);
-                });
-            } else {
-                console.warn('⚠️ Modal non trouvé pour la réservation', reservation.id);
-            }
-        });
-
-        // Fonction pour générer les codes manquants
-        function generateMissingCodes(reservationId, codeAcces, codeSortie) {
-            // Si les codes existent déjà, générer directement les QR codes
-            if (codeAcces && codeSortie) {
-                generateQRCode(codeAcces, 'qr-entry-code-' + reservationId, '007bff');
-                generateQRCode(codeSortie, 'qr-exit-code-' + reservationId, '198754');
-                return;
-            }
-
-            // Sinon, faire une requête AJAX pour générer les codes manquants
-            fetch('<?php echo BASE_URL; ?>reservation/generateCodes', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    reservation_id: reservationId
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Mettre à jour les codes dans l'interface
-                    if (data.code_acces) {
-                        const codeAccesElement = document.getElementById('code-acces-' + reservationId);
-                        const copyAccesButton = document.getElementById('copy-acces-' + reservationId);
-                        if (codeAccesElement) {
-                            codeAccesElement.textContent = data.code_acces;
-                            if (copyAccesButton) copyAccesButton.style.display = 'inline-block';
-                        }
-                        generateQRCode(data.code_acces, 'qr-entry-code-' + reservationId, '007bff');
-                    }
-
-                    if (data.code_sortie) {
-                        const codeSortieElement = document.getElementById('code-sortie-' + reservationId);
-                        const copySortieButton = document.getElementById('copy-sortie-' + reservationId);
-                        if (codeSortieElement) {
-                            codeSortieElement.textContent = data.code_sortie;
-                            if (copySortieButton) copySortieButton.style.display = 'inline-block';
-                        }
-                        generateQRCode(data.code_sortie, 'qr-exit-code-' + reservationId, '198754');
-                    }
-                } else {
-                    console.error('Erreur lors de la génération des codes:', data.message);
-                    // Afficher un message d'erreur dans l'interface
-                    const codeAccesElement = document.getElementById('code-acces-' + reservationId);
-                    const codeSortieElement = document.getElementById('code-sortie-' + reservationId);
-                    if (codeAccesElement && !codeAcces) codeAccesElement.textContent = 'Erreur';
-                    if (codeSortieElement && !codeSortie) codeSortieElement.textContent = 'Erreur';
-                }
-            })
-            .catch(error => {
-                console.error('Erreur réseau:', error);
-                const codeAccesElement = document.getElementById('code-acces-' + reservationId);
-                const codeSortieElement = document.getElementById('code-sortie-' + reservationId);
-                if (codeAccesElement && !codeAcces) codeAccesElement.textContent = 'Erreur réseau';
-                if (codeSortieElement && !codeSortie) codeSortieElement.textContent = 'Erreur réseau';
-            });
-        }
-    <?php endif; ?>
-
-    // Fonction pour copier dans le presse-papiers
-    window.copyToClipboard = function(text) {
-        if (!navigator.clipboard) {
-            // Fallback pour les anciens navigateurs
-            const textArea = document.createElement('textarea');
-            textArea.value = text;
-            textArea.style.position = 'fixed';
-            textArea.style.left = '-999999px';
-            textArea.style.top = '-999999px';
-            document.body.appendChild(textArea);
-            textArea.focus();
-            textArea.select();
-            
-            try {
-                document.execCommand('copy');
-                showCopyNotification('Code copié dans le presse-papiers!');
-            } catch (err) {
-                console.error('Erreur lors de la copie:', err);
-                showCopyNotification('Erreur lors de la copie', 'error');
-            }
-            
-            document.body.removeChild(textArea);
-            return;
-        }
-
-        navigator.clipboard.writeText(text).then(function() {
-            showCopyNotification('Code copié dans le presse-papiers!');
-        }).catch(function(err) {
-            console.error('Erreur lors de la copie:', err);
-            showCopyNotification('Erreur lors de la copie', 'error');
-        });
-    };
-
-    // Fonction pour afficher les notifications de copie
-    function showCopyNotification(message, type = 'success') {
-        // Supprimer les notifications existantes
-        const existingNotifications = document.querySelectorAll('.copy-notification');
-        existingNotifications.forEach(notification => notification.remove());
-
-        // Créer la nouvelle notification
-        const notification = document.createElement('div');
-        notification.className = `copy-notification alert alert-${type === 'error' ? 'danger' : 'success'} alert-dismissible fade show position-fixed`;
-        notification.style.top = '20px';
-        notification.style.right = '20px';
-        notification.style.zIndex = '9999';
-        notification.style.minWidth = '300px';
-        
-        notification.innerHTML = `
-            <i class="fas fa-${type === 'error' ? 'exclamation-triangle' : 'check-circle'} me-2"></i>
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        `;
-        
-        document.body.appendChild(notification);
-        
-        // Supprimer automatiquement après 3 secondes
-        setTimeout(() => {
-            if (notification.parentNode) {
-                notification.remove();
-            }
-        }, 3000);
-    }
-
-    console.log('✅ Gestionnaire de QR codes et copie initialisé');
-});
-</script>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('🔄 Initialisation de la gestion des onglets du profil...');
-    
-    // Fonction pour activer un onglet spécifique
-    function activateProfileTab(tabId) {
-        console.log('Activation de l\'onglet profil:', tabId);
-        
         // Désactiver tous les onglets
         document.querySelectorAll('#profileTabs .nav-link').forEach(tab => {
             tab.classList.remove('active');
             tab.setAttribute('aria-selected', 'false');
         });
-        
-        // Masquer tous les contenus
-        document.querySelectorAll('#profileTabsContent .tab-pane').forEach(pane => {
+
+        document.querySelectorAll('.tab-content .tab-pane').forEach(pane => {
             pane.classList.remove('show', 'active');
         });
-        
+
         // Activer l'onglet demandé
         const tabButton = document.getElementById(tabId + '-tab');
         const tabPane = document.getElementById(tabId);
-        
+
         if (tabButton && tabPane) {
             tabButton.classList.add('active');
             tabButton.setAttribute('aria-selected', 'true');
             tabPane.classList.add('show', 'active');
-            
             console.log('✅ Onglet activé:', tabId);
             return true;
         } else {
-            console.warn('❌ Onglet non trouvé:', tabId);
+            console.warn('⚠️ Onglet non trouvé:', tabId);
             return false;
         }
     }
-    
-    // Gérer l'URL hash au chargement
-    function handleUrlHash() {
+
+    // Vérifier l'ancre dans l'URL
+    function checkUrlHash() {
         const hash = window.location.hash.substring(1);
-        if (hash && ['informations', 'reservations', 'subscriptions', 'notifications'].includes(hash)) {
-            console.log('Hash détecté:', hash);
+        console.log('🔗 Hash détecté:', hash);
+
+        if (hash === 'notifications' || hash === 'reservations' || hash === 'informations' || hash === 'subscriptions') {
             setTimeout(() => {
-                activateProfileTab(hash);
+                forceActivateTab(hash);
             }, 100);
-        } else if (hash) {
-            console.log('Hash non reconnu:', hash);
         }
     }
-    
-    // Gérer les changements d'hash
-    window.addEventListener('hashchange', handleUrlHash);
-    
-    // Gérer l'hash initial
-    handleUrlHash();
-    
-    // Exposer la fonction globalement pour les liens externes
-    window.activateProfileTab = activateProfileTab;
-    
-    // Gérer la pagination des réservations
-    document.addEventListener('DOMContentLoaded', function() {
-        // Si on a un paramètre page dans l'URL, activer automatiquement l'onglet réservations
-        const urlParams = new URLSearchParams(window.location.search);
-        const pageParam = urlParams.get('page');
-        
-        if (pageParam && window.location.hash === '#reservations') {
-            setTimeout(() => {
-                activateProfileTab('reservations');
-            }, 100);
-        }
-        
-        // Gérer les clics sur la pagination
-        document.querySelectorAll('.pagination .page-link').forEach(link => {
-            link.addEventListener('click', function(e) {
-                // Assurer que l'onglet réservations reste actif après la navigation
-                setTimeout(() => {
-                    if (window.location.hash === '#reservations') {
-                        activateProfileTab('reservations');
-                    }
-                }, 100);
-            });
-        });
-    });
 
-    console.log('✅ Gestion des onglets du profil initialisée');
+    // Vérifier immédiatement
+    checkUrlHash();
+
+    // Vérifier après un délai
+    setTimeout(checkUrlHash, 500);
+
+    // Écouter les changements de hash
+    window.addEventListener('hashchange', checkUrlHash);
+
+    console.log('✅ Script de secours initialisé');
 });
 </script>
-
-<!-- La gestion des onglets est maintenant prise en charge par profileTabService.js et profileTabs.js -->

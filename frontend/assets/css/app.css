@@ -1,20 +1,13 @@
-/* ========== FICHIER CSS PRINCIPAL OPTIMISÉ ========== */
-/* Application de gestion de parking - Styles uniformisés */
+/* Fichier CSS principal - Application de gestion de parking */
 
-/* Import des variables globales */
+/* Variables globales */
 @import 'variables.css';
 
-/* Import des composants */
+/* Composants UI */
 @import 'components.css';
 
-/* Import des styles pages */
+/* Styles des pages */
 @import 'pages.css';
-
-/* Import des styles admin (chargé conditionnellement) */
-@import 'admin.css';
-
-/* Import des corrections CSS */
-@import 'fixes.css';
 
 /* ========== STYLES GLOBAUX ========== */
 * {

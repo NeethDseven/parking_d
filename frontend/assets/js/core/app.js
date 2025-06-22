@@ -61,10 +61,22 @@
                     await this.loadModule('components/unifiedUIManager');
                 }
 
+                // Script spécifique pour la page places
+                if (this.page === 'places') {
+                    console.log('🔄 Chargement script places...');
+                    await this.loadModule('pages/places');
+                }
+
                 // Gestionnaires unifiés pour l'administration (remplacent tous les anciens composants admin)
                 if (this.page.startsWith('admin_')) {
                     console.log('🔄 Chargement modules admin...');
                     await this.loadModule('components/unifiedAdminManager');
+
+                    // Script spécifique pour le dashboard admin
+                    if (this.page === 'admin_dashboard') {
+                        console.log('🔄 Chargement script dashboard admin...');
+                        await this.loadModule('pages/admin-dashboard');
+                    }
                 }
 
                 // Charger les dépendances spécifiques à la page (VERSION CONSOLIDÉE)

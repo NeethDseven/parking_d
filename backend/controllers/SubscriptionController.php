@@ -1,20 +1,22 @@
 <?php
+
 /**
  * Contrôleur d'abonnements consolidé et optimisé
  * Gestion des abonnements utilisateurs et interface d'administration des abonnements
  */
 class SubscriptionController extends BaseController
-{    private $subscriptionModel;
-    private $userModel;   
+{
+    private $subscriptionModel;
+    private $userModel;
     private $logModel;
-    private $notificationService;    public function __construct()
+    public function __construct()
     {
         parent::__construct();
         $this->subscriptionModel = new SubscriptionModel();
         $this->userModel = new UserModel();
         $this->logModel = new LogModel();
-        $this->notificationService = new NotificationService();
-    }/**
+    }
+    /**
      * Affiche la liste des abonnements disponibles
      */
     public function index()
@@ -30,7 +32,8 @@ class SubscriptionController extends BaseController
         ];
 
         $this->renderView('subscription/index', $data);
-    }    /**
+    }
+    /**
      * Gère la souscription à un abonnement
      */
     public function subscribe($subscriptionId = null)
@@ -59,30 +62,32 @@ class SubscriptionController extends BaseController
         $paymentId = null; // À remplacer par l'ID du paiement réel
 
         // Souscrire l'utilisateur
-        $result = $this->subscriptionModel->subscribeUser($_SESSION['user']['id'], $subscriptionId, $paymentId);        if ($result) {
+        $result = $this->subscriptionModel->subscribeUser($_SESSION['user']['id'], $subscriptionId, $paymentId);
+        if ($result) {
             // Récupérer les détails de l'abonnement créé
             $userSubscriptions = $this->subscriptionModel->getUserActiveSubscriptions($_SESSION['user']['id']);
             $subscription = $this->subscriptionModel->getSubscriptionById($subscriptionId);
-            
+
             // Mise à jour de la session utilisateur pour refléter le nouvel état d'abonnement
             $_SESSION['user']['is_subscribed'] = 1;
-            
+
             // Envoyer une notification de confirmation d'abonnement
             if (!empty($userSubscriptions) && $subscription) {
                 $userSubscription = $userSubscriptions[0]; // Prendre le plus récent
-                $this->notificationService->sendSubscriptionConfirmationNotification(
+                $this->userModel->sendSubscriptionConfirmationNotification(
                     $_SESSION['user']['id'],
                     $subscription['nom'], // Utiliser 'nom' au lieu de 'name'
                     $userSubscription['date_debut'],
                     $userSubscription['date_fin']
                 );
             }
-            
+
             $this->redirectWithSuccess('auth/profile', "Vous avez souscrit avec succès à l'abonnement " . $subscription['nom']);
         } else {
             $this->redirectWithError('subscription', "Une erreur est survenue lors de la souscription à l'abonnement.");
         }
-    }    /**
+    }
+    /**
      * Gère la résiliation d'un abonnement
      */
     public function cancel($userSubscriptionId = null)
@@ -101,17 +106,18 @@ class SubscriptionController extends BaseController
             // Mettre à jour la session utilisateur
             $hasActiveSubscription = $this->subscriptionModel->updateUserSubscriptionStatus($_SESSION['user']['id']);
             $_SESSION['user']['is_subscribed'] = $hasActiveSubscription ? 1 : 0;
-            
+
             $this->redirectWithSuccess('auth/profile', "Votre abonnement a été résilié avec succès.");
         } else {
             $this->redirectWithError('auth/profile', "Une erreur est survenue lors de la résiliation de l'abonnement.");
         }
-    }    /**
+    }
+    /**
      * Interface d'administration des abonnements
      */    public function admin()
     {
         $this->requireAdmin();
-        
+
         // Récupérer tous les abonnements, y compris les inactifs
         $subscriptions = $this->subscriptionModel->getAllSubscriptions(false);
         $stats = $this->subscriptionModel->getSubscriptionStats();
@@ -133,7 +139,7 @@ class SubscriptionController extends BaseController
             'month' => $this->subscriptionModel->calculateSubscriptionRevenue('month'),
             'total' => $this->subscriptionModel->calculateSubscriptionRevenue('total')
         ];
-        
+
         // Utiliser setActiveMenu et combiner avec les autres données
         $data = $this->setActiveMenu('subscriptions') + [
             'subscriptions' => $subscriptions,
@@ -143,7 +149,8 @@ class SubscriptionController extends BaseController
         ];
 
         $this->renderView('admin/subscriptions/index', $data, 'admin');
-    }    /**
+    }
+    /**
      * Gère la création d'un nouvel abonnement
      */
     public function create()
@@ -154,7 +161,7 @@ class SubscriptionController extends BaseController
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $requiredFields = ['name', 'description', 'price', 'duration_days'];
             $validatedData = $this->validateRequiredFields($requiredFields);
-            
+
             // Si validateRequiredFields retourne false, la redirection a déjà eu lieu
             if ($validatedData === false) {
                 return;
@@ -189,7 +196,8 @@ class SubscriptionController extends BaseController
         }
 
         $this->renderView('admin/subscriptions/create', [], 'admin');
-    }/**
+    }
+    /**
      * Gère la mise à jour d'un abonnement
      */
     public function update($id = null)
@@ -205,10 +213,11 @@ class SubscriptionController extends BaseController
         $subscription = $this->subscriptionModel->getSubscriptionById($id);
         if (!$subscription) {
             $this->redirectWithError('subscription/admin', "Cet abonnement n'existe pas.");
-        }        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        }
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $requiredFields = ['name', 'description', 'price', 'duration_days'];
             $validatedData = $this->validateRequiredFields($requiredFields);
-            
+
             // Si validateRequiredFields retourne false, la redirection a déjà eu lieu
             if ($validatedData === false) {
                 return;
@@ -244,7 +253,8 @@ class SubscriptionController extends BaseController
 
         $data = ['subscription' => $subscription];
         $this->renderView('admin/subscriptions/edit', $data, 'admin');
-    }    /**
+    }
+    /**
      * Gère la suppression d'un abonnement
      */
     public function delete($id = null)
@@ -263,7 +273,8 @@ class SubscriptionController extends BaseController
         } else {
             $this->redirectWithError('subscription/admin', "Une erreur est survenue lors de la suppression de l'abonnement.");
         }
-    }    /**
+    }
+    /**
      * Traite le paiement d'un abonnement
      */
     public function processPayment()
@@ -286,7 +297,7 @@ class SubscriptionController extends BaseController
             if (!isset($_POST['mode_paiement']) || trim($_POST['mode_paiement']) === '') {
                 $missing[] = 'Mode de paiement';
             }
-            
+
             $this->redirectWithError('subscription', "Données de paiement incomplètes. Champs manquants : " . implode(', ', $missing));
             return;
         }
@@ -352,7 +363,7 @@ class SubscriptionController extends BaseController
             if ($result) {
                 // Mise à jour de la session utilisateur
                 $_SESSION['user']['is_subscribed'] = 1;
-                
+
                 // Message de succès adapté au mode de paiement
                 $successMessage = "Félicitations ! Vous avez souscrit avec succès à l'abonnement " . $subscription['name'];
                 if ($modePaiement === 'virement') {
@@ -360,7 +371,7 @@ class SubscriptionController extends BaseController
                 } else {
                     $successMessage .= ". Votre abonnement est maintenant actif !";
                 }
-                
+
                 $this->redirectWithSuccess('auth/profile', $successMessage);
             } else {
                 $this->redirectWithError('subscription', "Une erreur est survenue lors de la souscription à l'abonnement.");
@@ -416,7 +427,7 @@ class SubscriptionController extends BaseController
                 JOIN abonnements a ON ua.abonnement_id = a.id
                 WHERE ua.status = 'actif' AND ua.date_fin > NOW()
                 ORDER BY ua.date_fin ASC";
-        
+
         $db = Database::getInstance();
         $users = $db->findAll($sql);
 

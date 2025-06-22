@@ -11,7 +11,8 @@ if (!function_exists('getTypePlaceBadge')) {
      * @param string $type Le type de place
      * @return string Le HTML du badge
      */
-    function getTypePlaceBadge($type) {
+    function getTypePlaceBadge($type)
+    {
         switch ($type) {
             case 'standard':
                 return '<span class="badge bg-secondary">Standard</span>';
@@ -37,7 +38,8 @@ if (!function_exists('getAllTypesPlaces')) {
      * 
      * @return array Les types de places avec leur label d'affichage
      */
-    function getAllTypesPlaces() {
+    function getAllTypesPlaces()
+    {
         return [
             'standard' => 'Standard',
             'handicape' => 'PMR',
@@ -55,7 +57,8 @@ if (!function_exists('isCustomPlaceType')) {
      * @param string $type Le type de place à vérifier
      * @return bool True si le type est personnalisé, false sinon
      */
-    function isCustomPlaceType($type) {
+    function isCustomPlaceType($type)
+    {
         $predefinedTypes = array_keys(getAllTypesPlaces());
         return !in_array($type, $predefinedTypes);
     }
@@ -68,7 +71,8 @@ if (!function_exists('formatCustomPlaceType')) {
      * @param string $type Le type personnalisé
      * @return string Le nom formaté
      */
-    function formatCustomPlaceType($type) {
+    function formatCustomPlaceType($type)
+    {
         return ucfirst(str_replace('-', ' ', $type));
     }
 }
@@ -80,8 +84,8 @@ if (!function_exists('sanitizePlaceType')) {
      * @param string $type Le type de place à nettoyer
      * @return string Le type nettoyé
      */
-    function sanitizePlaceType($type) {
+    function sanitizePlaceType($type)
+    {
         return strtolower(trim(preg_replace('/[^a-zA-Z0-9\s\-\/]/', '', $type)));
     }
 }
-?>

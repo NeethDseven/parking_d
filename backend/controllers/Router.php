@@ -1,27 +1,24 @@
 <?php
-/**
- * Routeur principal optimisé
- * Analyse l'URL et achemine les requêtes vers les contrôleurs appropriés
- */
+// Routeur principal - Analyse l'URL et route vers les contrôleurs
 class Router
 {
-    /**
-     * Routes protégées nécessitant une authentification
-     */    private $protectedRoutes = [
+    // Routes nécessitant une authentification
+    private $protectedRoutes = [
         'auth/profile',
         'reservation/reserve',
+        'reservation/reserveImmediate',
         'reservation/payment',
         'reservation/confirmation',
         'reservation/generateAccessCode',
-        'subscription', 
+        'reservation/immediate',
+        'reservation/endImmediate',
+        'subscription',
         'subscription/subscribe',
         'subscription/cancel',
         'notification'
     ];
-    
-    /**
-     * Routes réservées aux administrateurs
-     */
+
+    // Routes réservées aux administrateurs
     private $adminRoutes = [
         'admin',
         'admin/dashboard',
@@ -30,27 +27,21 @@ class Router
         'admin/reservations',
         'admin/tarifs',
         'admin/subscriptions',
-        'subscription/admin'  // Ajout de la route subscription/admin
+        'subscription/admin'
     ];
-    
-    /**
-     * Traite la requête et route vers le bon contrôleur
-     */
+
+    // Traite la requête et route vers le bon contrôleur
     public function route()
     {
-        // Récupérer l'URL demandée
         $url = isset($_GET['url']) ? trim($_GET['url'], '/') : '';
-        
-        // Identifier la route actuelle
         $currentRoute = strtolower($url);
 
-        // Vérifier les droits d'accès aux routes protégées
+        // Vérifie les droits d'accès
         if ($this->isProtectedRoute($currentRoute) && !$this->isAuthenticated()) {
             $this->redirectToLogin();
             return;
         }
-        
-        // Vérifier les droits d'accès aux routes admin
+
         if ($this->isAdminRoute($currentRoute) && !$this->isAdmin()) {
             $this->accessDenied();
             return;
@@ -63,19 +54,17 @@ class Router
             return;
         }
 
-        // Diviser l'URL en segments
+        // Parse l'URL en segments
         $segments = explode('/', $url);
         $controller_name = ucfirst($segments[0]) . 'Controller';
         $action = isset($segments[1]) ? $segments[1] : 'index';
         $params = array_slice($segments, 2);
 
-        // Vérifier si le contrôleur existe et appeler son action
+        // Instancie et appelle le contrôleur
         if (class_exists($controller_name)) {
             $controller = new $controller_name();
 
-            // Vérifier si l'action existe
             if (method_exists($controller, $action)) {
-                // Appeler la méthode avec les paramètres
                 call_user_func_array([$controller, $action], $params);
             } else {
                 $this->notFound();
@@ -85,25 +74,19 @@ class Router
         }
     }
 
-    /**
-     * Vérifie si l'utilisateur est authentifié
-     */
+    // Vérifie si l'utilisateur est authentifié
     private function isAuthenticated()
     {
         return isset($_SESSION['user']);
     }
-    
-    /**
-     * Vérifie si l'utilisateur a les droits administrateur
-     */
+
+    // Vérifie si l'utilisateur est administrateur
     private function isAdmin()
     {
         return isset($_SESSION['user']) && $_SESSION['user']['role'] === 'admin';
     }
-    
-    /**
-     * Vérifie si la route demandée est protégée
-     */
+
+    // Vérifie si la route nécessite une authentification
     private function isProtectedRoute($route)
     {
         foreach ($this->protectedRoutes as $protectedRoute) {
@@ -113,10 +96,8 @@ class Router
         }
         return false;
     }
-    
-    /**
-     * Vérifie si la route demandée est réservée aux administrateurs
-     */
+
+    // Vérifie si la route est réservée aux administrateurs
     private function isAdminRoute($route)
     {
         foreach ($this->adminRoutes as $adminRoute) {
@@ -126,29 +107,23 @@ class Router
         }
         return false;
     }
-    
-    /**
-     * Redirige vers la page de connexion avec la route d'origine
-     */
+
+    // Redirige vers login en conservant la route d'origine
     private function redirectToLogin()
     {
         $redirect = urlencode($_SERVER['REQUEST_URI']);
         header("Location: " . BASE_URL . "auth/login?redirect=" . $redirect);
         exit;
     }
-    
-    /**
-     * Affiche une page d'erreur accès refusé
-     */
+
+    // Affiche la page d'accès refusé
     private function accessDenied()
     {
         $controller = new ErrorController();
         $controller->forbidden();
     }
 
-    /**
-     * Affiche une page d'erreur 404
-     */
+    // Affiche la page 404
     private function notFound()
     {
         header("HTTP/1.0 404 Not Found");

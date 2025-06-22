@@ -9,52 +9,45 @@ class UserModel
     }
     public function authenticate($email, $password)
     {
-        // Vérifier d'abord si la colonne is_subscribed existe
+        // Vérifie si la colonne is_subscribed existe pour compatibilité
         $hasIsSubscribed = $this->columnExists('users', 'is_subscribed');
 
         if ($hasIsSubscribed) {
-            $sql = "SELECT id, email, password, nom, prenom, role, telephone, status, is_subscribed 
-                    FROM users 
-                    WHERE email = :email";
+            $sql = "SELECT id, email, password, nom, prenom, role, telephone, status, is_subscribed
+                    FROM users WHERE email = :email";
         } else {
-            $sql = "SELECT id, email, password, nom, prenom, role, telephone, status 
-                    FROM users 
-                    WHERE email = :email";
+            $sql = "SELECT id, email, password, nom, prenom, role, telephone, status
+                    FROM users WHERE email = :email";
         }
 
         $user = $this->db->findOne($sql, ['email' => $email]);
 
         if ($user && password_verify($password, $user['password'])) {
-            // Vérifier si le compte est actif
+            // Refuse les comptes inactifs
             if (isset($user['status']) && $user['status'] === 'inactif') {
-                // Compte désactivé
                 return false;
             }
 
-            // Ajouter la valeur par défaut pour is_subscribed si elle n'existe pas
+            // Valeur par défaut pour is_subscribed
             if (!isset($user['is_subscribed'])) {
                 $user['is_subscribed'] = 0;
             }
 
-            // Ne pas inclure le mot de passe dans la session
+            // Exclut le mot de passe de la session
             unset($user['password']);
             return $user;
         }
 
         return false;
     }
-    /**
-     * Vérifie si une colonne existe dans une table
-     */
+    // Vérifie si une colonne existe dans une table
     private function columnExists($table, $column)
     {
-        // Important: pour SHOW COLUMNS, on ne peut pas utiliser de paramètres préparés avec LIKE
-        // Donc on doit l'échapper manuellement
-        $escapedColumn = str_replace('`', '``', $column); // Échapper les backticks
+        // SHOW COLUMNS ne supporte pas les paramètres préparés avec LIKE
+        $escapedColumn = str_replace('`', '``', $column);
 
         $sql = "SHOW COLUMNS FROM `{$table}` LIKE '{$escapedColumn}'";
         try {
-            // Exécution directe sans préparation de la requête
             $stmt = $this->db->getConnection()->query($sql);
             $result = $stmt ? $stmt->fetch() : false;
             return $result ? true : false;
@@ -67,35 +60,27 @@ class UserModel
     public function createUser($nom, $prenom, $email, $telephone, $password)
     {
         try {
-            // Vérifier si l'email existe déjà
+            // Vérifie si l'email existe déjà
             if ($this->emailExists($email)) {
                 return false;
             }
 
-            // Connexion directe
             $connection = $this->db->getConnection();
 
-            // SOLUTION DÉFINITIVE : Toujours générer un ID unique manuellement
-
-            // 1. Supprimer tous les utilisateurs avec ID 0
+            // Génère un ID unique manuellement pour éviter les conflits AUTO_INCREMENT
             $connection->exec("DELETE FROM users WHERE id = 0");
 
-            // 2. Obtenir le prochain ID disponible
+            // Obtient le prochain ID disponible
             $stmt = $connection->query("SELECT COALESCE(MAX(id), 0) + 1 as next_id FROM users WHERE id > 0");
             $result = $stmt->fetch();
-            $nextId = $result['next_id'];
+            $nextId = max($result['next_id'], 1);
 
-            // 3. S'assurer que l'ID est au minimum 1
-            if ($nextId < 1) {
-                $nextId = 1;
-            }
-
-            // 4. Vérifier que cet ID n'existe pas déjà (sécurité supplémentaire)
+            // Vérifie que l'ID n'existe pas déjà
             $stmt = $connection->prepare("SELECT COUNT(*) as count FROM users WHERE id = ?");
             $stmt->execute([$nextId]);
             $exists = $stmt->fetch();
 
-            // Si l'ID existe déjà, trouver le premier ID libre
+            // Trouve le premier ID libre si nécessaire
             $attempts = 0;
             while ($exists['count'] > 0 && $attempts < 100) {
                 $nextId++;
@@ -108,7 +93,7 @@ class UserModel
                 return false;
             }
 
-            // 5. Insérer avec l'ID spécifique (sans created_at pour éviter les erreurs)
+            // Insère avec l'ID spécifique
             $sql = "INSERT INTO users (id, nom, prenom, email, telephone, password, role, notifications_active, status)
                     VALUES (?, ?, ?, ?, ?, ?, 'user', 1, 'actif')";
 
@@ -130,20 +115,15 @@ class UserModel
                 return false;
             }
 
-            // 6. Mettre à jour l'AUTO_INCREMENT pour les prochaines insertions
+            // Met à jour l'AUTO_INCREMENT pour les prochaines insertions
             $connection->exec("ALTER TABLE users AUTO_INCREMENT = " . ($nextId + 1));
 
-            // 7. Vérifier que l'utilisateur a bien été créé avec le bon ID
+            // Vérifie que l'utilisateur a bien été créé
             $stmt = $connection->prepare("SELECT id FROM users WHERE email = ? AND id = ?");
             $stmt->execute([$email, $nextId]);
             $createdUser = $stmt->fetch();
 
-            if ($createdUser && $createdUser['id'] == $nextId) {
-                return $nextId;
-            } else {
-                return false;
-            }
-
+            return ($createdUser && $createdUser['id'] == $nextId) ? $nextId : false;
         } catch (Exception $e) {
             error_log("Erreur dans createUser: " . $e->getMessage());
             return false;
@@ -152,11 +132,10 @@ class UserModel
 
     public function updateUser($id, $data)
     {
-        // Si le mot de passe est inclus, le hasher
+        // Hash le mot de passe s'il est fourni
         if (isset($data['password']) && !empty($data['password'])) {
             $data['password'] = password_hash($data['password'], PASSWORD_DEFAULT);
         } else {
-            // Ne pas mettre à jour le mot de passe s'il est vide
             unset($data['password']);
         }
 
@@ -262,15 +241,106 @@ class UserModel
         return $this->db->insert('notifications', $data);
     }
 
+    // ===========================================
+    // MÉTHODES DE NOTIFICATION SPÉCIALISÉES
+    // ===========================================
+
     /**
-     * Récupère les utilisateurs avec pagination
+     * Envoie une notification de début de réservation
      */
+    public function sendReservationStartNotification($userId, $reservationId, $placeName, $dateDebut)
+    {
+        $titre = "🚗 Votre réservation commence !";
+        $message = "Votre réservation #{$reservationId} pour la place {$placeName} commence le " .
+            date('d/m/Y à H:i', strtotime($dateDebut)) . ". N'oubliez pas vos codes d'accès !";
+
+        return $this->createNotification($userId, $titre, $message, 'reservation');
+    }
+
+    /**
+     * Envoie une notification de fin de réservation
+     */
+    public function sendReservationEndReminderNotification($userId, $reservationId, $placeName, $dateFin)
+    {
+        $titre = "⏰ Votre réservation se termine bientôt !";
+        $message = "Votre réservation #{$reservationId} pour la place {$placeName} se termine le " .
+            date('d/m/Y à H:i', strtotime($dateFin)) . ". N'oubliez pas de libérer la place à temps !";
+
+        return $this->createNotification($userId, $titre, $message, 'rappel');
+    }
+
+    /**
+     * Envoie une notification de début de réservation immédiate
+     */
+    public function sendImmediateReservationStartNotification($userId, $reservationId, $placeName, $accessCode)
+    {
+        $titre = "🚀 Réservation immédiate activée !";
+        $message = "Votre réservation immédiate #{$reservationId} pour la place {$placeName} est maintenant active. " .
+            "Code d'accès : {$accessCode}. Vous avez 15 minutes pour vous présenter.";
+
+        return $this->createNotification($userId, $titre, $message, 'reservation');
+    }
+
+    /**
+     * Envoie une notification de confirmation d'abonnement
+     */
+    public function sendSubscriptionConfirmationNotification($userId, $subscriptionName, $dateDebut, $dateFin)
+    {
+        $titre = "✅ Abonnement confirmé !";
+        $message = "Votre abonnement '{$subscriptionName}' est maintenant actif du " .
+            date('d/m/Y', strtotime($dateDebut)) . " au " . date('d/m/Y', strtotime($dateFin)) . ".";
+
+        return $this->createNotification($userId, $titre, $message, 'system');
+    }
+
+    /**
+     * Envoie une notification de fin d'abonnement
+     */
+    public function sendSubscriptionEndingNotification($userId, $subscriptionName, $dateFin)
+    {
+        $titre = "⚠️ Votre abonnement expire bientôt !";
+        $message = "Votre abonnement '{$subscriptionName}' expire le " .
+            date('d/m/Y', strtotime($dateFin)) . ". Pensez à le renouveler pour continuer à bénéficier de vos avantages.";
+
+        return $this->createNotification($userId, $titre, $message, 'system');
+    }
+
+    /**
+     * Envoie une notification de rappel de réservation
+     */
+    public function sendReservationReminderNotification($userId, $reservationId, $placeName, $dateDebut)
+    {
+        $dateDebutObj = new DateTime($dateDebut);
+        $now = new DateTime();
+        $interval = $now->diff($dateDebutObj);
+        $heuresRestantes = ($interval->days * 24) + $interval->h;
+
+        // Déterminer le texte selon le timing
+        if ($heuresRestantes <= 1) {
+            $timing = "dans moins d'une heure";
+            $titre = "🚨 Réservation imminente !";
+        } elseif ($heuresRestantes <= 6) {
+            $timing = "dans quelques heures";
+            $titre = "🔔 Réservation aujourd'hui !";
+        } elseif ($heuresRestantes <= 24) {
+            $timing = "aujourd'hui";
+            $titre = "🔔 Réservation aujourd'hui !";
+        } else {
+            $timing = "demain";
+            $titre = "🔔 Rappel : Réservation demain !";
+        }
+
+        $message = "N'oubliez pas ! Votre réservation #{$reservationId} pour la place {$placeName} commence {$timing} le " .
+            date('d/m/Y à H:i', strtotime($dateDebut)) . ".";
+
+        return $this->createNotification($userId, $titre, $message, 'rappel');
+    }
+
+    // Récupère les utilisateurs avec pagination
     public function getUsersPaginated($offset, $limit)
     {
-        $sql = "SELECT id, email, telephone, nom, prenom, role, notifications_active, status, created_at 
-                FROM users 
-                ORDER BY id DESC 
-                LIMIT :limit OFFSET :offset";
+        $sql = "SELECT id, email, telephone, nom, prenom, role, notifications_active, status, created_at
+                FROM users ORDER BY id DESC LIMIT :limit OFFSET :offset";
 
         $stmt = $this->db->getConnection()->prepare($sql);
         $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
@@ -280,49 +350,11 @@ class UserModel
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    /**
-     * Récupère les utilisateurs avec filtres et tri
-     */
+    // Récupère les utilisateurs avec filtres et tri
     public function getFilteredUsers($role = null, $status = null, $sort = 'created_at_desc', $offset = 0, $limit = 10)
     {
-        $conditions = [];
-        $params = [];
-
-        if ($role && $role !== '') {
-            $conditions[] = "role = :role";
-            $params['role'] = $role;
-        }
-
-        if ($status && $status !== '') {
-            $conditions[] = "status = :status";
-            $params['status'] = $status;
-        }
-
-        $whereClause = "";
-        if (!empty($conditions)) {
-            $whereClause = "WHERE " . implode(" AND ", $conditions);
-        }
-
-        // Gestion du tri
-        $orderClause = "ORDER BY ";
-        switch ($sort) {
-            case 'created_at_asc':
-                $orderClause .= "created_at ASC";
-                break;
-            case 'nom_asc':
-                $orderClause .= "nom ASC, prenom ASC";
-                break;
-            case 'nom_desc':
-                $orderClause .= "nom DESC, prenom DESC";
-                break;
-            case 'email_asc':
-                $orderClause .= "email ASC";
-                break;
-            case 'created_at_desc':
-            default:
-                $orderClause .= "created_at DESC";
-                break;
-        }
+        [$whereClause, $params] = $this->buildFilterConditions($role, $status);
+        $orderClause = $this->buildSortClause($sort);
 
         $sql = "SELECT * FROM users $whereClause $orderClause LIMIT :offset, :limit";
 
@@ -337,10 +369,25 @@ class UserModel
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    /**
-     * Compte le nombre d'utilisateurs avec filtres
-     */
+    // Compte les utilisateurs avec filtres
     public function countFilteredUsers($role = null, $status = null)
+    {
+        [$whereClause, $params] = $this->buildFilterConditions($role, $status);
+
+        $sql = "SELECT COUNT(*) as count FROM users $whereClause";
+
+        $stmt = $this->db->getConnection()->prepare($sql);
+        foreach ($params as $key => $value) {
+            $stmt->bindValue(":$key", $value);
+        }
+        $stmt->execute();
+
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result['count'];
+    }
+
+    // Construit les conditions de filtrage pour éviter la duplication
+    private function buildFilterConditions($role, $status)
     {
         $conditions = [];
         $params = [];
@@ -355,26 +402,26 @@ class UserModel
             $params['status'] = $status;
         }
 
-        $whereClause = "";
-        if (!empty($conditions)) {
-            $whereClause = "WHERE " . implode(" AND ", $conditions);
-        }
+        $whereClause = empty($conditions) ? "" : "WHERE " . implode(" AND ", $conditions);
 
-        $sql = "SELECT COUNT(*) as count FROM users $whereClause";
-
-        $stmt = $this->db->getConnection()->prepare($sql);
-        foreach ($params as $key => $value) {
-            $stmt->bindValue(":$key", $value);
-        }
-        $stmt->execute();
-
-        $result = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $result['count'];
+        return [$whereClause, $params];
     }
 
-    /**
-     * Compte le nombre total d'utilisateurs
-     */
+    // Construit la clause de tri
+    private function buildSortClause($sort)
+    {
+        $sortOptions = [
+            'created_at_asc' => "created_at ASC",
+            'nom_asc' => "nom ASC, prenom ASC",
+            'nom_desc' => "nom DESC, prenom DESC",
+            'email_asc' => "email ASC",
+            'created_at_desc' => "created_at DESC"
+        ];
+
+        return "ORDER BY " . ($sortOptions[$sort] ?? $sortOptions['created_at_desc']);
+    }
+
+    // Compte le nombre total d'utilisateurs
     public function countUsers()
     {
         $sql = "SELECT COUNT(*) as count FROM users";
@@ -382,109 +429,91 @@ class UserModel
         return $result['count'];
     }
 
-    /**
-     * Compte les utilisateurs actifs du dernier mois (ceux qui ont fait une réservation)
-     */
+    // Compte les utilisateurs actifs du dernier mois
     public function countActiveUsersLastMonth()
     {
-        $sql = "SELECT COUNT(DISTINCT user_id) as count 
-                FROM reservations 
-                WHERE user_id > 0 
-                AND created_at >= DATE_SUB(NOW(), INTERVAL 1 MONTH)";
+        $sql = "SELECT COUNT(DISTINCT user_id) as count
+                FROM reservations
+                WHERE user_id > 0 AND created_at >= DATE_SUB(NOW(), INTERVAL 1 MONTH)";
 
         $result = $this->db->findOne($sql);
         return $result['count'];
     }
 
-    /**
-     * Compte les nouveaux utilisateurs du mois en cours
-     */
+    // Compte les nouveaux utilisateurs du mois en cours
     public function countNewUsersThisMonth()
     {
-        $sql = "SELECT COUNT(*) as count 
-                FROM users 
+        $sql = "SELECT COUNT(*) as count
+                FROM users
                 WHERE created_at >= DATE_FORMAT(NOW(), '%Y-%m-01')";
 
         $result = $this->db->findOne($sql);
         return $result['count'];
     }
 
-    /**
-     * Supprime un utilisateur
-     */    public function deleteUser($id)
+    // Supprime un utilisateur avec gestion des contraintes
+    public function deleteUser($id)
     {
         try {
-            // Commencer une transaction pour assurer la cohérence des données
             $this->db->beginTransaction();
 
-            // Vérifier d'abord si l'utilisateur a des réservations
+            // Vérifie si l'utilisateur a des réservations
             $sql = "SELECT COUNT(*) as count FROM reservations WHERE user_id = :id";
             $result = $this->db->findOne($sql, ['id' => $id]);
 
             if ($result['count'] > 0) {
                 $this->db->rollBack();
-                return false; // Ne pas supprimer un utilisateur avec des réservations
+                return false; // Ne supprime pas un utilisateur avec des réservations
             }
 
-            // Récupérer toutes les tables qui peuvent avoir une référence à l'utilisateur
+            // Nettoie toutes les références à l'utilisateur
             $tables = $this->getTablesWithForeignKeyToUsers();
 
-            // Supprimer ou mettre à jour toutes les références à l'utilisateur dans chaque table
             foreach ($tables as $table => $column) {
-                // Selon la table, soit supprimer les enregistrements, soit mettre à jour la référence
                 if ($table === 'logs') {
-                    // Pour les logs, nous voulons garder l'historique mais anonymiser
+                    // Anonymise les logs au lieu de les supprimer
                     $this->db->update($table, [$column => 0], "$column = :id", ['id' => $id]);
                 } else {
-                    // Pour les autres tables, supprimer les enregistrements
                     $this->db->delete($table, "$column = :id", ['id' => $id]);
                 }
             }
 
-            // Supprimer spécifiquement les notifications (déjà inclus ci-dessus, mais pour être sûr)
+            // Supprime les notifications
             $this->db->delete('notifications', 'user_id = :id', ['id' => $id]);
 
-            // Supprimer les alertes de disponibilité
+            // Supprime les alertes de disponibilité si la table existe
             if ($this->tableExists('availability_alerts')) {
                 $this->db->delete('availability_alerts', 'user_id = :id', ['id' => $id]);
             }
 
-            // Supprimer explicitement toute autre référence
             $this->cleanupAdditionalReferences($id);
 
-            // Forcer la suppression de l'utilisateur, même s'il reste des références
+            // Supprime l'utilisateur
             $sql = "DELETE FROM users WHERE id = :id";
             $stmt = $this->db->getConnection()->prepare($sql);
             $success = $stmt->execute(['id' => $id]);
 
-            // Confirmer la transaction si tout s'est bien passé
             $this->db->commit();
             return $success;
         } catch (Exception $e) {
-            // Annuler la transaction en cas d'erreur
             if ($this->db->inTransaction()) {
                 $this->db->rollBack();
             }
 
-            // Log l'erreur pour le débogage
             error_log("Erreur lors de la suppression de l'utilisateur #$id: " . $e->getMessage());
-            error_log("Stack trace: " . $e->getTraceAsString());
 
-            // Essayer une suppression directe sans transaction
+            // Essaie une suppression directe
             if ($this->forceDeleteUser($id)) {
                 return true;
             }
 
-            // En dernier recours, désactiver l'utilisateur au lieu de le supprimer
-            return $this->deactivateUserInsteadOfDelete($id, $e);
+            // En dernier recours, désactive l'utilisateur
+            return $this->deactivateUserInsteadOfDelete($id);
         }
     }
 
-    /**
-     * Désactive un utilisateur quand la suppression échoue à cause de contraintes de clé étrangère
-     * Cette méthode est utilisée comme fallback
-     */
-    private function deactivateUserInsteadOfDelete($id, $exception)
+    // Désactive un utilisateur quand la suppression échoue
+    private function deactivateUserInsteadOfDelete($id)
     {
         try {
             // Mettre à jour le statut utilisateur en 'inactif' et anonymiser les données sensibles
@@ -579,7 +608,7 @@ class UserModel
             $stmt = $this->db->getConnection()->prepare($sql);
             $stmt->execute(['tableName' => $tableName]);
             return $stmt->rowCount() > 0;
-        } catch (Exception $e) {
+        } catch (Exception) {
             return false;
         }
     }
@@ -631,8 +660,8 @@ class UserModel
             // Réactiver les contraintes de clé étrangère en cas d'erreur
             try {
                 $this->db->getConnection()->exec('SET FOREIGN_KEY_CHECKS=1');
-            } catch (Exception $ex) {
-                // Ignorer cette erreur
+            } catch (Exception) {
+                // Ignore cette erreur
             }
 
             return false;
@@ -698,7 +727,6 @@ class UserModel
             // Confirmer la transaction si tout s'est bien passé
             $this->db->commit();
             return $success;
-            
         } catch (Exception $e) {
             // Annuler la transaction en cas d'erreur
             if ($this->db->inTransaction()) {
@@ -773,7 +801,8 @@ class UserModel
         if ($this->tableExists('logs')) {
             $this->db->update('logs', ['user_id' => 0], 'user_id = :id', ['id' => $userId]);
         }
-    }    /**
+    }
+    /**
      * Compte les réservations d'un utilisateur par statut
      */
     public function countUserReservationsByStatus($userId)
@@ -782,13 +811,13 @@ class UserModel
                 FROM reservations 
                 WHERE user_id = :user_id 
                 GROUP BY status";
-        
+
         $results = $this->db->findAll($sql, ['user_id' => $userId]);
-        
+
         $counts = [];
         foreach ($results as $result) {
             $counts[$result['status']] = (int)$result['count'];
         }
-          return $counts;
+        return $counts;
     }
 }

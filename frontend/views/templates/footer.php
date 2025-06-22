@@ -69,7 +69,7 @@
 </body>
 
 </html><?php
-        // Fonction helper pour éviter les erreurs liées à BASE_URL (si pas déjà définie dans header)
+        // Fonction helper pour éviter les erreurs liées à BASE_URL
         if (!function_exists('getBaseUrl')) {
             function getBaseUrl()
             {

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Modèle pour les fonctionnalités de la page d'accueil
  * Centralise les fonctions liées aux places, tarifs et statistiques publiques
@@ -115,7 +116,8 @@ class HomeModel
                 FROM tarifs";
 
         return $this->db->findAll($sql);
-    }    public function getTarifByType($type)
+    }
+    public function getTarifByType($type)
     {
         $sql = "SELECT prix_heure 
                 FROM tarifs 
@@ -137,9 +139,10 @@ class HomeModel
         $sql = "SELECT id, type_place, prix_heure, prix_journee, prix_mois 
                 FROM tarifs 
                 WHERE id = :id";
-        
+
         return $this->db->findOne($sql, ['id' => $id]);
-    }    /**
+    }
+    /**
      * Met à jour un tarif
      * @param int $id L'ID du tarif à mettre à jour
      * @param array $data Les données à mettre à jour
@@ -246,11 +249,16 @@ class HomeModel
      */
     public function getReservedTimeSlotsByPlace($placeId)
     {
-        $sql = "SELECT date_debut, date_fin, status 
-                FROM reservations 
-                WHERE place_id = :place_id 
-                AND status IN ('confirmée', 'en_cours')
-                AND date_fin > NOW()
+        $sql = "SELECT date_debut, date_fin, status
+                FROM reservations
+                WHERE place_id = :place_id
+                AND (
+                    -- Réservations classiques actives
+                    (status IN ('confirmée', 'en_cours') AND date_fin > NOW())
+                    OR
+                    -- Réservations immédiates en cours
+                    (status = 'en_cours_immediat')
+                )
                 ORDER BY date_debut ASC";
 
         return $this->db->findAll($sql, ['place_id' => $placeId]);
@@ -262,10 +270,15 @@ class HomeModel
      */
     public function getAllReservedTimeSlots()
     {
-        $sql = "SELECT place_id, date_debut, date_fin, status 
-                FROM reservations 
-                WHERE status IN ('confirmée', 'en_cours')
-                AND date_fin > NOW()
+        $sql = "SELECT place_id, date_debut, date_fin, status
+                FROM reservations
+                WHERE (
+                    -- Réservations classiques actives
+                    (status IN ('confirmée', 'en_cours') AND date_fin > NOW())
+                    OR
+                    -- Réservations immédiates en cours (date_fin peut être NULL)
+                    (status = 'en_cours_immediat')
+                )
                 ORDER BY date_debut ASC";
 
         $slots = $this->db->findAll($sql);
@@ -292,10 +305,15 @@ class HomeModel
 
         $sql = "SELECT r.place_id, r.date_debut, r.date_fin, r.status
                 FROM reservations r
-                WHERE r.status IN ('confirmée', 'en_cours')
-                AND :now BETWEEN r.date_debut AND r.date_fin";
+                WHERE (
+                    -- Réservations classiques en cours
+                    (r.status IN ('confirmée', 'en_cours') AND :now BETWEEN r.date_debut AND r.date_fin)
+                    OR
+                    -- Réservations immédiates en cours (date_fin peut être NULL)
+                    (r.status = 'en_cours_immediat' AND r.date_debut <= :now2)
+                )";
 
-        $occupations = $this->db->findAll($sql, ['now' => $now]);
+        $occupations = $this->db->findAll($sql, ['now' => $now, 'now2' => $now]);
 
         // Organiser par place_id
         $infoByPlace = [];
@@ -319,7 +337,8 @@ class HomeModel
                 LIMIT :limit";
 
         return $this->db->findAll($sql, ['limit' => $limit]);
-    }    /**
+    }
+    /**
      * Compter les réservations par type de tarif
      */
     public function countReservationsByTarifType($typePlaceOrTarifId)
@@ -329,7 +348,7 @@ class HomeModel
             $tarif = $this->getTarifById($typePlaceOrTarifId);
             $typePlaceOrTarifId = $tarif ? $tarif['type_place'] : null;
         }
-        
+
         if (!$typePlaceOrTarifId) {
             return 0;
         }
@@ -338,7 +357,7 @@ class HomeModel
                 FROM reservations r 
                 INNER JOIN parking_spaces p ON r.place_id = p.id 
                 WHERE p.type = :type_place";
-        
+
         $result = $this->db->query($sql, ['type_place' => $typePlaceOrTarifId]);
         $data = $result->fetch();
         return $data ? (int)$data['count'] : 0;

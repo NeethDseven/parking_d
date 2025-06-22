@@ -9,96 +9,126 @@ class ReservationModel
     }
     public function createReservation($userId, $placeId, $dateDebut, $dateFin)
     {
-        // Validation de base des entrées
+        // Valide les entrées de base
         if (!$userId || !$placeId || !$dateDebut || !$dateFin) {
             return false;
         }
 
-        // Vérifier la validité des dates
-        try {
-            $debutObj = new DateTime($dateDebut);
-            $finObj = new DateTime($dateFin);
-            if ($debutObj >= $finObj) {
-                return false; // La date de début doit être avant la date de fin
-            }
-        } catch (Exception $e) {
+        // Valide les dates
+        $dateValidation = $this->validateDates($dateDebut, $dateFin);
+        if (!$dateValidation['valid']) {
             return false;
         }
 
-        // Vérifier si la place existe
+        // Vérifie la place et sa disponibilité
         $place = $this->getPlaceById($placeId);
-        if (!$place) {
+        if (!$place || !$this->isPlaceAvailableForTimeSlot($placeId, $dateDebut, $dateFin)) {
             return false;
         }
 
-        // Vérifier si la place est disponible pour ce créneau
-        if (!$this->isPlaceAvailableForTimeSlot($placeId, $dateDebut, $dateFin)) {
+        // Calcule le montant avec les avantages d'abonnement
+        $montantData = $this->calculateReservationAmount(
+            $place['type'],
+            $dateValidation['debut'],
+            $dateValidation['fin'],
+            $userId
+        );
+
+        if (!$montantData) {
             return false;
-        }        // Calculer le montant total basé sur le tarif horaire et la durée
-        $tarifHoraire = $this->getTarifByType($place['type']);
-        if (!$tarifHoraire) {
-            return false; // Type de place sans tarif défini
         }
 
-        // Calculer la durée en minutes pour plus de précision
-        $dureeMinutes = ($finObj->getTimestamp() - $debutObj->getTimestamp()) / 60; // Convertir en minutes
-
-        // Récupérer les avantages d'abonnement de l'utilisateur
-        $subscriptionBenefits = $this->getUserSubscriptionBenefits($userId);
-
-        // Appliquer les minutes gratuites et la réduction si l'utilisateur est abonné
-        $freeMinutes = 0;
-        $discountPercent = 0;
-
-        if ($subscriptionBenefits) {
-            $freeMinutes = $subscriptionBenefits['free_minutes'];
-            $discountPercent = $subscriptionBenefits['discount_percent'];
-        }
-
-        // Appliquer les minutes gratuites
-        $dureeFacturee = max(0, $dureeMinutes - $freeMinutes);
-
-        // Convertir en heures pour le calcul du prix (avec précision à 2 décimales)
-        $dureeHeures = $dureeFacturee / 60;
-
-        // Calculer le montant de base
-        $montantBase = $dureeHeures * $tarifHoraire;
-
-        // Appliquer la réduction d'abonnement
-        $montantTotal = $montantBase * (1 - ($discountPercent / 100));
-
-        // Générer un code d'accès aléatoire
-        $codeAcces = strtoupper(substr(md5(uniqid(rand(), true)), 0, 6));
-
-        // Définir un délai d'expiration de 15 minutes pour le paiement
-        $expirationTime = new DateTime();
-        $expirationTime->add(new DateInterval('PT15M')); // PT15M = 15 minutes
-
+        // Prépare les données de réservation
         $data = [
             'user_id' => $userId,
             'place_id' => $placeId,
             'date_debut' => $dateDebut,
             'date_fin' => $dateFin,
             'status' => 'en_attente',
-            'code_acces' => $codeAcces,
-            'montant_total' => $montantTotal,
-            'expiration_time' => $expirationTime->format('Y-m-d H:i:s')
+            'code_acces' => $this->generateAccessCode(),
+            'montant_total' => $montantData['montant'],
+            'expiration_time' => $this->getExpirationTime()
         ];
 
-        // Insérer la réservation
         $reservationId = $this->db->insert('reservations', $data);
 
-        // Mettre à jour le statut de la place seulement si la place n'a pas d'autres réservations actives
+        // Met à jour le statut de la place si nécessaire
         if ($reservationId && $place['status'] === 'libre') {
-            $now = date('Y-m-d H:i:s');
-            // Vérifier s'il y a des réservations actives actuellement
-            $activeReservations = $this->getActiveReservationsForPlace($placeId, $now);
-            if (empty($activeReservations)) {
-                $this->updatePlaceStatus($placeId, 'occupe');
-            }
+            $this->updatePlaceStatusIfNeeded($placeId);
         }
 
         return $reservationId;
+    }
+
+    // Valide les dates de début et fin
+    private function validateDates($dateDebut, $dateFin)
+    {
+        try {
+            $debutObj = new DateTime($dateDebut);
+            $finObj = new DateTime($dateFin);
+
+            if ($debutObj >= $finObj) {
+                return ['valid' => false];
+            }
+
+            return [
+                'valid' => true,
+                'debut' => $debutObj,
+                'fin' => $finObj
+            ];
+        } catch (Exception) {
+            return ['valid' => false];
+        }
+    }
+
+    // Calcule le montant de la réservation avec avantages d'abonnement
+    private function calculateReservationAmount($placeType, $debutObj, $finObj, $userId)
+    {
+        $tarifHoraire = $this->getTarifByType($placeType);
+        if (!$tarifHoraire) {
+            return false;
+        }
+
+        $dureeMinutes = ($finObj->getTimestamp() - $debutObj->getTimestamp()) / 60;
+
+        // Récupère les avantages d'abonnement
+        $subscriptionBenefits = $this->getUserSubscriptionBenefits($userId);
+        $freeMinutes = $subscriptionBenefits['free_minutes'] ?? 0;
+        $discountPercent = $subscriptionBenefits['discount_percent'] ?? 0;
+
+        // Applique les minutes gratuites
+        $dureeFacturee = max(0, $dureeMinutes - $freeMinutes);
+        $dureeHeures = $dureeFacturee / 60;
+
+        // Calcule le montant avec réduction
+        $montantBase = $dureeHeures * $tarifHoraire;
+        $montantTotal = $montantBase * (1 - ($discountPercent / 100));
+
+        return ['montant' => $montantTotal];
+    }
+
+    // Génère un code d'accès aléatoire
+    private function generateAccessCode()
+    {
+        return strtoupper(substr(md5(uniqid(rand(), true)), 0, 6));
+    }
+
+    // Calcule le temps d'expiration (15 minutes)
+    private function getExpirationTime()
+    {
+        $expirationTime = new DateTime();
+        $expirationTime->add(new DateInterval('PT15M'));
+        return $expirationTime->format('Y-m-d H:i:s');
+    }
+
+    // Met à jour le statut de la place si nécessaire
+    private function updatePlaceStatusIfNeeded($placeId)
+    {
+        $now = date('Y-m-d H:i:s');
+        $activeReservations = $this->getActiveReservationsForPlace($placeId, $now);
+        if (empty($activeReservations)) {
+            $this->updatePlaceStatus($placeId, 'occupe');
+        }
     }
 
     public function getPlaceById($placeId)
@@ -310,64 +340,97 @@ class ReservationModel
 
         return $this->db->findAll($sql, ['now' => $now]);
     }
-    /**
-     * Créer une réservation pour un invité
-     */
+    // Crée une réservation pour un invité
     public function createGuestReservation($placeId, $dateDebut, $dateFin, $guestName, $guestEmail, $guestPhone = null)
     {
-        // Validation de base des entrées
+        // Valide les entrées de base
         if (!$placeId || !$dateDebut || !$dateFin || !$guestName || !$guestEmail) {
             return false;
         }
 
-        // Vérifier la validité des dates
-        $debutObj = new DateTime($dateDebut);
-        $finObj = new DateTime($dateFin);
-        if ($debutObj >= $finObj) {
-            return false; // La date de début doit être avant la date de fin
+        // Valide les dates
+        $dateValidation = $this->validateDates($dateDebut, $dateFin);
+        if (!$dateValidation['valid']) {
+            return false;
         }
 
-        // Vérifier si la place existe et est disponible pour ce créneau
+        // Vérifie la place et sa disponibilité
         $place = $this->getPlaceById($placeId);
-        if (!$place || $place['status'] === 'maintenance') {
+        if (
+            !$place || $place['status'] === 'maintenance' ||
+            !$this->isPlaceAvailableForTimeSlot($placeId, $dateDebut, $dateFin)
+        ) {
             return false;
         }
 
-        // Vérifier la disponibilité du créneau
-        if (!$this->isPlaceAvailableForTimeSlot($placeId, $dateDebut, $dateFin)) {
+        // Calcule le montant (les invités n'ont pas d'avantages d'abonnement)
+        $montantData = $this->calculateGuestReservationAmount(
+            $place['type'],
+            $dateValidation['debut'],
+            $dateValidation['fin']
+        );
+
+        if (!$montantData) {
             return false;
-        }        // Calculer le montant total basé sur le tarif horaire et la durée
-        $tarifHoraire = $this->getTarifByType($place['type']);
+        }
+
+        // Récupère ou crée l'utilisateur guest
+        $guestUserId = $this->getOrCreateGuestUser();
+        $guestToken = bin2hex(random_bytes(16));
+
+        // Prépare les données de réservation
+        $data = [
+            'user_id' => $guestUserId,
+            'place_id' => $placeId,
+            'date_debut' => $dateDebut,
+            'date_fin' => $dateFin,
+            'status' => 'en_attente',
+            'code_acces' => $this->generateAccessCode(),
+            'montant_total' => $montantData['montant'],
+            'guest_name' => $guestName,
+            'guest_email' => $guestEmail,
+            'guest_phone' => $guestPhone,
+            'guest_token' => $guestToken,
+            'expiration_time' => $this->getExpirationTime()
+        ];
+
+        $reservationId = $this->db->insert('reservations', $data);
+
+        // Met à jour le statut de la place si nécessaire
+        if ($reservationId && $place['status'] === 'libre') {
+            $this->updatePlaceStatusIfNeeded($placeId);
+        }
+
+        return $reservationId ? [
+            'reservation_id' => $reservationId,
+            'guest_token' => $guestToken,
+            'user_id' => $guestUserId
+        ] : false;
+    }
+
+    // Calcule le montant pour une réservation d'invité (sans avantages)
+    private function calculateGuestReservationAmount($placeType, $debutObj, $finObj)
+    {
+        $tarifHoraire = $this->getTarifByType($placeType);
         if (!$tarifHoraire) {
-            return false; // Type de place sans tarif défini
+            return false;
         }
 
-        // Calculer la durée en minutes pour plus de précision
-        $dureeMinutes = ($finObj->getTimestamp() - $debutObj->getTimestamp()) / 60; // Convertir en minutes
-
-        // Les invités ne bénéficient jamais des minutes gratuites
-        $dureeFacturee = $dureeMinutes; // Pas de minutes gratuites pour les invités
-
-        // Convertir en heures pour le calcul du prix (avec précision à 2 décimales)
-        $dureeHeures = $dureeFacturee / 60;
-        $duree = $dureeMinutes / 60; // Durée totale en heures (pour l'enregistrement)
-
-        // Calculer le montant
+        $dureeMinutes = ($finObj->getTimestamp() - $debutObj->getTimestamp()) / 60;
+        $dureeHeures = $dureeMinutes / 60;
         $montantTotal = $dureeHeures * $tarifHoraire;
 
-        // Générer un code d'accès aléatoire
-        $codeAcces = strtoupper(substr(md5(uniqid(rand(), true)), 0, 6));
+        return ['montant' => $montantTotal];
+    }
 
-        // Générer un token unique pour le suivi de la réservation
-        $guestToken = bin2hex(random_bytes(16)); // 32 caractères
-
-        // Récupérer l'ID de l'utilisateur guest
+    // Récupère ou crée l'utilisateur guest
+    private function getOrCreateGuestUser()
+    {
         $sql = "SELECT id FROM users WHERE email = 'guest@parkme.in' LIMIT 1";
         $guestUser = $this->db->findOne($sql);
 
         if (!$guestUser) {
-            // Si l'utilisateur guest n'existe pas, le créer
-            $guestUserId = $this->db->insert('users', [
+            return $this->db->insert('users', [
                 'email' => 'guest@parkme.in',
                 'password' => 'NO_LOGIN',
                 'nom' => 'Guest',
@@ -375,71 +438,26 @@ class ReservationModel
                 'role' => 'user',
                 'notifications_active' => 0
             ]);
-        } else {
-            $guestUserId = $guestUser['id'];
-        }
-        // Définir un délai d'expiration de 15 minutes pour le paiement
-        $expirationTime = new DateTime();
-        $expirationTime->add(new DateInterval('PT15M')); // PT15M = 15 minutes
-
-        $data = [
-            'user_id' => $guestUserId, // Utiliser l'utilisateur guest au lieu de 0
-            'place_id' => $placeId,
-            'date_debut' => $dateDebut,
-            'date_fin' => $dateFin,
-            'status' => 'en_attente',
-            'code_acces' => $codeAcces,
-            'montant_total' => $montantTotal,
-            'guest_name' => $guestName,
-            'guest_email' => $guestEmail,
-            'guest_phone' => $guestPhone,
-            'guest_token' => $guestToken,
-            'expiration_time' => $expirationTime->format('Y-m-d H:i:s')
-        ];
-
-        // Insérer la réservation
-        $reservationId = $this->db->insert('reservations', $data);
-
-        // Mettre à jour le statut de la place si nécessaire
-        if ($reservationId && $place['status'] === 'libre') {
-            $now = date('Y-m-d H:i:s');
-            // Vérifier s'il y a des réservations actives actuellement
-            $activeReservations = $this->getActiveReservationsForPlace($placeId, $now);
-            if (empty($activeReservations)) {
-                $this->updatePlaceStatus($placeId, 'occupe');
-            }
         }
 
-        if ($reservationId) {
-            return [
-                'reservation_id' => $reservationId,
-                'guest_token' => $guestToken,
-                'user_id' => $guestUserId
-            ];
-        }
-
-        return false;
+        return $guestUser['id'];
     }
 
-    /**
-     * Récupérer une réservation par son token d'invité
-     */
+    // Récupère une réservation par son token d'invité
     public function getReservationByGuestToken($token)
     {
-        $sql = "SELECT r.id, r.place_id, r.date_debut, r.date_fin, r.status, 
-                       r.code_acces, r.montant_total, r.created_at, r.guest_name, r.guest_email, 
+        $sql = "SELECT r.id, r.place_id, r.date_debut, r.date_fin, r.status,
+                       r.code_acces, r.montant_total, r.created_at, r.guest_name, r.guest_email,
                        r.guest_phone, r.guest_token,
                        p.numero, p.type, p.status as place_status
-                FROM reservations r 
-                JOIN parking_spaces p ON r.place_id = p.id 
+                FROM reservations r
+                JOIN parking_spaces p ON r.place_id = p.id
                 WHERE r.guest_token = :token";
 
         return $this->db->findOne($sql, ['token' => $token]);
     }
 
-    /**
-     * Créer un paiement pour une réservation d'invité
-     */
+    // Crée un paiement pour une réservation d'invité
     public function createGuestPayment($reservationId, $montant, $modePayment = null)
     {
         $data = [
@@ -452,7 +470,6 @@ class ReservationModel
         $paymentId = $this->db->insert('paiements', $data);
 
         if ($paymentId) {
-            // Mettre à jour le statut de la réservation
             $this->db->update(
                 'reservations',
                 ['status' => 'confirmée'],
@@ -460,19 +477,16 @@ class ReservationModel
                 ['id' => $reservationId]
             );
 
-            // Générer une facture
             $this->generateInvoice($paymentId);
         }
 
         return $paymentId;
     }
 
-    /**
-     * Annuler une réservation d'invité
-     */
+    // Annule une réservation d'invité
     public function cancelGuestReservation($reservationId, $token)
     {
-        // Vérifier que la réservation existe et correspond au token
+        // Vérifie que la réservation existe et correspond au token
         $sql = "SELECT id, place_id FROM reservations WHERE id = :id AND guest_token = :token";
         $reservation = $this->db->findOne($sql, ['id' => $reservationId, 'token' => $token]);
 
@@ -480,7 +494,7 @@ class ReservationModel
             return false;
         }
 
-        // Mettre à jour le statut de la réservation
+        // Met à jour le statut de la réservation
         $this->db->update(
             'reservations',
             ['status' => 'annulée'],
@@ -488,14 +502,13 @@ class ReservationModel
             ['id' => $reservationId]
         );
 
-        // Libérer la place de parking
+        // Libère la place de parking
         $this->updatePlaceStatus($reservation['place_id'], 'libre');
 
-        // Vérifier s'il y a un paiement associé
+        // Vérifie s'il y a un paiement associé
         $paiement = $this->getPaymentByReservationId($reservationId);
 
         if ($paiement && $paiement['status'] === 'valide') {
-            // Mettre à jour le statut du paiement
             $this->db->update(
                 'paiements',
                 ['status' => 'annule'],
@@ -852,7 +865,10 @@ class ReservationModel
         // 1. Annuler les réservations en attente dont le délai de paiement est expiré
         $cancelledWaiting = $this->cancelExpiredWaitingReservations();
 
-        // 2. Mettre à jour confirmées -> en_cours (seulement pour celles qui commencent maintenant)
+        // 2. Finaliser les réservations immédiates en attente de paiement depuis trop longtemps
+        $expiredImmediatePayments = $this->finalizeExpiredImmediatePayments();
+
+        // 3. Mettre à jour confirmées -> en_cours (seulement pour celles qui commencent maintenant)
         $updatedToInProgress = $this->updateConfirmedToInProgress();
 
         // 3. Mettre à jour confirmées -> terminée (pour celles qui sont déjà terminées)
@@ -864,10 +880,11 @@ class ReservationModel
         // Calculer les totaux
         $totalCompleted = $confirmedToCompleted['updated'] + $updatedToCompleted['updated'];
         $totalPlacesLiberated = $confirmedToCompleted['places_liberated'] + $updatedToCompleted['places_liberated'];
-        $totalErrors = $cancelledWaiting['errors'] + $confirmedToCompleted['errors'] + $updatedToCompleted['errors'];
+        $totalErrors = $cancelledWaiting['errors'] + $expiredImmediatePayments['errors'] + $confirmedToCompleted['errors'] + $updatedToCompleted['errors'];
 
         return [
             'cancelled_waiting' => $cancelledWaiting['cancelled'],
+            'expired_immediate_payments' => $expiredImmediatePayments['finalized'],
             'to_in_progress' => $updatedToInProgress,
             'to_completed' => $totalCompleted,
             'places_liberated' => $totalPlacesLiberated,
@@ -1111,6 +1128,51 @@ class ReservationModel
                 $stats['cancelled']++;
 
                 // Libérer la place
+                $this->updatePlaceStatus($reservation['place_id'], 'libre');
+            } else {
+                $stats['errors']++;
+            }
+        }
+
+        return $stats;
+    }
+
+    /**
+     * Finalise les réservations immédiates en attente de paiement depuis trop longtemps
+     * @return array Statistiques sur les finalisations effectuées
+     */
+    public function finalizeExpiredImmediatePayments()
+    {
+        $now = date('Y-m-d H:i:s');
+        $stats = [
+            'finalized' => 0,
+            'errors' => 0
+        ];
+
+        // Trouver toutes les réservations immédiates en attente de paiement depuis plus de 2 heures
+        $expirationTime = date('Y-m-d H:i:s', strtotime('-2 hours'));
+
+        $sql = "SELECT r.id, r.place_id
+                FROM reservations r
+                WHERE r.status = 'en_attente_paiement'
+                AND r.date_fin < :expiration_time";
+
+        $reservations = $this->db->findAll($sql, ['expiration_time' => $expirationTime]);
+
+        // Finaliser chaque réservation
+        foreach ($reservations as $reservation) {
+            // Mettre à jour le statut de la réservation vers "terminée"
+            $updateResult = $this->db->update(
+                'reservations',
+                ['status' => 'terminée'],
+                'id = :id',
+                ['id' => $reservation['id']]
+            );
+
+            if ($updateResult) {
+                $stats['finalized']++;
+                // Note: La place devrait déjà être libérée lors de endImmediateReservation
+                // Mais on s'assure qu'elle est bien libre
                 $this->updatePlaceStatus($reservation['place_id'], 'libre');
             } else {
                 $stats['errors']++;
@@ -1584,7 +1646,8 @@ class ReservationModel
         $newCode = strtoupper(substr(md5(uniqid(rand(), true)), 0, 8));
 
         // Mettre à jour la réservation avec le nouveau code
-        $result = $this->db->update('reservations',
+        $result = $this->db->update(
+            'reservations',
             ['code_acces' => $newCode],
             'id = :id',
             ['id' => $reservationId]
@@ -1606,7 +1669,8 @@ class ReservationModel
         $newCode = strtoupper(substr(md5(uniqid(rand(), true)), 0, 8));
 
         // Mettre à jour la réservation avec le nouveau code
-        $result = $this->db->update('reservations',
+        $result = $this->db->update(
+            'reservations',
             ['code_sortie' => $newCode],
             'id = :id',
             ['id' => $reservationId]
@@ -1694,5 +1758,29 @@ class ReservationModel
             'available' => true,
             'reason' => 'Place disponible'
         ];
+    }
+
+    /**
+     * Récupère les changements de statut récents des réservations
+     * @param int $lastCheck Timestamp de la dernière vérification
+     * @return array Liste des réservations modifiées
+     */
+    public function getRecentStatusChanges($lastCheck)
+    {
+        $lastCheckDate = date('Y-m-d H:i:s', $lastCheck);
+
+        // Utiliser created_at puisque updated_at n'existe pas dans la table
+        $sql = "SELECT r.id, r.status, r.place_id, r.created_at as updated_at, p.numero as place_numero
+                FROM reservations r
+                JOIN parking_spaces p ON r.place_id = p.id
+                WHERE r.created_at > :last_check
+                   OR (r.status IN ('terminee', 'annulee') AND r.created_at > :last_check_alt)
+                ORDER BY r.created_at DESC
+                LIMIT 50";
+
+        return $this->db->findAll($sql, [
+            'last_check' => $lastCheckDate,
+            'last_check_alt' => $lastCheckDate
+        ]);
     }
 }

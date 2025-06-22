@@ -36,7 +36,7 @@ class Database
     public function query($sql, $params = [])
     {
         try {
-            // Valider les paramètres avant d'exécuter la requête
+            // Valide les paramètres avant exécution pour éviter les erreurs
             $this->validateSqlParams($sql, $params);
 
             $stmt = $this->connection->prepare($sql);
@@ -54,7 +54,7 @@ class Database
                 echo "</div>";
                 exit;
             } else {
-                throw $e; // Relancer l'exception pour un traitement plus global
+                throw $e; // Relance pour traitement global
             }
         }
     }
@@ -74,10 +74,10 @@ class Database
     public function insert($table, $data)
     {
         try {
-            // Filtrer les données pour éviter les problèmes avec les clés primaires auto-incrémentées
+            // Filtre les données pour éviter les conflits AUTO_INCREMENT
             $filteredData = [];
             foreach ($data as $key => $value) {
-                // Ignorer les clés 'id' avec des valeurs nulles, 0 ou vides pour éviter les conflits AUTO_INCREMENT
+                // Ignore les ID vides pour laisser AUTO_INCREMENT fonctionner
                 if ($key === 'id' && (is_null($value) || $value === 0 || $value === '' || $value === '0')) {
                     continue;
                 }
@@ -112,14 +112,14 @@ class Database
         $sets = [];
         $params = [];
 
-        // Préparer les paramètres de SET
+        // Prépare les paramètres SET avec préfixe pour éviter les conflits
         foreach ($data as $key => $value) {
-            $paramKey = "set_" . $key; // Préfixe pour éviter les conflits avec les paramètres WHERE
+            $paramKey = "set_" . $key; // Préfixe pour éviter conflits WHERE
             $sets[] = "$key = :$paramKey";
             $params[$paramKey] = $value;
         }
 
-        // Fusionner avec les paramètres WHERE
+        // Fusionne avec les paramètres WHERE
         foreach ($whereParams as $key => $value) {
             $params[$key] = $value;
         }
@@ -148,9 +148,7 @@ class Database
         return $stmt->rowCount();
     }
 
-    /**
-     * Exécute une requête SQL avec gestion d'erreur améliorée
-     */
+    // Exécute une requête avec gestion d'erreur améliorée
     public function safeQuery($sql, $params = [])
     {
         try {
@@ -158,10 +156,9 @@ class Database
             $stmt->execute($params);
             return $stmt;
         } catch (PDOException $e) {
-            // Log de l'erreur
             error_log("Erreur SQL: " . $e->getMessage() . " | Requête: $sql");
 
-            // En mode développement, on peut afficher plus de détails
+            // Affiche les détails en mode debug
             if (defined('DEBUG') && DEBUG === true) {
                 echo "Erreur SQL: " . $e->getMessage() . "<br>";
                 echo "Requête: $sql<br>";
@@ -173,18 +170,14 @@ class Database
         }
     }
 
-    /**
-     * Version sécurisée de findOne
-     */
+    // Version sécurisée de findOne
     public function safeFindOne($sql, $params = [])
     {
         $stmt = $this->safeQuery($sql, $params);
         return $stmt ? $stmt->fetch() : false;
     }
 
-    /**
-     * Version sécurisée de findAll
-     */
+    // Version sécurisée de findAll
     public function safeFindAll($sql, $params = [])
     {
         try {
@@ -206,16 +199,11 @@ class Database
         }
     }
 
-    /**
-     * Vérifie si tous les paramètres nommés dans une requête SQL sont présents dans le tableau de paramètres
-     * @param string $sql La requête SQL
-     * @param array $params Le tableau de paramètres
-     * @return bool True si tous les paramètres sont présents, false sinon
-     */
+    // Vérifie que tous les paramètres SQL nommés sont fournis
     public function validateSqlParams($sql, $params = [])
     {
         $namedParams = [];
-        // Trouver tous les paramètres nommés dans la requête SQL (format :param)
+        // Trouve tous les paramètres nommés (:param)
         preg_match_all('/:([a-zA-Z0-9_]+)/', $sql, $matches);
 
         if (!empty($matches[1])) {
@@ -224,7 +212,7 @@ class Database
             }
         }
 
-        // Vérifier si tous les paramètres sont présents dans le tableau
+        // Vérifie que tous les paramètres sont présents
         foreach (array_keys($namedParams) as $param) {
             if (!array_key_exists($param, $params)) {
                 if (defined('DEBUG') && DEBUG === true) {
@@ -243,37 +231,25 @@ class Database
         return true;
     }
 
-    /**
-     * Commence une transaction
-     * @return bool True si la transaction a démarré avec succès
-     */
+    // Commence une transaction
     public function beginTransaction()
     {
         return $this->connection->beginTransaction();
     }
 
-    /**
-     * Valide une transaction
-     * @return bool True si la transaction a été validée avec succès
-     */
+    // Valide une transaction
     public function commit()
     {
         return $this->connection->commit();
     }
 
-    /**
-     * Annule une transaction
-     * @return bool True si la transaction a été annulée avec succès
-     */
+    // Annule une transaction
     public function rollBack()
     {
         return $this->connection->rollBack();
     }
 
-    /**
-     * Vérifie si une transaction est en cours
-     * @return bool True si une transaction est en cours
-     */
+    // Vérifie si une transaction est en cours
     public function inTransaction()
     {
         return $this->connection->inTransaction();
