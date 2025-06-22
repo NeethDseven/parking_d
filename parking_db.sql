@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : 127.0.0.1
--- Généré le : dim. 22 juin 2025 à 03:49
+-- Généré le : dim. 22 juin 2025 à 17:55
 -- Version du serveur : 10.4.32-MariaDB
 -- Version de PHP : 8.2.12
 
@@ -80,6 +80,26 @@ CREATE TABLE `availability_alerts` (
   `notified` tinyint(1) DEFAULT 0,
   `expires_at` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `contact_messages`
+--
+
+CREATE TABLE `contact_messages` (
+  `id` int(11) NOT NULL,
+  `nom` varchar(100) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `sujet` enum('demande_information','reservation','probleme','autre') NOT NULL DEFAULT 'autre',
+  `message` text NOT NULL,
+  `status` enum('nouveau','lu','traite','archive') NOT NULL DEFAULT 'nouveau',
+  `admin_response` text DEFAULT NULL,
+  `admin_user_id` int(11) DEFAULT NULL,
+  `responded_at` datetime DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -211,7 +231,25 @@ INSERT INTO `factures` (`id`, `paiement_id`, `numero_facture`, `chemin_pdf`, `cr
 (109, 107, '20250622-0001', 'factures/facture_20250622-0001.pdf', '2025-06-22 00:19:55'),
 (110, 107, '20250622-0002', 'factures/facture_20250622-0002.pdf', '2025-06-22 00:19:55'),
 (111, 108, '20250622-0003', 'factures/facture_20250622-0003.pdf', '2025-06-22 00:20:11'),
-(112, 108, '20250622-0004', 'factures/facture_20250622-0004.pdf', '2025-06-22 00:20:11');
+(112, 108, '20250622-0004', 'factures/facture_20250622-0004.pdf', '2025-06-22 00:20:11'),
+(113, 109, '20250622-0005', 'factures/facture_20250622-0005.pdf', '2025-06-22 02:05:17'),
+(114, 109, '20250622-0006', 'factures/facture_20250622-0006.pdf', '2025-06-22 02:05:17'),
+(115, 110, '20250622-0007', 'factures/facture_20250622-0007.pdf', '2025-06-22 11:02:48'),
+(116, 110, '20250622-0008', 'factures/facture_20250622-0008.pdf', '2025-06-22 11:02:48'),
+(117, 111, '20250622-0009', 'factures/facture_20250622-0009.pdf', '2025-06-22 14:25:12'),
+(118, 111, '20250622-0010', 'factures/facture_20250622-0010.pdf', '2025-06-22 14:25:12'),
+(119, 112, '20250622-0011', 'factures/facture_20250622-0011.pdf', '2025-06-22 14:27:08'),
+(120, 112, '20250622-0012', 'factures/facture_20250622-0012.pdf', '2025-06-22 14:27:08'),
+(121, 113, '20250622-0013', 'factures/facture_20250622-0013.pdf', '2025-06-22 14:39:42'),
+(122, 113, '20250622-0014', 'factures/facture_20250622-0014.pdf', '2025-06-22 14:39:42'),
+(123, 114, '20250622-0015', 'factures/facture_20250622-0015.pdf', '2025-06-22 14:48:15'),
+(124, 114, '20250622-0016', 'factures/facture_20250622-0016.pdf', '2025-06-22 14:48:15'),
+(125, 115, '20250622-0017', 'factures/facture_20250622-0017.pdf', '2025-06-22 14:58:36'),
+(126, 115, '20250622-0018', 'factures/facture_20250622-0018.pdf', '2025-06-22 14:58:36'),
+(127, 116, '20250622-0019', 'factures/facture_20250622-0019.pdf', '2025-06-22 15:49:39'),
+(128, 116, '20250622-0020', 'factures/facture_20250622-0020.pdf', '2025-06-22 15:49:39'),
+(129, 117, '20250622-0021', 'factures/facture_20250622-0021.pdf', '2025-06-22 15:50:00'),
+(130, 117, '20250622-0022', 'factures/facture_20250622-0022.pdf', '2025-06-22 15:50:00');
 
 -- --------------------------------------------------------
 
@@ -636,7 +674,54 @@ INSERT INTO `logs` (`id`, `user_id`, `action`, `description`, `created_at`) VALU
 (378, 22, 'déconnexion', 'Déconnexion réussie', '2025-06-22 01:45:58'),
 (379, 23, 'inscription', 'Création de compte réussie', '2025-06-22 01:46:25'),
 (380, 23, 'déconnexion', 'Déconnexion réussie', '2025-06-22 01:46:28'),
-(381, 7, 'connexion', 'Connexion réussie', '2025-06-22 01:46:35');
+(381, 7, 'connexion', 'Connexion réussie', '2025-06-22 01:46:35'),
+(382, 7, 'déconnexion', 'Déconnexion réussie', '2025-06-22 01:54:57'),
+(383, 25, 'inscription', 'Création de compte réussie', '2025-06-22 02:04:37'),
+(384, 25, 'reservation_create', 'Nouvelle réservation créée: 175', '2025-06-22 02:05:11'),
+(385, 25, 'payment_create', 'Paiement effectué: 109', '2025-06-22 02:05:17'),
+(386, 25, 'déconnexion', 'Déconnexion réussie', '2025-06-22 02:05:36'),
+(387, 26, 'inscription', 'Création de compte réussie', '2025-06-22 02:07:03'),
+(388, 26, 'reservation_create', 'Nouvelle réservation créée: 176', '2025-06-22 11:02:12'),
+(389, 26, 'reservation_create', 'Nouvelle réservation créée: 177', '2025-06-22 11:02:45'),
+(390, 26, 'payment_create', 'Paiement effectué: 110', '2025-06-22 11:02:48'),
+(391, 26, 'déconnexion', 'Déconnexion réussie', '2025-06-22 11:03:38'),
+(392, 7, 'connexion', 'Connexion réussie', '2025-06-22 11:03:45'),
+(393, 7, 'immediate_reservation_create', 'Réservation immédiate créée: 178', '2025-06-22 13:57:46'),
+(394, 7, 'déconnexion', 'Déconnexion réussie', '2025-06-22 13:58:47'),
+(395, 7, 'connexion', 'Connexion réussie', '2025-06-22 14:00:02'),
+(396, 7, 'immediate_reservation_end', 'Réservation immédiate terminée: 178', '2025-06-22 14:00:07'),
+(397, 7, 'immediate_reservation_create', 'Réservation immédiate créée: 179', '2025-06-22 14:24:53'),
+(398, 7, 'immediate_reservation_end', 'Réservation immédiate terminée: 179', '2025-06-22 14:25:08'),
+(399, 7, 'payment_create', 'Paiement effectué: 111', '2025-06-22 14:25:12'),
+(400, 7, 'immediate_reservation_create', 'Réservation immédiate créée: 180', '2025-06-22 14:25:16'),
+(401, 7, 'immediate_reservation_end', 'Réservation immédiate terminée: 180', '2025-06-22 14:26:35'),
+(402, 7, 'immediate_reservation_create', 'Réservation immédiate créée: 181', '2025-06-22 14:26:59'),
+(403, 7, 'immediate_reservation_end', 'Réservation immédiate terminée: 181', '2025-06-22 14:27:03'),
+(404, 7, 'payment_create', 'Paiement effectué: 112', '2025-06-22 14:27:08'),
+(405, 7, 'immediate_reservation_create', 'Réservation immédiate créée: 182', '2025-06-22 14:32:43'),
+(406, 7, 'immediate_reservation_end', 'Réservation immédiate terminée: 182', '2025-06-22 14:32:48'),
+(407, 7, 'immediate_reservation_create', 'Réservation immédiate créée: 183', '2025-06-22 14:34:09'),
+(408, 7, 'immediate_reservation_end', 'Réservation immédiate terminée: 183', '2025-06-22 14:34:37'),
+(409, 7, 'immediate_reservation_create', 'Réservation immédiate créée: 184', '2025-06-22 14:34:45'),
+(410, 7, 'immediate_reservation_end', 'Réservation immédiate terminée: 184', '2025-06-22 14:35:39'),
+(411, 7, 'immediate_reservation_create', 'Réservation immédiate créée: 185', '2025-06-22 14:38:11'),
+(412, 7, 'immediate_reservation_end', 'Réservation immédiate terminée: 185', '2025-06-22 14:39:37'),
+(413, 7, 'payment_create', 'Paiement effectué: 113', '2025-06-22 14:39:42'),
+(414, 7, 'immediate_reservation_create', 'Réservation immédiate créée: 186', '2025-06-22 14:42:18'),
+(415, 7, 'immediate_reservation_end', 'Réservation immédiate terminée: 186', '2025-06-22 14:48:10'),
+(416, 7, 'payment_create', 'Paiement effectué: 114', '2025-06-22 14:48:15'),
+(417, 7, 'immediate_reservation_create', 'Réservation immédiate créée: 187', '2025-06-22 14:58:18'),
+(418, 7, 'immediate_reservation_end', 'Réservation immédiate terminée: 187', '2025-06-22 14:58:32'),
+(419, 7, 'payment_create', 'Paiement effectué: 115', '2025-06-22 14:58:36'),
+(420, 7, 'déconnexion', 'Déconnexion réussie', '2025-06-22 15:33:34'),
+(421, 7, 'connexion', 'Connexion réussie', '2025-06-22 15:33:43'),
+(422, 7, 'déconnexion', 'Déconnexion réussie', '2025-06-22 15:38:13'),
+(423, 7, 'connexion', 'Connexion réussie', '2025-06-22 15:38:21'),
+(424, 7, 'immediate_reservation_create', 'Réservation immédiate créée: 188', '2025-06-22 15:48:40'),
+(425, 7, 'immediate_reservation_end', 'Réservation immédiate terminée: 188', '2025-06-22 15:49:33'),
+(426, 7, 'payment_create', 'Paiement effectué: 116', '2025-06-22 15:49:39'),
+(427, 7, 'reservation_create', 'Nouvelle réservation créée: 189', '2025-06-22 15:49:56'),
+(428, 7, 'payment_create', 'Paiement effectué: 117', '2025-06-22 15:50:00');
 
 -- --------------------------------------------------------
 
@@ -782,12 +867,38 @@ INSERT INTO `notifications` (`id`, `user_id`, `titre`, `message`, `type`, `lu`, 
 (123, 7, '⏱️ Réservation immédiate terminée', 'Votre réservation immédiate #169 pour la place Place 123 est maintenant terminée. Merci d\'avoir utilisé notre service !', '', 1, '2025-06-21 17:29:29'),
 (124, 7, '🚀 Réservation immédiate activée !', 'Votre réservation immédiate #170 pour la place Place 123 est maintenant active. Code d\'accès : B1ED4CEE. Vous avez 15 minutes pour vous présenter.', '', 1, '2025-06-21 17:29:58'),
 (125, 7, '⏱️ Réservation immédiate terminée', 'Votre réservation immédiate #170 pour la place Place 123 est maintenant terminée. Merci d\'avoir utilisé notre service !', '', 1, '2025-06-21 17:30:14'),
-(127, 7, 'Réservation annulée', 'Votre réservation #171 a été annulée.', '', 0, '2025-06-21 17:33:43'),
-(129, 7, 'Réservation annulée', 'Votre réservation #172 a été annulée.', '', 0, '2025-06-21 18:22:34'),
-(130, 7, '🚀 Réservation immédiate activée !', 'Votre réservation immédiate #173 pour la place Place 123 est maintenant active. Code d\'accès : 1BCFE8C1. Vous avez 15 minutes pour vous présenter.', '', 0, '2025-06-22 00:16:23'),
-(131, 7, '⏱️ Réservation immédiate terminée', 'Votre réservation immédiate #173 pour la place Place 123 est maintenant terminée. Merci d\'avoir utilisé notre service !', '', 0, '2025-06-22 00:19:50'),
-(132, 7, '🚀 Réservation immédiate activée !', 'Votre réservation immédiate #174 pour la place Place 123 est maintenant active. Code d\'accès : 55104379. Vous avez 15 minutes pour vous présenter.', '', 0, '2025-06-22 00:20:00'),
-(133, 7, '⏱️ Réservation immédiate terminée', 'Votre réservation immédiate #174 pour la place Place 123 est maintenant terminée. Merci d\'avoir utilisé notre service !', '', 0, '2025-06-22 00:20:08');
+(127, 7, 'Réservation annulée', 'Votre réservation #171 a été annulée.', '', 1, '2025-06-21 17:33:43'),
+(129, 7, 'Réservation annulée', 'Votre réservation #172 a été annulée.', '', 1, '2025-06-21 18:22:34'),
+(130, 7, '🚀 Réservation immédiate activée !', 'Votre réservation immédiate #173 pour la place Place 123 est maintenant active. Code d\'accès : 1BCFE8C1. Vous avez 15 minutes pour vous présenter.', '', 1, '2025-06-22 00:16:23'),
+(131, 7, '⏱️ Réservation immédiate terminée', 'Votre réservation immédiate #173 pour la place Place 123 est maintenant terminée. Merci d\'avoir utilisé notre service !', '', 1, '2025-06-22 00:19:50'),
+(132, 7, '🚀 Réservation immédiate activée !', 'Votre réservation immédiate #174 pour la place Place 123 est maintenant active. Code d\'accès : 55104379. Vous avez 15 minutes pour vous présenter.', '', 1, '2025-06-22 00:20:00'),
+(133, 7, '⏱️ Réservation immédiate terminée', 'Votre réservation immédiate #174 pour la place Place 123 est maintenant terminée. Merci d\'avoir utilisé notre service !', '', 1, '2025-06-22 00:20:08'),
+(134, 25, '� Réservation imminente !', 'N\'oubliez pas ! Votre réservation #175 pour la place Place 123 commence dans moins d\'une heure le 22/06/2025 à 05:05.', '', 1, '2025-06-22 02:05:11'),
+(135, 26, '🔔 Réservation aujourd\'hui !', 'N\'oubliez pas ! Votre réservation #176 pour la place Place 123 commence dans quelques heures le 22/06/2025 à 16:01.', '', 0, '2025-06-22 11:02:12'),
+(136, 26, '🔔 Réservation aujourd\'hui !', 'N\'oubliez pas ! Votre réservation #177 pour la place Place 123 commence dans quelques heures le 22/06/2025 à 17:02.', '', 0, '2025-06-22 11:02:45'),
+(137, 7, '🚀 Réservation immédiate activée !', 'Votre réservation immédiate #178 pour la place Place 123 est maintenant active. Code d\'accès : DD6C962A. Vous avez 15 minutes pour vous présenter.', '', 1, '2025-06-22 13:57:46'),
+(138, 7, '⏱️ Réservation immédiate terminée', 'Votre réservation immédiate #178 pour la place Place 123 est maintenant terminée. Merci d\'avoir utilisé notre service !', '', 1, '2025-06-22 14:00:07'),
+(139, 7, '🚀 Réservation immédiate activée !', 'Votre réservation immédiate #179 pour la place Place 2 est maintenant active. Code d\'accès : 2FFE5ED7. Vous avez 15 minutes pour vous présenter.', '', 1, '2025-06-22 14:24:53'),
+(140, 7, '⏱️ Réservation immédiate terminée', 'Votre réservation immédiate #179 pour la place Place 2 est maintenant terminée. Merci d\'avoir utilisé notre service !', '', 1, '2025-06-22 14:25:08'),
+(141, 7, '🚀 Réservation immédiate activée !', 'Votre réservation immédiate #180 pour la place Place 123 est maintenant active. Code d\'accès : 7F45FE34. Vous avez 15 minutes pour vous présenter.', '', 1, '2025-06-22 14:25:16'),
+(142, 7, '⏱️ Réservation immédiate terminée', 'Votre réservation immédiate #180 pour la place Place 123 est maintenant terminée. Merci d\'avoir utilisé notre service !', '', 1, '2025-06-22 14:26:35'),
+(143, 7, '🚀 Réservation immédiate activée !', 'Votre réservation immédiate #181 pour la place Place 123 est maintenant active. Code d\'accès : C6696819. Vous avez 15 minutes pour vous présenter.', '', 1, '2025-06-22 14:26:59'),
+(144, 7, '⏱️ Réservation immédiate terminée', 'Votre réservation immédiate #181 pour la place Place 123 est maintenant terminée. Merci d\'avoir utilisé notre service !', '', 1, '2025-06-22 14:27:03'),
+(145, 7, '🚀 Réservation immédiate activée !', 'Votre réservation immédiate #182 pour la place Place 123 est maintenant active. Code d\'accès : 2E13D1A8. Vous avez 15 minutes pour vous présenter.', '', 1, '2025-06-22 14:32:43'),
+(146, 7, '⏱️ Réservation immédiate terminée', 'Votre réservation immédiate #182 pour la place Place 123 est maintenant terminée. Merci d\'avoir utilisé notre service !', '', 1, '2025-06-22 14:32:48'),
+(147, 7, '🚀 Réservation immédiate activée !', 'Votre réservation immédiate #183 pour la place Place 123 est maintenant active. Code d\'accès : 102E634C. Vous avez 15 minutes pour vous présenter.', '', 1, '2025-06-22 14:34:09'),
+(148, 7, '⏱️ Réservation immédiate terminée', 'Votre réservation immédiate #183 pour la place Place 123 est maintenant terminée. Merci d\'avoir utilisé notre service !', '', 1, '2025-06-22 14:34:37'),
+(149, 7, '🚀 Réservation immédiate activée !', 'Votre réservation immédiate #184 pour la place Place 123 est maintenant active. Code d\'accès : B992374E. Vous avez 15 minutes pour vous présenter.', '', 1, '2025-06-22 14:34:45'),
+(150, 7, '⏱️ Réservation immédiate terminée', 'Votre réservation immédiate #184 pour la place Place 123 est maintenant terminée. Merci d\'avoir utilisé notre service !', '', 1, '2025-06-22 14:35:39'),
+(151, 7, '🚀 Réservation immédiate activée !', 'Votre réservation immédiate #185 pour la place Place 123 est maintenant active. Code d\'accès : 0750FB99. Vous avez 15 minutes pour vous présenter.', '', 1, '2025-06-22 14:38:11'),
+(152, 7, '⏱️ Réservation immédiate terminée', 'Votre réservation immédiate #185 pour la place Place 123 est maintenant terminée. Merci d\'avoir utilisé notre service !', '', 1, '2025-06-22 14:39:37'),
+(153, 7, '🚀 Réservation immédiate activée !', 'Votre réservation immédiate #186 pour la place Place 123 est maintenant active. Code d\'accès : D79822B0. Vous avez 15 minutes pour vous présenter.', '', 1, '2025-06-22 14:42:18'),
+(154, 7, '⏱️ Réservation immédiate terminée', 'Votre réservation immédiate #186 pour la place Place 123 est maintenant terminée. Merci d\'avoir utilisé notre service !', '', 1, '2025-06-22 14:48:10'),
+(155, 7, '🚀 Réservation immédiate activée !', 'Votre réservation immédiate #187 pour la place Place 123 est maintenant active. Code d\'accès : F63D53A1. Vous avez 15 minutes pour vous présenter.', '', 1, '2025-06-22 14:58:18'),
+(156, 7, '⏱️ Réservation immédiate terminée', 'Votre réservation immédiate #187 pour la place Place 123 est maintenant terminée. Merci d\'avoir utilisé notre service !', '', 1, '2025-06-22 14:58:32'),
+(157, 7, '🚀 Réservation immédiate activée !', 'Votre réservation immédiate #188 pour la place Place 123 est maintenant active. Code d\'accès : 222C088F. Vous avez 15 minutes pour vous présenter.', 'reservation', 0, '2025-06-22 15:48:40'),
+(158, 7, '✅ Réservation terminée', 'Votre réservation immédiate pour la place 123 a été terminée avec succès.', 'reservation', 0, '2025-06-22 15:49:33'),
+(159, 7, '🚨 Réservation imminente !', 'N\'oubliez pas ! Votre réservation #189 pour la place Place 123 commence dans moins d\'une heure le 22/06/2025 à 17:55.', 'rappel', 0, '2025-06-22 15:49:56');
 
 -- --------------------------------------------------------
 
@@ -915,7 +1026,16 @@ INSERT INTO `paiements` (`id`, `reservation_id`, `montant`, `mode_paiement`, `st
 (105, 171, 0.08, 'carte', 'annule', '2025-06-21 17:31:53'),
 (106, 172, 0.08, 'carte', 'annule', '2025-06-21 18:02:42'),
 (107, 173, 0.00, 'carte', 'valide', '2025-06-22 00:19:55'),
-(108, 174, 0.00, 'carte', 'valide', '2025-06-22 00:20:11');
+(108, 174, 0.00, 'carte', 'valide', '2025-06-22 00:20:11'),
+(109, 175, 0.45, 'paypal', 'valide', '2025-06-22 02:05:17'),
+(110, 177, 0.45, 'carte', 'valide', '2025-06-22 11:02:48'),
+(111, 179, 0.00, 'carte', 'valide', '2025-06-22 14:25:12'),
+(112, 181, 0.00, 'carte', 'valide', '2025-06-22 14:27:08'),
+(113, 185, 0.00, 'carte', 'valide', '2025-06-22 14:39:42'),
+(114, 186, 0.00, 'carte', 'valide', '2025-06-22 14:48:15'),
+(115, 187, 0.00, 'carte', 'valide', '2025-06-22 14:58:36'),
+(116, 188, 0.00, 'carte', 'valide', '2025-06-22 15:49:39'),
+(117, 189, 0.08, 'carte', 'valide', '2025-06-22 15:50:00');
 
 -- --------------------------------------------------------
 
@@ -975,7 +1095,7 @@ INSERT INTO `parking_spaces` (`id`, `numero`, `type`, `status`, `created_at`) VA
 (43, 'u05', 'handicape', 'libre', '2025-06-17 10:33:32'),
 (44, '9', 'electrique', 'libre', '2025-06-17 10:34:17'),
 (46, '7', 'moto/scooter', 'libre', '2025-06-17 10:39:04'),
-(47, '123', 'moto/scooter', 'libre', '2025-06-17 16:54:15');
+(47, '123', 'moto/scooter', 'occupe', '2025-06-17 16:54:15');
 
 -- --------------------------------------------------------
 
@@ -1209,15 +1329,15 @@ INSERT INTO `reservations` (`id`, `user_id`, `place_id`, `date_debut`, `date_fin
 (143, 7, 35, '2025-06-20 03:30:31', '2025-06-20 03:33:37', '', NULL, '13997E0D', 0.64, 0.00, 0, '2025-06-20 01:30:31', NULL, NULL, NULL, NULL, NULL),
 (144, 7, 38, '2025-06-20 03:36:07', '2025-06-20 03:36:29', 'terminee', NULL, '179AF285', 0.32, 0.00, 0, '2025-06-20 01:36:07', NULL, NULL, NULL, NULL, NULL),
 (147, 7, 35, '2025-06-20 03:46:18', '2025-06-20 03:46:26', 'terminee', NULL, '9CCF91B1', 0.64, 0.00, 0, '2025-06-20 01:46:18', NULL, NULL, NULL, NULL, NULL),
-(148, 7, 38, '2025-06-20 03:47:10', '2025-06-20 03:49:47', 'en_attente_paiement', NULL, 'B8439112', 0.32, 0.00, 0, '2025-06-20 01:47:10', NULL, NULL, NULL, NULL, NULL),
-(149, 2, 1, '2025-06-20 03:37:38', '2025-06-20 03:47:38', 'en_attente_paiement', '4441D15C', '8C535BF6', 0.62, 0.00, 0, '2025-06-20 01:47:38', NULL, NULL, NULL, NULL, NULL),
-(150, 2, 1, '2025-06-20 03:44:04', '2025-06-20 03:51:33', 'en_attente_paiement', 'C451E6A5', 'C42C3AE1', 0.62, 0.00, 0, '2025-06-20 01:49:04', NULL, NULL, NULL, NULL, NULL),
+(148, 7, 38, '2025-06-20 03:47:10', '2025-06-20 03:49:47', 'terminee', NULL, 'B8439112', 0.32, 0.00, 0, '2025-06-20 01:47:10', NULL, NULL, NULL, NULL, NULL),
+(149, 2, 1, '2025-06-20 03:37:38', '2025-06-20 03:47:38', 'terminee', '4441D15C', '8C535BF6', 0.62, 0.00, 0, '2025-06-20 01:47:38', NULL, NULL, NULL, NULL, NULL),
+(150, 2, 1, '2025-06-20 03:44:04', '2025-06-20 03:51:33', 'terminee', 'C451E6A5', 'C42C3AE1', 0.62, 0.00, 0, '2025-06-20 01:49:04', NULL, NULL, NULL, NULL, NULL),
 (151, 7, 47, '2025-06-20 03:53:00', '2025-06-20 04:23:00', 'terminee', '9BAEC6', NULL, 0.19, 0.00, 0, '2025-06-20 01:52:00', '2025-06-20 04:07:00', NULL, NULL, NULL, NULL),
-(152, 7, 35, '2025-06-20 03:52:30', '2025-06-20 03:52:37', 'en_attente_paiement', 'B43274', 'B3FDFF4D', 0.64, 0.00, 0, '2025-06-20 01:52:30', NULL, NULL, NULL, NULL, NULL),
+(152, 7, 35, '2025-06-20 03:52:30', '2025-06-20 03:52:37', 'terminee', 'B43274', 'B3FDFF4D', 0.64, 0.00, 0, '2025-06-20 01:52:30', NULL, NULL, NULL, NULL, NULL),
 (153, 2, 1, '2025-06-20 03:49:45', NULL, 'terminee', '9EEA3236', '8B6425BB', 0.00, 0.00, 0, '2025-06-20 01:52:45', NULL, NULL, NULL, NULL, NULL),
 (154, 2, 1, '2025-06-20 03:51:12', NULL, 'terminee', '7EBC0C39', '6453ED35', 0.00, 0.00, 0, '2025-06-20 01:54:12', NULL, NULL, NULL, NULL, NULL),
 (155, 7, 35, '2025-06-20 03:54:41', '2025-06-20 03:54:45', 'terminee', '92D84F', 'BC88449D', 0.64, 0.00, 0, '2025-06-20 01:54:41', NULL, NULL, NULL, NULL, NULL),
-(156, 7, 35, '2025-06-20 03:58:47', '2025-06-20 03:59:26', 'en_attente_paiement', NULL, 'FAC0BB34', 0.64, 0.00, 0, '2025-06-20 01:58:47', NULL, NULL, NULL, NULL, NULL),
+(156, 7, 35, '2025-06-20 03:58:47', '2025-06-20 03:59:26', 'terminee', NULL, 'FAC0BB34', 0.64, 0.00, 0, '2025-06-20 01:58:47', NULL, NULL, NULL, NULL, NULL),
 (158, 7, 47, '2025-06-21 19:26:00', '2025-06-21 19:56:00', 'annulée', '961254', NULL, 0.19, 0.00, 0, '2025-06-21 16:27:05', '2025-06-21 18:42:05', NULL, NULL, NULL, NULL),
 (159, 7, 47, '2025-06-21 20:28:00', '2025-06-21 20:58:00', 'annulée', '7B5B51', NULL, 0.19, 0.00, 0, '2025-06-21 16:28:33', '2025-06-21 18:43:33', NULL, NULL, NULL, NULL),
 (161, 7, 47, '2025-06-21 19:30:00', '2025-06-21 20:00:00', 'annulée', '10C6FA', NULL, 0.19, 0.00, 0, '2025-06-21 16:30:24', '2025-06-21 18:45:24', NULL, NULL, NULL, NULL),
@@ -1229,11 +1349,26 @@ INSERT INTO `reservations` (`id`, `user_id`, `place_id`, `date_debut`, `date_fin
 (167, 9, 47, '2025-06-21 20:08:00', '2025-06-21 20:38:00', 'annulée', 'C49A4D', NULL, 0.45, 0.00, 0, '2025-06-21 17:08:12', '2025-06-21 19:23:12', 'Sami LABIDI', 'labidi.neeth@gmail.com', '0663895379', '10714c36e8493283f0b135c12fb1946e'),
 (168, 9, 47, '2025-06-21 21:26:00', '2025-06-21 21:56:00', 'annulée', 'B45755', NULL, 0.45, 0.00, 0, '2025-06-21 17:27:01', '2025-06-21 19:42:01', 'Sami LABIDI', 'labidi.neeth@gmail.com', '0663895379', 'db97bc886adca3f59e66f759779a1c6e'),
 (169, 7, 47, '2025-06-21 19:29:07', '2025-06-21 19:29:29', 'terminee', 'B3DC678B', '94261F5E', 0.19, 0.00, 0, '2025-06-21 17:29:07', NULL, NULL, NULL, NULL, NULL),
-(170, 7, 47, '2025-06-21 19:29:58', '2025-06-21 19:30:14', 'en_attente_paiement', 'B1ED4CEE', '74F99595', 0.19, 0.00, 0, '2025-06-21 17:29:58', NULL, NULL, NULL, NULL, NULL),
+(170, 7, 47, '2025-06-21 19:29:58', '2025-06-21 19:30:14', 'terminee', 'B1ED4CEE', '74F99595', 0.19, 0.00, 0, '2025-06-21 17:29:58', NULL, NULL, NULL, NULL, NULL),
 (171, 7, 47, '2025-06-21 21:31:00', '2025-06-21 22:01:00', 'annulée', 'D872DB', NULL, 0.19, 0.00, 0, '2025-06-21 17:31:50', '2025-06-21 19:46:50', NULL, NULL, NULL, NULL),
 (172, 7, 47, '2025-06-21 21:33:00', '2025-06-21 22:03:00', 'annulée', '3D1AFB', NULL, 0.19, 0.00, 0, '2025-06-21 17:33:50', '2025-06-21 19:48:50', NULL, NULL, NULL, NULL),
 (173, 7, 47, '2025-06-22 02:16:23', '2025-06-22 02:19:50', 'terminee', '1BCFE8C1', '535AA3CE', 0.19, 0.00, 0, '2025-06-22 00:16:23', NULL, NULL, NULL, NULL, NULL),
-(174, 7, 47, '2025-06-22 02:20:00', '2025-06-22 02:20:08', 'terminee', '55104379', '4BA13608', 0.19, 0.00, 0, '2025-06-22 00:20:00', NULL, NULL, NULL, NULL, NULL);
+(174, 7, 47, '2025-06-22 02:20:00', '2025-06-22 02:20:08', 'terminee', '55104379', '4BA13608', 0.19, 0.00, 0, '2025-06-22 00:20:00', NULL, NULL, NULL, NULL, NULL),
+(175, 25, 47, '2025-06-22 05:05:00', '2025-06-22 05:35:00', 'terminee', '24E9A6', NULL, 0.45, 0.00, 0, '2025-06-22 02:05:11', '2025-06-22 04:20:11', NULL, NULL, NULL, NULL),
+(176, 26, 47, '2025-06-22 16:01:00', '2025-06-22 16:31:00', 'annulée', '8FC765', NULL, 0.45, 0.00, 0, '2025-06-22 11:02:12', '2025-06-22 13:17:12', NULL, NULL, NULL, NULL),
+(177, 26, 47, '2025-06-22 17:02:00', '2025-06-22 17:32:00', 'terminee', '71D0B8', NULL, 0.45, 0.00, 0, '2025-06-22 11:02:45', '2025-06-22 13:17:45', NULL, NULL, NULL, NULL),
+(178, 7, 47, '2025-06-22 15:57:46', '2025-06-22 16:00:07', 'en_attente_paiement', 'DD6C962A', 'EFE8EC2A', 0.19, 0.00, 0, '2025-06-22 13:57:46', NULL, NULL, NULL, NULL, NULL),
+(179, 7, 35, '2025-06-22 16:24:53', '2025-06-22 16:25:08', 'terminee', '2FFE5ED7', '76D226BD', 0.64, 0.00, 0, '2025-06-22 14:24:53', NULL, NULL, NULL, NULL, NULL),
+(180, 7, 47, '2025-06-22 16:25:16', '2025-06-22 16:26:35', 'en_attente_paiement', '7F45FE34', 'A80E5EA1', 0.19, 0.00, 0, '2025-06-22 14:25:16', NULL, NULL, NULL, NULL, NULL),
+(181, 7, 47, '2025-06-22 16:26:59', '2025-06-22 16:27:03', 'terminee', 'C6696819', 'F8159742', 0.19, 0.00, 0, '2025-06-22 14:26:59', NULL, NULL, NULL, NULL, NULL),
+(182, 7, 47, '2025-06-22 16:32:42', '2025-06-22 16:32:48', 'en_attente_paiement', '2E13D1A8', '79C70A0D', 0.19, 0.00, 0, '2025-06-22 14:32:42', NULL, NULL, NULL, NULL, NULL),
+(183, 7, 47, '2025-06-22 16:34:09', '2025-06-22 16:34:37', 'en_attente_paiement', '102E634C', 'F5E97DDC', 0.19, 0.00, 0, '2025-06-22 14:34:09', NULL, NULL, NULL, NULL, NULL),
+(184, 7, 47, '2025-06-22 16:34:45', '2025-06-22 16:35:39', 'en_attente_paiement', 'B992374E', '7DC5B676', 0.19, 0.00, 0, '2025-06-22 14:34:45', NULL, NULL, NULL, NULL, NULL),
+(185, 7, 47, '2025-06-22 16:38:11', '2025-06-22 16:39:37', 'terminee', '0750FB99', '85BCB551', 0.19, 0.00, 0, '2025-06-22 14:38:11', NULL, NULL, NULL, NULL, NULL),
+(186, 7, 47, '2025-06-22 16:42:18', '2025-06-22 16:48:10', 'terminee', 'D79822B0', '81482B64', 0.19, 0.00, 0, '2025-06-22 14:42:18', NULL, NULL, NULL, NULL, NULL),
+(187, 7, 47, '2025-06-22 16:58:18', '2025-06-22 16:58:32', 'terminee', 'F63D53A1', 'C516B4EE', 0.19, 0.00, 0, '2025-06-22 14:58:18', NULL, NULL, NULL, NULL, NULL),
+(188, 7, 47, '2025-06-22 17:48:40', '2025-06-22 17:49:33', 'terminee', '222C088F', '81A7CE8F', 0.19, 0.00, 0, '2025-06-22 15:48:40', NULL, NULL, NULL, NULL, NULL),
+(189, 7, 47, '2025-06-22 17:55:00', '2025-06-22 18:25:00', 'confirmée', 'AB4900', NULL, 0.19, 0.00, 0, '2025-06-22 15:49:56', '2025-06-22 18:04:56', NULL, NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -1351,8 +1486,10 @@ INSERT INTO `users` (`id`, `email`, `telephone`, `password`, `nom`, `prenom`, `r
 (15, 'lasabisdi.neeth@gmail.com', '0663895379', '$2y$10$XX0m3LXTNyj4OmI7gXf2f.f.Gv8z3XR68ICL73qhp/XR45sDixBce', 'LABIDI', 'Sami', 'user', 0, 1, 'actif', NULL, '2025-06-22 01:08:49'),
 (14, 'lasasbisdi.neeth@gmail.com', '0663895379', '$2y$10$oe6ydatwZo2nNMlVWqglo.a8SmPY7mU8NnGoAsuuyrvrQ8vCextXu', 'LABIDI', 'Sami', 'user', 0, 1, 'actif', NULL, '2025-06-22 01:09:24'),
 (22, 'labiddsdddddsdddi.neeth@gmail.com', '0663895379', '$2y$10$TQQAB8z7bLWfgs1XLZTxp.Am.mYs3CIJyO43Btp7xMbGdjlHUEcs6', 'LABIDI', 'Sami', 'user', 0, 1, 'actif', NULL, '2025-06-22 01:45:46'),
-(0, 'sasa45@gmail.com', '0663895379', '$2y$10$IaxjPD/9kZedCe9iwArVu.GVckj5.1q72ELB0HrVUDkj01WXzvypu', 'sa', 'sa', 'user', 0, 1, 'actif', NULL, '2025-06-22 01:46:25'),
-(23, 'sasa45@gmail.com', '0663895379', '$2y$10$PTiNPZMS4MYhShgj8hBwLeiTgYp8jZZqMOGL08ovO6Ap.ZbuWvzwu', 'sa', 'sa', 'user', 0, 1, 'actif', NULL, '2025-06-22 01:46:25');
+(23, 'sasa45@gmail.com', '0663895379', '$2y$10$PTiNPZMS4MYhShgj8hBwLeiTgYp8jZZqMOGL08ovO6Ap.ZbuWvzwu', 'sa', 'sa', 'user', 0, 1, 'actif', NULL, '2025-06-22 01:46:25'),
+(24, 'sasa45@gmail.com', '0663895379', '$2y$10$IaxjPD/9kZedCe9iwArVu.GVckj5.1q72ELB0HrVUDkj01WXzvypu', 'sa', 'sa', 'user', 0, 1, 'actif', NULL, '2025-06-22 01:46:25'),
+(25, 'labidi.ssdneeth@gmail.com', '0663895379', '$2y$10$bwb0ojCDsNFOHbpyNGVZoe3vFKZh/gHYbmYcs9CGhddfHG0Pxkewi', 'LABIDI', 'Sami', 'user', 0, 1, 'actif', NULL, '2025-06-22 02:04:37'),
+(26, 'labidi.neesssth@gmail.com', '0663895379', '$2y$10$e/vYIqL063RKa8JZbQ9DBugtOv3RT/8TwGKYEnLns3bxrznzen3j6', 'LABIDI', 'Sami', 'user', 0, 1, 'actif', NULL, '2025-06-22 02:07:03');
 
 -- --------------------------------------------------------
 
@@ -1415,6 +1552,15 @@ ALTER TABLE `availability_alerts`
   ADD PRIMARY KEY (`id`),
   ADD KEY `user_id` (`user_id`),
   ADD KEY `place_id` (`place_id`);
+
+--
+-- Index pour la table `contact_messages`
+--
+ALTER TABLE `contact_messages`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `status` (`status`),
+  ADD KEY `created_at` (`created_at`),
+  ADD KEY `admin_user_id` (`admin_user_id`);
 
 --
 -- Index pour la table `factures`
@@ -1517,10 +1663,16 @@ ALTER TABLE `availability_alerts`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT pour la table `contact_messages`
+--
+ALTER TABLE `contact_messages`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT pour la table `factures`
 --
 ALTER TABLE `factures`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=113;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=131;
 
 --
 -- AUTO_INCREMENT pour la table `horaires_ouverture`
@@ -1532,19 +1684,19 @@ ALTER TABLE `horaires_ouverture`
 -- AUTO_INCREMENT pour la table `logs`
 --
 ALTER TABLE `logs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=382;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=429;
 
 --
 -- AUTO_INCREMENT pour la table `notifications`
 --
 ALTER TABLE `notifications`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=134;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=160;
 
 --
 -- AUTO_INCREMENT pour la table `paiements`
 --
 ALTER TABLE `paiements`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=109;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=118;
 
 --
 -- AUTO_INCREMENT pour la table `parking_spaces`
@@ -1562,7 +1714,7 @@ ALTER TABLE `remboursements`
 -- AUTO_INCREMENT pour la table `reservations`
 --
 ALTER TABLE `reservations`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=175;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=190;
 
 --
 -- AUTO_INCREMENT pour la table `tarifs`

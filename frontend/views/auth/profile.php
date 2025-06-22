@@ -41,6 +41,23 @@
             </button>
         </li>
         <li class="nav-item" role="presentation">
+            <button class="nav-link" id="contact-messages-tab" data-bs-toggle="tab" data-bs-target="#contact-messages" type="button" role="tab" aria-controls="contact-messages" aria-selected="false">
+                <i class="fas fa-envelope-open-text me-2"></i>Mes Messages
+                <?php
+                // Compter les messages avec réponse pour cet utilisateur
+                try {
+                    $contactModel = new ContactModel();
+                    $messagesWithResponse = $contactModel->countMessagesWithResponseByEmail($user['email']);
+                    if ($messagesWithResponse > 0): ?>
+                        <span class="badge rounded-pill bg-info"><?php echo $messagesWithResponse; ?></span>
+                    <?php endif;
+                } catch (Exception $e) {
+                    // Ignorer les erreurs silencieusement
+                }
+                ?>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
             <button class="nav-link" id="notifications-tab" data-bs-toggle="tab" data-bs-target="#notifications" type="button" role="tab" aria-controls="notifications" aria-selected="false">
                 <i class="fas fa-bell me-2"></i>Notifications
                 <?php if ($unread_notifications > 0): ?>
@@ -316,6 +333,189 @@
             </div>
         </div>
 
+        <!-- Onglet Messages de Contact -->
+        <div class="tab-pane fade" id="contact-messages" role="tabpanel" aria-labelledby="contact-messages-tab">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-envelope-open-text me-2"></i>
+                        Mes Messages de Contact
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <?php
+                    // Récupérer les messages de contact de l'utilisateur
+                    try {
+                        $contactModel = new ContactModel();
+                        $userMessages = $contactModel->getMessagesByEmail($user['email']);
+
+                        if (!empty($userMessages)):
+                            // Statistiques
+                            $totalMessages = count($userMessages);
+                            $messagesWithResponse = array_filter($userMessages, function($msg) {
+                                return !empty($msg['admin_response']);
+                            });
+                            $pendingMessages = array_filter($userMessages, function($msg) {
+                                return empty($msg['admin_response']) && in_array($msg['status'], ['nouveau', 'lu']);
+                            });
+                    ?>
+                            <!-- Statistiques -->
+                            <div class="row mb-4">
+                                <div class="col-md-4">
+                                    <div class="card bg-primary text-white">
+                                        <div class="card-body text-center">
+                                            <h4 class="mb-0"><?php echo $totalMessages; ?></h4>
+                                            <p class="mb-0">Message(s) envoyé(s)</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card bg-success text-white">
+                                        <div class="card-body text-center">
+                                            <h4 class="mb-0"><?php echo count($messagesWithResponse); ?></h4>
+                                            <p class="mb-0">Avec réponse</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card bg-warning text-dark">
+                                        <div class="card-body text-center">
+                                            <h4 class="mb-0"><?php echo count($pendingMessages); ?></h4>
+                                            <p class="mb-0">En attente</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Liste des messages -->
+                            <div class="accordion" id="contactMessagesAccordion">
+                                <?php foreach ($userMessages as $index => $message): ?>
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header" id="heading<?php echo $message['id']; ?>">
+                                            <button class="accordion-button <?php echo $index > 0 ? 'collapsed' : ''; ?>" type="button" data-bs-toggle="collapse" data-bs-target="#collapse<?php echo $message['id']; ?>" aria-expanded="<?php echo $index === 0 ? 'true' : 'false'; ?>" aria-controls="collapse<?php echo $message['id']; ?>">
+                                                <div class="d-flex w-100 justify-content-between align-items-center me-3">
+                                                    <div>
+                                                        <strong>Message #<?php echo $message['id']; ?></strong>
+                                                        <small class="text-muted ms-2">
+                                                            <?php echo date('d/m/Y à H:i', strtotime($message['created_at'])); ?>
+                                                        </small>
+                                                    </div>
+                                                    <div>
+                                                        <?php
+                                                        $statusClasses = [
+                                                            'nouveau' => 'bg-warning',
+                                                            'lu' => 'bg-info',
+                                                            'traite' => 'bg-success',
+                                                            'archive' => 'bg-secondary'
+                                                        ];
+                                                        $statusLabels = [
+                                                            'nouveau' => 'Nouveau',
+                                                            'lu' => 'Lu',
+                                                            'traite' => 'Traité',
+                                                            'archive' => 'Archivé'
+                                                        ];
+                                                        ?>
+                                                        <span class="badge <?php echo $statusClasses[$message['status']] ?? 'bg-secondary'; ?> me-2">
+                                                            <?php echo $statusLabels[$message['status']] ?? $message['status']; ?>
+                                                        </span>
+                                                        <?php if (!empty($message['admin_response'])): ?>
+                                                            <span class="badge bg-success">
+                                                                <i class="fas fa-reply me-1"></i>Répondu
+                                                            </span>
+                                                        <?php endif; ?>
+                                                    </div>
+                                                </div>
+                                            </button>
+                                        </h2>
+                                        <div id="collapse<?php echo $message['id']; ?>" class="accordion-collapse collapse <?php echo $index === 0 ? 'show' : ''; ?>" aria-labelledby="heading<?php echo $message['id']; ?>" data-bs-parent="#contactMessagesAccordion">
+                                            <div class="accordion-body">
+                                                <!-- Sujet -->
+                                                <div class="mb-3">
+                                                    <strong>Sujet :</strong>
+                                                    <?php
+                                                    $sujets = [
+                                                        'demande_information' => 'Demande d\'information',
+                                                        'reservation' => 'Question sur réservation',
+                                                        'probleme' => 'Signaler un problème',
+                                                        'autre' => 'Autre'
+                                                    ];
+                                                    echo $sujets[$message['sujet']] ?? $message['sujet'];
+                                                    ?>
+                                                </div>
+
+                                                <!-- Votre message -->
+                                                <div class="mb-3">
+                                                    <h6 class="text-primary">
+                                                        <i class="fas fa-comment me-1"></i>Votre message :
+                                                    </h6>
+                                                    <div class="bg-light p-3 rounded">
+                                                        <?php echo nl2br(htmlspecialchars($message['message'])); ?>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Réponse de l'administration -->
+                                                <?php if (!empty($message['admin_response'])): ?>
+                                                    <div class="mb-3">
+                                                        <h6 class="text-success">
+                                                            <i class="fas fa-reply me-1"></i>Réponse de notre équipe :
+                                                        </h6>
+                                                        <div class="bg-success bg-opacity-10 border border-success border-opacity-25 p-3 rounded">
+                                                            <?php echo nl2br(htmlspecialchars($message['admin_response'])); ?>
+                                                        </div>
+                                                        <small class="text-muted">
+                                                            <i class="fas fa-clock me-1"></i>
+                                                            Répondu le <?php echo date('d/m/Y à H:i', strtotime($message['responded_at'])); ?>
+                                                            <?php if (!empty($message['admin_nom'])): ?>
+                                                                par <?php echo htmlspecialchars($message['admin_nom'] . ' ' . $message['admin_prenom']); ?>
+                                                            <?php endif; ?>
+                                                        </small>
+                                                    </div>
+                                                <?php else: ?>
+                                                    <div class="alert alert-info">
+                                                        <i class="fas fa-hourglass-half me-2"></i>
+                                                        <strong>En attente de réponse</strong><br>
+                                                        Votre message a été reçu et sera traité dans les plus brefs délais.
+                                                    </div>
+                                                <?php endif; ?>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+
+                            <!-- Bouton pour envoyer un nouveau message -->
+                            <div class="text-center mt-4">
+                                <a href="<?php echo BASE_URL; ?>home/contact" class="btn btn-primary">
+                                    <i class="fas fa-paper-plane me-1"></i>
+                                    Envoyer un nouveau message
+                                </a>
+                            </div>
+
+                    <?php else: ?>
+                            <!-- Aucun message -->
+                            <div class="text-center py-5">
+                                <i class="fas fa-envelope-open fa-3x text-muted mb-3"></i>
+                                <h5 class="text-muted">Aucun message de contact</h5>
+                                <p class="text-muted">Vous n'avez encore envoyé aucun message de contact.</p>
+                                <a href="<?php echo BASE_URL; ?>home/contact" class="btn btn-primary">
+                                    <i class="fas fa-paper-plane me-1"></i>
+                                    Envoyer votre premier message
+                                </a>
+                            </div>
+                    <?php
+                        endif;
+                    } catch (Exception $e) {
+                        // En cas d'erreur, afficher un message d'erreur
+                        echo '<div class="alert alert-danger">';
+                        echo '<i class="fas fa-exclamation-triangle me-2"></i>';
+                        echo 'Erreur lors du chargement des messages de contact.';
+                        echo '</div>';
+                    }
+                    ?>
+                </div>
+            </div>
+        </div>
+
         <!-- Onglet Notifications -->
         <div class="tab-pane fade" id="notifications" role="tabpanel" aria-labelledby="notifications-tab">
             <div class="card">
@@ -527,7 +727,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const hash = window.location.hash.substring(1);
         console.log('🔗 Hash détecté:', hash);
 
-        if (hash === 'notifications' || hash === 'reservations' || hash === 'informations' || hash === 'subscriptions') {
+        if (hash === 'notifications' || hash === 'reservations' || hash === 'informations' || hash === 'subscriptions' || hash === 'contact-messages') {
             setTimeout(() => {
                 forceActivateTab(hash);
             }, 100);

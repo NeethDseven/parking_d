@@ -44,10 +44,13 @@ function getBaseUrl()
     <!-- CSS Files -->
     <link href="<?php echo getBaseUrl(); ?>frontend/assets/css/app.css?v=<?php echo time(); ?>" rel="stylesheet">
     <link href="<?php echo getBaseUrl(); ?>frontend/assets/css/admin.css?v=<?php echo time(); ?>" rel="stylesheet">
+    <link href="<?php echo getBaseUrl(); ?>frontend/assets/css/dashboard-responsive.css?v=<?php echo time(); ?>" rel="stylesheet">
+    <link href="<?php echo getBaseUrl(); ?>frontend/assets/css/admin-responsive-optimized.css?v=<?php echo time(); ?>" rel="stylesheet">
 
     <!-- Scripts -->
     <script src="<?php echo getBaseUrl(); ?>frontend/assets/js/core/logger.js?v=<?php echo time(); ?>"></script>
     <script src="<?php echo getBaseUrl(); ?>frontend/assets/js/core/app.js?v=<?php echo time(); ?>"></script>
+    <script src="<?php echo getBaseUrl(); ?>frontend/assets/js/components/adminResponsiveManager.js?v=<?php echo time(); ?>"></script>
 </head>
 
 <body data-page="<?php echo isset($active_page) ? 'admin_' . $active_page : 'admin'; ?>" class="admin-layout">

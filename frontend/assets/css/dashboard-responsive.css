@@ -1,0 +1,1025 @@
+/* ========== CORRECTION RESPONSIVE DASHBOARD ========== */
+
+/* Suppression des contraintes ultra-compact qui causent des problèmes */
+
+/* Correction globale pour éviter les éléments qui descendent à l'infini */
+.admin-container {
+    height: auto !important;
+    min-height: 100vh !important;
+    max-height: none !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+}
+
+/* Main-content géré par admin-no-scroll.css */
+
+/* Container principal responsive - DÉSACTIVÉ pour le nouveau layout */
+.dashboard-responsive-layout,
+.dashboard-ultra-compact-layout {
+    display: none !important; /* Désactivé au profit du nouveau layout desktop */
+}
+
+/* Stats responsive - colonne verticale */
+.dashboard-stats-responsive,
+.dashboard-stats-compact {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 1.5rem !important;
+    height: auto !important; /* Hauteur automatique */
+    max-height: none !important;
+    overflow: visible !important;
+}
+
+.stat-responsive,
+.stat-mini {
+    background: white !important;
+    border-radius: 12px !important;
+    padding: 1.5rem !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12) !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 1rem !important;
+    border-left: 4px solid #2c3e50 !important;
+    min-height: 120px !important;
+    height: auto !important;
+    max-height: none !important;
+    transition: all 0.3s ease !important;
+}
+
+/* Graphiques responsive - grille adaptative */
+.dashboard-charts-responsive,
+.dashboard-charts-ultra-compact {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important; /* 3 colonnes égales */
+    grid-template-rows: auto auto !important; /* Hauteur automatique */
+    gap: 1rem !important;
+    height: auto !important; /* Hauteur automatique */
+    max-height: none !important;
+    overflow: visible !important;
+}
+
+.chart-responsive,
+.chart-mini {
+    background: white !important;
+    border-radius: 12px !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12) !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+    height: auto !important; /* Hauteur automatique */
+    min-height: 300px !important; /* Hauteur minimale fixe */
+    max-height: 400px !important; /* Hauteur maximale pour éviter l'infini */
+}
+
+/* Graphique détaillé qui prend 2 colonnes */
+.chart-detailed {
+    grid-column: span 2 !important;
+}
+
+.chart-responsive h6,
+.chart-mini h6 {
+    background: linear-gradient(135deg, #2c3e50, #34495e) !important;
+    color: white !important;
+    margin: 0 !important;
+    padding: 1rem 1.5rem !important;
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+    text-align: center !important;
+}
+
+.chart-responsive .chart-container,
+.chart-mini-container {
+    flex: 1 !important; /* Prend tout l'espace disponible */
+    min-height: 200px !important;
+    max-height: 300px !important; /* Limite la hauteur maximale */
+    padding: 1rem !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    overflow: hidden !important; /* Évite les débordements */
+}
+
+.chart-responsive .chart-container canvas,
+.chart-mini-container canvas {
+    max-width: 100% !important;
+    max-height: 280px !important;
+    width: auto !important;
+    height: auto !important;
+}
+
+/* Tableaux responsive - colonne verticale */
+.dashboard-tables-compact {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 1.5rem !important;
+    height: auto !important; /* Hauteur automatique */
+    max-height: none !important;
+    overflow: visible !important;
+}
+
+.table-mini {
+    background: white !important;
+    border-radius: 12px !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12) !important;
+    overflow: hidden !important;
+    flex: 1 !important; /* Prend une part égale de l'espace disponible */
+    min-height: 250px !important;
+    max-height: none !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+/* Headers et body des tableaux */
+.table-mini-header {
+    background: linear-gradient(135deg, #2c3e50, #34495e) !important;
+    color: white !important;
+    padding: 1rem 1.5rem !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+}
+
+.table-mini-body {
+    flex: 1 !important; /* Prend tout l'espace restant */
+    padding: 1rem !important;
+    overflow-y: auto !important;
+}
+
+.table-mini-scroll {
+    height: 100% !important;
+    overflow-y: auto !important;
+}
+
+/* ========== RESPONSIVE AMÉLIORÉ ========== */
+
+@media (max-width: 1400px) {
+    .dashboard-responsive-layout,
+    .dashboard-ultra-compact-layout {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
+        gap: 1.5rem !important;
+    }
+
+    .dashboard-charts-responsive,
+    .dashboard-charts-ultra-compact {
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)) !important;
+    }
+
+    .chart-responsive,
+    .chart-mini {
+        min-height: 320px !important;
+    }
+}
+
+@media (max-width: 1200px) {
+    .dashboard-responsive-layout,
+    .dashboard-ultra-compact-layout {
+        grid-template-columns: 1fr !important;
+        gap: 1.5rem !important;
+    }
+
+    .dashboard-stats-responsive,
+    .dashboard-stats-compact {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) !important;
+        gap: 1rem !important;
+    }
+
+    .dashboard-charts-responsive,
+    .dashboard-charts-ultra-compact {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
+        gap: 1rem !important;
+    }
+
+    .chart-responsive,
+    .chart-mini {
+        min-height: 300px !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard-stats-responsive,
+    .dashboard-stats-compact {
+        grid-template-columns: 1fr !important;
+        gap: 1rem !important;
+    }
+
+    .stat-responsive,
+    .stat-mini {
+        min-height: 100px !important;
+        padding: 1rem !important;
+    }
+
+    .dashboard-charts-responsive,
+    .dashboard-charts-ultra-compact {
+        grid-template-columns: 1fr !important;
+        gap: 1rem !important;
+    }
+
+    .chart-responsive,
+    .chart-mini {
+        min-height: 280px !important;
+    }
+
+    .chart-responsive .chart-container,
+    .chart-mini-container {
+        height: 250px !important;
+        padding: 0.75rem !important;
+    }
+
+    .chart-responsive .chart-container canvas,
+    .chart-mini-container canvas {
+        max-height: 220px !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .chart-responsive,
+    .chart-mini {
+        min-height: 250px !important;
+    }
+
+    .chart-responsive .chart-container,
+    .chart-mini-container {
+        height: 220px !important;
+        padding: 0.5rem !important;
+    }
+
+    .chart-responsive .chart-container canvas,
+    .chart-mini-container canvas {
+        max-height: 190px !important;
+    }
+
+    .chart-responsive h6,
+    .chart-mini h6 {
+        padding: 0.75rem 1rem !important;
+        font-size: 0.9rem !important;
+    }
+}
+
+/* Correction spécifique pour les graphiques Chart.js */
+.chart-container canvas[id*="Chart"],
+.chart-mini-container canvas[id*="Chart"] {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+}
+
+/* Suppression des contraintes de taille forcées */
+canvas[style*="width"],
+canvas[style*="height"] {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+}
+
+/* ========== LAYOUT DESKTOP MODERNE ========== */
+
+/* Container principal desktop */
+.dashboard-desktop-layout {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 1.5rem !important;
+    margin-bottom: 1rem !important;
+    height: auto !important;
+    min-height: auto !important;
+    overflow: visible !important;
+}
+
+/* Stats en haut sur toute la largeur */
+.dashboard-stats-desktop {
+    display: grid !important;
+    grid-template-columns: repeat(6, 1fr) !important;
+    gap: 1rem !important;
+    margin-bottom: 0.5rem !important;
+}
+
+/* Cartes de statistiques modernes */
+.stat-card {
+    background: #fff !important;
+    border-radius: 12px !important;
+    padding: 1.25rem !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08) !important;
+    border: 1px solid #e9ecef !important;
+    transition: all 0.3s ease !important;
+    position: relative !important;
+    overflow: hidden !important;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12) !important;
+}
+
+.stat-card-content {
+    position: relative !important;
+    z-index: 2 !important;
+}
+
+.stat-card-header {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    margin-bottom: 1rem !important;
+}
+
+.stat-card-header h6 {
+    margin: 0 !important;
+    font-size: 0.875rem !important;
+    font-weight: 600 !important;
+    color: #6c757d !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+}
+
+.stat-card-header i {
+    font-size: 1.5rem !important;
+    opacity: 0.7 !important;
+}
+
+.stat-card h2 {
+    margin: 0 !important;
+    font-size: 2rem !important;
+    font-weight: 700 !important;
+    line-height: 1.2 !important;
+}
+
+.stat-card-subtitle {
+    margin: 0.5rem 0 0 0 !important;
+    font-size: 0.875rem !important;
+    color: #6c757d !important;
+}
+
+/* Couleurs des cartes de stats */
+.stat-card.primary {
+    border-left: 4px solid #2c3e50 !important;
+}
+
+.stat-card.primary .stat-card-header i {
+    color: #2c3e50 !important;
+}
+
+.stat-card.success {
+    border-left: 4px solid #28a745 !important;
+}
+
+.stat-card.success .stat-card-header i {
+    color: #28a745 !important;
+}
+
+.stat-card.warning {
+    border-left: 4px solid #ffc107 !important;
+}
+
+.stat-card.warning .stat-card-header i {
+    color: #ffc107 !important;
+}
+
+.stat-card.info {
+    border-left: 4px solid #17a2b8 !important;
+}
+
+.stat-card.info .stat-card-header i {
+    color: #17a2b8 !important;
+}
+
+.stat-card.primary-light {
+    border-left: 4px solid #5a6c7d !important;
+}
+
+.stat-card.primary-light .stat-card-header i {
+    color: #5a6c7d !important;
+}
+
+.stat-card.secondary {
+    border-left: 4px solid #6c757d !important;
+}
+
+.stat-card.secondary .stat-card-header i {
+    color: #6c757d !important;
+}
+
+/* Grille principale optimisée */
+.dashboard-main-grid {
+    display: grid !important;
+    grid-template-columns: 2fr 1fr !important;
+    grid-template-rows: auto auto !important;
+    gap: 1.5rem !important;
+    height: auto !important;
+    align-items: start !important;
+}
+
+/* Zone graphiques principaux */
+.dashboard-charts-main {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    display: grid !important;
+    grid-template-columns: 2fr 1fr 1fr !important;
+    grid-template-rows: auto !important;
+    gap: 1rem !important;
+    align-items: start !important;
+}
+
+/* Zone graphiques secondaires */
+.dashboard-charts-secondary {
+    grid-column: 2 !important;
+    grid-row: 1 / 3 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 1rem !important;
+    align-items: stretch !important;
+}
+
+/* Zone informations et activité - côte à côte */
+.dashboard-info-section {
+    grid-column: 1 !important;
+    grid-row: 2 !important;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 1.5rem !important;
+    align-items: start !important;
+}
+
+/* Zone activité intégrée dans info-section */
+.dashboard-activity-section {
+    /* Sera placée dans la grille de dashboard-info-section */
+    margin-top: 0 !important;
+}
+
+/* Cartes de graphiques modernes */
+.chart-card {
+    background: #fff !important;
+    border-radius: 12px !important;
+    padding: 1.5rem !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08) !important;
+    border: 1px solid #e9ecef !important;
+    transition: all 0.3s ease !important;
+    height: fit-content !important;
+}
+
+.chart-card:hover {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12) !important;
+}
+
+.chart-card.featured {
+    grid-column: 1 !important;
+    grid-row: 1 / 3 !important;
+}
+
+.chart-card-header {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    margin-bottom: 1rem !important;
+    padding-bottom: 0.75rem !important;
+    border-bottom: 1px solid #e9ecef !important;
+}
+
+.chart-card-header h5,
+.chart-card-header h6 {
+    margin: 0 !important;
+    font-weight: 600 !important;
+    color: #2c3e50 !important;
+}
+
+.chart-card-header h5 {
+    font-size: 1.125rem !important;
+}
+
+.chart-card-header h6 {
+    font-size: 1rem !important;
+}
+
+.chart-card-header i {
+    margin-right: 0.5rem !important;
+    color: #6c757d !important;
+}
+
+.chart-card-body {
+    position: relative !important;
+    height: 250px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.chart-card.featured .chart-card-body {
+    height: 350px !important;
+}
+
+.chart-card-legend {
+    margin-top: 1rem !important;
+    padding-top: 1rem !important;
+    border-top: 1px solid #e9ecef !important;
+    font-size: 0.875rem !important;
+}
+
+/* État vide pour les graphiques */
+.empty-chart {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    height: 100% !important;
+    color: #6c757d !important;
+    text-align: center !important;
+}
+
+.empty-chart i {
+    font-size: 2rem !important;
+    margin-bottom: 0.5rem !important;
+    opacity: 0.5 !important;
+}
+
+.empty-chart p {
+    margin: 0 !important;
+    font-size: 0.875rem !important;
+}
+
+/* Cartes d'information modernes */
+.info-card {
+    background: #fff !important;
+    border-radius: 12px !important;
+    padding: 1.5rem !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08) !important;
+    border: 1px solid #e9ecef !important;
+    transition: all 0.3s ease !important;
+    height: fit-content !important;
+}
+
+.info-card:hover {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12) !important;
+}
+
+.info-card-header {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    margin-bottom: 1.5rem !important;
+    padding-bottom: 0.75rem !important;
+    border-bottom: 1px solid #e9ecef !important;
+}
+
+.info-card-header h5 {
+    margin: 0 !important;
+    font-size: 1.125rem !important;
+    font-weight: 600 !important;
+    color: #2c3e50 !important;
+}
+
+.info-card-header i {
+    margin-right: 0.5rem !important;
+    color: #6c757d !important;
+}
+
+.info-card-body {
+    max-height: 300px !important;
+    overflow-y: auto !important;
+}
+
+/* Liste des réservations */
+.reservations-list {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 1rem !important;
+}
+
+.reservation-item {
+    display: flex !important;
+    align-items: center !important;
+    gap: 1rem !important;
+    padding: 1rem !important;
+    background: #f8f9fa !important;
+    border-radius: 8px !important;
+    border-left: 4px solid #2c3e50 !important;
+    transition: all 0.3s ease !important;
+}
+
+.reservation-item:hover {
+    background: #e9ecef !important;
+    transform: translateX(4px) !important;
+}
+
+.place-number {
+    background: #2c3e50 !important;
+    color: white !important;
+    padding: 0.5rem 0.75rem !important;
+    border-radius: 6px !important;
+    font-weight: 600 !important;
+    font-size: 0.875rem !important;
+    min-width: 60px !important;
+    text-align: center !important;
+}
+
+.reservation-user {
+    flex: 1 !important;
+    font-size: 0.95rem !important;
+}
+
+.reservation-user strong {
+    color: #2c3e50 !important;
+}
+
+.reservation-time {
+    font-size: 0.875rem !important;
+    color: #6c757d !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+}
+
+.reservation-time i {
+    color: #28a745 !important;
+}
+
+/* Liste d'activité */
+.activity-list {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 1rem !important;
+}
+
+.activity-item {
+    display: flex !important;
+    gap: 1rem !important;
+    padding: 1rem !important;
+    background: #f8f9fa !important;
+    border-radius: 8px !important;
+    border-left: 4px solid #17a2b8 !important;
+    transition: all 0.3s ease !important;
+}
+
+.activity-item:hover {
+    background: #e9ecef !important;
+    transform: translateX(4px) !important;
+}
+
+.activity-time {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+    font-size: 0.875rem !important;
+    color: #6c757d !important;
+    min-width: 80px !important;
+}
+
+.activity-time i {
+    color: #17a2b8 !important;
+}
+
+.activity-content {
+    flex: 1 !important;
+}
+
+.activity-user {
+    font-size: 0.95rem !important;
+    margin-bottom: 0.25rem !important;
+}
+
+.activity-user strong {
+    color: #2c3e50 !important;
+}
+
+.activity-description {
+    font-size: 0.875rem !important;
+    color: #6c757d !important;
+    line-height: 1.4 !important;
+}
+
+/* États vides */
+.empty-state {
+    text-align: center !important;
+    padding: 2rem !important;
+    color: #6c757d !important;
+}
+
+.empty-state i {
+    font-size: 2rem !important;
+    margin-bottom: 1rem !important;
+    opacity: 0.5 !important;
+}
+
+.empty-state p {
+    margin: 0 !important;
+    font-size: 0.95rem !important;
+}
+
+/* ========== RESPONSIVE POUR LE NOUVEAU LAYOUT ========== */
+
+/* Tablettes et écrans moyens */
+@media (max-width: 1200px) {
+    .dashboard-stats-desktop {
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 1rem !important;
+    }
+
+    .dashboard-main-grid {
+        grid-template-columns: 1fr !important;
+        grid-template-rows: auto auto auto !important;
+        gap: 1.5rem !important;
+    }
+
+    .dashboard-charts-main {
+        grid-column: 1 !important;
+        grid-row: 1 !important;
+        grid-template-columns: 1fr !important;
+        grid-template-rows: auto auto auto !important;
+    }
+
+    .dashboard-charts-secondary {
+        grid-column: 1 !important;
+        grid-row: 2 !important;
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 1rem !important;
+    }
+
+    .dashboard-info-section,
+    .dashboard-activity-section {
+        grid-column: 1 !important;
+        grid-row: 3 !important;
+        margin-top: 0 !important;
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 1.5rem !important;
+    }
+
+    .chart-card.featured {
+        grid-column: 1 !important;
+        grid-row: 1 !important;
+    }
+
+    .chart-card.featured .chart-card-body {
+        height: 300px !important;
+    }
+}
+
+/* Mobiles */
+@media (max-width: 768px) {
+    .dashboard-stats-desktop {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 0.75rem !important;
+    }
+
+    .dashboard-main-grid {
+        gap: 1rem !important;
+    }
+
+    .dashboard-charts-main {
+        grid-template-columns: 1fr !important;
+        gap: 1rem !important;
+    }
+
+    .dashboard-charts-secondary {
+        grid-template-columns: 1fr !important;
+        gap: 1rem !important;
+    }
+
+    .dashboard-info-section,
+    .dashboard-activity-section {
+        grid-template-columns: 1fr !important;
+        gap: 1rem !important;
+    }
+
+    .chart-card.featured {
+        grid-column: 1 !important;
+        grid-row: auto !important;
+    }
+
+    .chart-card.featured .chart-card-body {
+        height: 250px !important;
+    }
+
+    .chart-card-body {
+        height: 200px !important;
+    }
+
+    .stat-card {
+        padding: 0.75rem !important;
+    }
+
+    .stat-card h2 {
+        font-size: 1.25rem !important;
+    }
+
+    .stat-card-header h6 {
+        font-size: 0.75rem !important;
+    }
+
+    .stat-card-subtitle {
+        font-size: 0.75rem !important;
+    }
+
+    .reservation-item,
+    .activity-item {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 0.5rem !important;
+        padding: 0.75rem !important;
+    }
+
+    .place-number {
+        min-width: auto !important;
+        align-self: flex-start !important;
+    }
+
+    .activity-time {
+        min-width: auto !important;
+    }
+}
+
+/* Très petits écrans */
+@media (max-width: 480px) {
+    .dashboard-stats-desktop {
+        grid-template-columns: 1fr !important;
+        gap: 0.5rem !important;
+    }
+
+    .stat-card {
+        padding: 0.5rem !important;
+    }
+
+    .stat-card h2 {
+        font-size: 1.125rem !important;
+    }
+
+    .stat-card-header h6 {
+        font-size: 0.7rem !important;
+    }
+
+    .stat-card-subtitle {
+        font-size: 0.7rem !important;
+    }
+}
+
+/* ========== CORRECTIONS RESPONSIVE ADMIN ========== */
+
+/* Sidebar overlay */
+.sidebar-overlay {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    background: rgba(0, 0, 0, 0.5) !important;
+    z-index: 1040 !important; /* Plus bas que la sidebar */
+    display: none !important;
+    opacity: 0 !important;
+    transition: opacity 0.3s ease !important;
+}
+
+.sidebar-overlay.show {
+    display: block !important;
+    opacity: 1 !important;
+}
+
+/* Correction de la sidebar en responsive */
+@media (max-width: 991.98px) {
+    .sidebar {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 250px !important;
+        height: 100vh !important;
+        transform: translateX(-100%) !important;
+        transition: transform 0.3s ease !important;
+        z-index: 1050 !important; /* Plus haut que l'overlay */
+        background: #fff !important; /* Fond blanc comme l'original */
+        overflow-y: auto !important;
+        box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1) !important;
+    }
+
+    .sidebar.show {
+        transform: translateX(0) !important;
+    }
+}
+
+    /* Main-content géré par admin-no-scroll.css pour éviter les conflits */
+
+    /* Dashboard responsive */
+    .dashboard-ultra-compact-layout {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 1rem !important;
+        padding: 1rem !important;
+        height: auto !important;
+    }
+
+    .dashboard-stats-compact {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 1rem !important;
+        height: auto !important;
+    }
+
+    .dashboard-charts-ultra-compact {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        grid-template-rows: auto !important; /* Hauteur automatique */
+        gap: 0.75rem !important;
+        height: auto !important;
+    }
+
+    .dashboard-tables-compact {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 1rem !important;
+        height: auto !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .dashboard-stats-compact {
+        grid-template-columns: 1fr !important;
+        height: auto !important;
+    }
+
+    .dashboard-charts-ultra-compact {
+        grid-template-columns: 1fr !important;
+        grid-template-rows: auto !important;
+        height: auto !important;
+    }
+
+    .chart-mini {
+        min-height: 250px !important;
+        max-height: 350px !important;
+        height: auto !important;
+    }
+
+    .stat-mini {
+        min-height: 80px !important;
+        max-height: 120px !important;
+        padding: 0.75rem !important;
+        height: auto !important;
+    }
+
+    .table-mini {
+        min-height: 200px !important;
+        max-height: 400px !important;
+        height: auto !important;
+    }
+}
+
+/* Correction des modales en responsive */
+@media (max-width: 768px) {
+    .modal-dialog {
+        margin: 0.5rem !important;
+        max-width: calc(100vw - 1rem) !important;
+        width: calc(100vw - 1rem) !important;
+    }
+
+    .modal-content {
+        max-height: calc(100vh - 1rem) !important;
+        overflow-y: auto !important;
+    }
+
+    .modal-body {
+        max-height: calc(100vh - 200px) !important;
+        overflow-y: auto !important;
+    }
+}
+
+/* Correction des tableaux en responsive */
+.table-responsive {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+}
+
+@media (max-width: 768px) {
+    .admin-table {
+        min-width: 600px !important;
+        font-size: 0.875rem !important;
+    }
+
+    .admin-table th,
+    .admin-table td {
+        padding: 0.5rem 0.25rem !important;
+        white-space: nowrap !important;
+    }
+}
+
+/* Correction du viewport */
+html {
+    height: 100% !important;
+    height: calc(var(--vh, 1vh) * 100) !important;
+}
+
+body {
+    min-height: 100% !important;
+    min-height: calc(var(--vh, 1vh) * 100) !important;
+}
+
+/* Correction des formulaires en responsive */
+@media (max-width: 768px) {
+    .form-control,
+    .form-select,
+    input,
+    textarea,
+    select {
+        font-size: 16px !important; /* Évite le zoom sur iOS */
+    }
+
+    .btn {
+        min-height: 44px !important; /* Taille tactile recommandée */
+    }
+}

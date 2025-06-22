@@ -52,6 +52,34 @@
 <!-- Bootstrap JS Bundle with Popper -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 
+<!-- Script minimal pour navbar mobile -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const navbarCollapse = document.querySelector('#navbarNav');
+    const navbarToggler = document.querySelector('.navbar-toggler');
+
+    // S'assurer que l'état initial est correct
+    if (navbarCollapse && navbarToggler) {
+        // Forcer l'état fermé au chargement en mobile
+        if (window.innerWidth < 992) {
+            navbarCollapse.classList.remove('show');
+            navbarToggler.classList.add('collapsed');
+            navbarToggler.setAttribute('aria-expanded', 'false');
+        }
+
+        // Fermer la navbar mobile quand on clique sur un lien
+        const navLinks = document.querySelectorAll('#navbarNav .nav-link:not(.dropdown-toggle)');
+        navLinks.forEach(function(link) {
+            link.addEventListener('click', function() {
+                if (window.innerWidth < 992 && !navbarToggler.classList.contains('collapsed')) {
+                    navbarToggler.click();
+                }
+            });
+        });
+    }
+});
+</script>
+
 <!-- Scripts de gestion des styles obsolètes - remplacés par la structure CSS optimisée -->
 
 <!-- Script pour le suivi des réservations immédiates, si besoin -->

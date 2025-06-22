@@ -980,25 +980,12 @@
         }
 
         /**
-         * Gestion de la sidebar admin sur mobile
+         * Gestion de la sidebar admin sur mobile - DÉSACTIVÉ
+         * Géré par adminResponsiveManager.js
          */
         setupAdminSidebar() {
-            const sidebarToggle = document.getElementById('sidebarToggle');
-            if (sidebarToggle) {
-                sidebarToggle.addEventListener('click', () => {
-                    const sidebar = document.querySelector('.sidebar');
-                    const content = document.querySelector('.content');
-
-                    sidebar.classList.toggle('active');
-
-                    // Ajuster le contenu en fonction de l'état de la sidebar
-                    if (sidebar.classList.contains('active')) {
-                        content.style.marginLeft = '0';
-                    } else {
-                        content.style.marginLeft = '250px';
-                    }
-                });
-            }
+            // Désactivé pour éviter les conflits avec adminResponsiveManager.js
+            console.log('📝 Sidebar gérée par adminResponsiveManager.js');
         }
 
         /**

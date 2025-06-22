@@ -49,6 +49,25 @@
                 <i class="fas fa-id-card me-2"></i> Abonnements
             </a>
         </li>
+        <li class="nav-item">
+            <a href="<?php echo BASE_URL; ?>admin/contact" class="nav-link <?php echo isset($activeMenu) && $activeMenu === 'contact' ? 'active' : ''; ?>">
+                <i class="fas fa-envelope me-2"></i> Messages de Contact
+                <?php
+                // Afficher le badge de nouveaux messages si disponible
+                if (isset($_SESSION['user']) && $_SESSION['user']['role'] === 'admin') {
+                    try {
+                        $contactModel = new ContactModel();
+                        $newMessagesCount = $contactModel->countMessages('nouveau');
+                        if ($newMessagesCount > 0) {
+                            echo '<span class="badge bg-danger rounded-pill ms-1">' . $newMessagesCount . '</span>';
+                        }
+                    } catch (Exception $e) {
+                        // Ignorer les erreurs silencieusement
+                    }
+                }
+                ?>
+            </a>
+        </li>
 
         <!-- Séparateur -->
         <li class="nav-item mt-4">

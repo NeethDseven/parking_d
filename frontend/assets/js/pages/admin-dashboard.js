@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const placeStats = JSON.parse(chartDataElement.dataset.placeStatus || '{}');
     const subscriptionStats = JSON.parse(chartDataElement.dataset.subscriptionStats || '[]');
     const revenueStats = JSON.parse(chartDataElement.dataset.revenueStats || '{}');
-    const reservationByStatus = JSON.parse(chartDataElement.dataset.reservationByStatus || '{}');
+    const reservationByStatus = JSON.parse(chartDataElement.dataset.reservationStatus || '{}');
 
     /* Couleurs pour les graphiques */
     const colors = ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b', '#5a5c69'];
@@ -152,128 +152,131 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    /* Crée le graphique du statut des places */
+    /* Crée le graphique de l'état des places (libre/occupées/en maintenance) */
     function createPlaceStatusChart() {
         const canvas = document.getElementById('placeStatusChart');
-        if (!canvas || !placeStats?.by_status) return;
+        if (!canvas || !placeStats) return;
 
-        const labels = [];
-        const values = [];
-        const backgroundColors = [];
+        // Données spécifiques pour libre/occupées/en maintenance
+        const data = {
+            'Libres': placeStats.libre || 0,
+            'Occupées': placeStats.occupee || 0,
+            'En maintenance': placeStats.maintenance || 0
+        };
 
-        let colorIndex = 0;
-        for (const [status, count] of Object.entries(placeStats.by_status)) {
-            if (count > 0) {
-                labels.push(getStatusLabel(status));
-                values.push(count);
-                backgroundColors.push(colors[colorIndex % colors.length]);
-                colorIndex++;
-            }
-        }
+        const labels = Object.keys(data);
+        const values = Object.values(data);
+        const backgroundColors = ['#28a745', '#dc3545', '#ffc107']; // Vert, Rouge, Orange
 
-        if (labels.length > 0) {
-            createSafeChart(canvas, {
-                type: 'pie',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        data: values,
-                        backgroundColor: backgroundColors,
-                        hoverBackgroundColor: backgroundColors,
-                        hoverBorderColor: "rgba(234, 236, 244, 1)",
-                    }]
-                }
-            }, 'placeStatus');
-        }
-    }
-
-    /* Crée le graphique des abonnements */
-    function createSubscriptionsChart() {
-        const canvas = document.getElementById('subscriptionsChart');
-        if (!canvas || !subscriptionStats?.length) return;
-
-        const labels = [];
-        const values = [];
-        const backgroundColors = [];
-
-        let colorIndex = 0;
-        subscriptionStats.forEach(sub => {
-            const count = parseInt(sub.count || sub.active_count || 0);
-            const name = sub.name || sub.nom || 'Inconnu';
-
-            if (count >= 0) {
-                labels.push(name);
-                values.push(count);
-                backgroundColors.push(colors[colorIndex % colors.length]);
-                colorIndex++;
-            }
-        });
-
-        if (labels.length > 0) {
-            createSafeChart(canvas, {
-                type: 'doughnut',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        data: values,
-                        backgroundColor: backgroundColors,
-                        hoverBackgroundColor: backgroundColors,
-                        hoverBorderColor: "rgba(234, 236, 244, 1)",
-                    }]
-                }
-            }, 'subscriptions');
-        }
-    }
-
-    /* Crée le graphique des types de places */
-    function createPlaceTypeChart() {
-        const canvas = document.getElementById('placeTypeChart');
-        console.log('🔍 Canvas placeTypeChart:', canvas);
-        console.log('🔍 Données placeTypeStats:', placeTypeStats);
-        if (!canvas || !placeTypeStats) return;
-
-        const labels = [];
-        const values = [];
-        const backgroundColors = [];
-
-        let colorIndex = 0;
-        for (const [type, count] of Object.entries(placeTypeStats)) {
-            if (count > 0) {
-                labels.push(getTypeLabel(type));
-                values.push(count);
-                backgroundColors.push(colors[colorIndex % colors.length]);
-                colorIndex++;
-            }
-        }
-
-        if (labels.length > 0) {
-            createSafeChart(canvas, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Nombre de places',
-                        data: values,
-                        backgroundColor: backgroundColors,
-                        borderColor: backgroundColors,
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    plugins: {
-                        legend: { display: false }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                stepSize: 1
+        createSafeChart(canvas, {
+            type: 'pie',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: values,
+                    backgroundColor: backgroundColors,
+                    hoverBackgroundColor: backgroundColors,
+                    hoverBorderColor: "rgba(234, 236, 244, 1)",
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 15,
+                            usePointStyle: true,
+                            font: {
+                                size: 12
                             }
                         }
                     }
                 }
-            }, 'placeType');
+            }
+        }, 'placeStatus');
+    }
+
+
+
+    /* Crée le graphique des réservations par statut */
+    function createReservationStatusChart() {
+        const canvas = document.getElementById('reservationStatusChart');
+        console.log('🔍 Canvas reservationStatusChart:', canvas);
+        console.log('🔍 Données reservationByStatus:', reservationByStatus);
+        if (!canvas || !reservationByStatus) return;
+
+        // Données des réservations par statut (avec les vraies clés de la DB)
+        const data = {
+            'Confirmées': (reservationByStatus['confirmée'] || reservationByStatus.confirmee || 0),
+            'En attente': reservationByStatus.en_attente || 0,
+            'Annulées': (reservationByStatus['annulée'] || reservationByStatus.annulee || 0),
+            'Terminées': reservationByStatus.terminee || 0,
+            'En cours': reservationByStatus.en_cours || 0,
+            'Expirées': (reservationByStatus['expirée'] || reservationByStatus.expiree || 0),
+            'En cours immédiat': reservationByStatus.en_cours_immediat || 0,
+            'En attente paiement': reservationByStatus.en_attente_paiement || 0
+        };
+
+        // Filtrer les données pour ne garder que celles avec des valeurs > 0
+        const filteredData = {};
+        Object.entries(data).forEach(([key, value]) => {
+            if (value > 0) {
+                filteredData[key] = value;
+            }
+        });
+
+        const labels = Object.keys(filteredData);
+        const values = Object.values(filteredData);
+        const colorMap = {
+            'Confirmées': '#28a745',              // Vert
+            'En attente': '#ffc107',              // Orange
+            'Annulées': '#dc3545',                // Rouge
+            'Terminées': '#6c757d',               // Gris
+            'En cours': '#17a2b8',                // Bleu
+            'Expirées': '#343a40',                // Gris foncé
+            'En cours immédiat': '#fd7e14',       // Orange vif
+            'En attente paiement': '#20c997'      // Vert-bleu
+        };
+        const backgroundColors = labels.map(label => colorMap[label] || '#6c757d');
+
+        // Ne créer le graphique que s'il y a des données
+        if (labels.length === 0) {
+            canvas.parentElement.innerHTML = '<div class="empty-chart"><i class="fas fa-info-circle"></i><p>Aucune réservation trouvée</p></div>';
+            return;
         }
+
+        // Afficher un message informatif si un seul statut
+        if (labels.length === 1) {
+            console.log(`ℹ️ Graphique réservations: Un seul statut trouvé (${labels[0]}: ${values[0]})`);
+        }
+
+        createSafeChart(canvas, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Nombre de réservations',
+                    data: values,
+                    backgroundColor: backgroundColors,
+                    borderColor: backgroundColors,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                }
+            }
+        }, 'reservationStatus');
     }
 
     /* Crée le graphique des revenus */
@@ -384,10 +387,9 @@ document.addEventListener('DOMContentLoaded', function() {
     /* Initialise tous les graphiques avec des délais pour éviter les conflits */
     setTimeout(createPlacesChart, 100);
     setTimeout(createPlaceStatusChart, 200);
-    setTimeout(createSubscriptionsChart, 300);
-    setTimeout(createPlaceTypeChart, 400);
-    setTimeout(createSubscriptionsChartDetailed, 500);
-    setTimeout(createRevenueChart, 600);
+    setTimeout(createReservationStatusChart, 300);
+    setTimeout(createSubscriptionsChartDetailed, 400);
+    setTimeout(createRevenueChart, 500);
 
     console.log('✅ Dashboard initialisé');
 });

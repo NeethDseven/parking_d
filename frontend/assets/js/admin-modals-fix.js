@@ -297,7 +297,7 @@
 
     // Fonction pour masquer tous les breadcrumbs
     function hideBreadcrumbs() {
-        console.log('🚫 Masquage des breadcrumbs...');
+        // Masquage des breadcrumbs
 
         // Sélecteurs pour tous les types de breadcrumbs possibles
         const breadcrumbSelectors = [
@@ -351,7 +351,7 @@
                             node.tagName === 'OL' && node.classList.contains('breadcrumb') ||
                             node.getAttribute('aria-label') === 'breadcrumb'
                         )) {
-                            console.log('🆕 Nouveau breadcrumb détecté, masquage...');
+                            // Nouveau breadcrumb détecté, masquage
                             node.style.display = 'none';
                             node.style.visibility = 'hidden';
                         }

@@ -76,42 +76,70 @@ body::before {
 .navbar.navbar-dark {
     background-color: var(--bg-header) !important;
     box-shadow: var(--shadow-lg);
-    padding: var(--spacing-md) var(--spacing-xl);
+    padding: var(--spacing-md) var(--spacing-sm); /* Réduction du padding horizontal */
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     position: static;
     z-index: var(--z-header);
 }
 
-.navbar .container {
+.navbar .container,
+.navbar .container-fluid {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    max-width: 100% !important; /* Utiliser toute la largeur disponible */
+    padding-left: var(--spacing-sm) !important; /* Réduction des marges internes */
+    padding-right: var(--spacing-sm) !important;
+}
+
+/* Amélioration de l'espacement pour container-fluid */
+.navbar .container-fluid.px-3 {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
 }
 
 /* ========== LAYOUT DE NAVIGATION OPTIMISÉ (PAGES NORMALES UNIQUEMENT) ========== */
-/* Exclure les pages admin du nouveau layout */
-body:not([data-page*="admin"]) .navbar-collapse {
-    flex-grow: 1 !important;
-    display: flex !important;
-    justify-content: space-between !important;
-    align-items: center !important;
+/* Exclure les pages admin du nouveau layout - DESKTOP UNIQUEMENT */
+@media (min-width: 992px) {
+    body:not([data-page*="admin"]) .navbar-collapse {
+        flex-grow: 1 !important;
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+    }
 }
 
-/* Menu principal centré avec espacement optimisé (pages normales uniquement) */
-body:not([data-page*="admin"]) .navbar-nav.mx-auto {
-    flex-grow: 1 !important;
-    margin: 0 1rem !important;
-    display: flex !important;
-    justify-content: center !important;
-    max-width: none !important;
-    gap: 0.5rem !important;
+/* Menu principal étendu avec espacement optimisé (pages normales uniquement) - DESKTOP UNIQUEMENT */
+@media (min-width: 992px) {
+    body:not([data-page*="admin"]) .navbar-nav.me-auto.flex-grow-1.justify-content-evenly {
+        flex-grow: 1 !important;
+        margin: 0 0.5rem !important; /* Réduction des marges */
+        display: flex !important;
+        justify-content: space-evenly !important; /* Répartition équitable de l'espace */
+        max-width: none !important;
+        gap: 0.5rem !important; /* Espacement entre les éléments */
+    }
+
+    /* Fallback pour l'ancien style mx-auto */
+    body:not([data-page*="admin"]) .navbar-nav.mx-auto {
+        flex-grow: 1 !important;
+        margin: 0 0.5rem !important;
+        display: flex !important;
+        justify-content: space-evenly !important;
+        max-width: none !important;
+        gap: 0.5rem !important;
+    }
 }
 
-/* Menu utilisateur à droite compact (pages normales uniquement) */
-body:not([data-page*="admin"]) .navbar-nav:last-child {
-    margin-left: auto !important;
-    flex-shrink: 0 !important;
-    gap: 0.25rem !important;
+/* Menu utilisateur à droite compact (pages normales uniquement) - DESKTOP UNIQUEMENT */
+@media (min-width: 992px) {
+    body:not([data-page*="admin"]) .navbar-nav:last-child {
+        margin-left: 1rem !important; /* Marge pour séparer du menu principal */
+        flex-shrink: 0 !important;
+        gap: 0.5rem !important; /* Espacement entre notifications et profil */
+        display: flex !important;
+        align-items: center !important;
+    }
 }
 
 /* Layout admin : garder le style original */
@@ -135,13 +163,21 @@ body:not([data-page*="admin"]) .navbar .navbar-nav .nav-link {
     white-space: nowrap !important;
 }
 
-/* Espacement compact des éléments de navigation (pages normales uniquement) */
+/* Espacement optimisé des éléments de navigation (pages normales uniquement) */
 body:not([data-page*="admin"]) .navbar .navbar-nav .nav-item {
-    margin-right: 0.25rem !important;
+    margin-right: 0.5rem !important;
+    flex: 0 0 auto !important; /* Empêche l'étirement excessif */
 }
 
 body:not([data-page*="admin"]) .navbar .navbar-nav .nav-item:last-child {
     margin-right: 0 !important;
+}
+
+/* Amélioration de l'espacement pour les liens */
+body:not([data-page*="admin"]) .navbar .navbar-nav .nav-link {
+    padding: 0.5rem 0.75rem !important;
+    white-space: nowrap !important;
+    font-size: 0.95rem !important;
 }
 
 /* Optimisation des dropdowns */
@@ -156,7 +192,13 @@ body:not([data-page*="admin"]) .navbar .navbar-nav .dropdown-toggle::after {
 
 /* Responsive - mobile */
 @media (max-width: 991.98px) {
-    .navbar-collapse {
+    /* S'assurer que la navbar est fermée par défaut */
+    .navbar-collapse:not(.show) {
+        display: none !important;
+    }
+
+    .navbar-collapse.show {
+        display: block !important;
         flex-direction: column !important;
     }
 
@@ -165,6 +207,13 @@ body:not([data-page*="admin"]) .navbar .navbar-nav .dropdown-toggle::after {
         width: 100% !important;
         margin: 0 !important;
         justify-content: center !important;
+    }
+
+    /* Améliorer les transitions de la navbar */
+    .navbar-collapse.collapsing {
+        transition: height 0.35s ease !important;
+        overflow: hidden !important;
+        display: block !important;
     }
 }
 
@@ -312,20 +361,32 @@ body:not([data-page*="admin"]) .navbar .navbar-nav .dropdown-toggle::after {
 
 /* Mobile toggle */
 .navbar-dark .navbar-toggler {
-    border: none;
+    border: 1px solid rgba(255, 255, 255, 0.2);
     background-color: var(--accent-light);
     padding: var(--spacing-sm);
     border-radius: var(--radius-sm);
     color: var(--accent-primary);
+    transition: all var(--transition-normal);
+}
+
+.navbar-dark .navbar-toggler:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: var(--accent-primary);
 }
 
 .navbar-dark .navbar-toggler:focus {
     outline: none;
-    box-shadow: 0 0 0 3px var(--accent-light);
+    box-shadow: 0 0 0 3px rgba(241, 196, 15, 0.3);
 }
 
 .navbar-dark .navbar-toggler-icon {
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28241, 196, 15, 0.9%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+    transition: transform var(--transition-normal);
+}
+
+/* Animation du bouton toggle */
+.navbar-toggler:not(.collapsed) .navbar-toggler-icon {
+    transform: rotate(90deg);
 }
 
 /* ========== BOUTONS CONSOLIDÉS ========== */

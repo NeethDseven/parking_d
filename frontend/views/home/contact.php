@@ -36,8 +36,45 @@
                     <?php if (isset($success)): ?>
                         <div class="alert alert-success">
                             <?php echo $success; ?>
+                            <hr>
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <div>
+                                    <strong>Consulter les réponses :</strong><br>
+                                    <small>
+                                        <?php if (isset($_SESSION['user'])): ?>
+                                            Vous pouvez consulter nos réponses dans votre
+                                            <a href="<?php echo BASE_URL; ?>auth/profile#contact-messages" class="alert-link">
+                                                profil → Mes Messages
+                                            </a>
+                                        <?php else: ?>
+                                            Connectez-vous pour consulter nos réponses dans votre profil
+                                        <?php endif; ?>
+                                    </small>
+                                </div>
+                            </div>
                         </div>
-                    <?php else: ?>
+                    <?php elseif (isset($error)): ?>
+                        <div class="alert alert-danger">
+                            <?php echo $error; ?>
+                        </div>
+                    <?php endif; ?>
+
+                    <?php if (!isset($success)): ?>
+                        <!-- Information sur la consultation des réponses -->
+                        <div class="alert alert-info">
+                            <i class="fas fa-lightbulb me-2"></i>
+                            <strong>Bon à savoir :</strong>
+                            <?php if (isset($_SESSION['user'])): ?>
+                                Vous pourrez consulter notre réponse dans votre
+                                <a href="<?php echo BASE_URL; ?>auth/profile#contact-messages" class="alert-link">
+                                    profil → Mes Messages
+                                </a>
+                            <?php else: ?>
+                                Connectez-vous pour consulter nos réponses dans votre profil utilisateur
+                            <?php endif; ?>
+                        </div>
+
                         <form action="<?php echo BASE_URL; ?>home/contact" method="post" class="mt-4">
                             <div class="mb-3">
                                 <label for="nom" class="form-label">Nom complet</label>

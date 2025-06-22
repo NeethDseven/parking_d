@@ -2004,16 +2004,16 @@ nav[aria-label="breadcrumb"],
     }
 
     .sidebar {
-        transform: translateX(-100%);
-        z-index: 1050;
+        transform: translateX(-100%) !important;
+        z-index: 1050 !important;
     }
 
     .sidebar.show {
-        transform: translateX(0);
+        transform: translateX(0) !important;
     }
 
     .main-content {
-        margin-left: 0;
+        margin-left: 0 !important;
     }
 }
 
@@ -2522,43 +2522,36 @@ canvas[id*="type"] {
     }
 }
 
-/* ========== LAYOUT ULTRA-COMPACT DASHBOARD ========== */
+/* ========== LAYOUT RESPONSIVE DASHBOARD ========== */
 
-/* Container principal ultra-compact */
-.dashboard-ultra-compact-layout {
+/* Container principal responsive */
+.dashboard-responsive-layout {
     display: grid !important;
-    grid-template-columns: 250px 1fr 400px !important; /* Colonnes agrandies */
-    gap: 1.5rem !important; /* Gap augmenté */
-    margin-bottom: 1.5rem !important;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)) !important;
+    gap: 2rem !important;
+    margin-bottom: 2rem !important;
     align-items: start !important;
-    height: 500px !important; /* Hauteur considérablement augmentée */
-    max-height: 500px !important; /* Empêche l'agrandissement */
-    overflow: hidden !important; /* Empêche le débordement */
 }
 
-/* ========== STATS COMPACTES ========== */
-.dashboard-stats-compact {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 0.75rem !important; /* Gap augmenté */
-    height: 500px !important; /* Hauteur augmentée */
-    max-height: 500px !important;
-    overflow: hidden !important;
+/* ========== STATS RESPONSIVE ========== */
+.dashboard-stats-responsive {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) !important;
+    gap: 1rem !important;
+    margin-bottom: 2rem !important;
 }
 
-.stat-mini {
+.stat-responsive {
     background: white !important;
-    border-radius: 8px !important; /* Arrondi augmenté */
-    padding: 1.25rem !important; /* Padding considérablement augmenté */
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12) !important; /* Ombre plus prononcée */
+    border-radius: 12px !important;
+    padding: 1.5rem !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12) !important;
     display: flex !important;
     align-items: center !important;
-    gap: 1rem !important; /* Gap augmenté */
-    border-left: 4px solid #2c3e50 !important; /* Bordure plus épaisse */
-    height: 110px !important; /* Hauteur considérablement augmentée */
-    max-height: 110px !important;
-    min-height: 110px !important;
-    overflow: hidden !important;
+    gap: 1rem !important;
+    border-left: 4px solid #2c3e50 !important;
+    min-height: 120px !important;
+    transition: all 0.3s ease !important;
 }
 
 .stat-mini.primary { border-left-color: #2c3e50 !important; }
@@ -2611,26 +2604,22 @@ canvas[id*="type"] {
 .stat-mini-icon.warning { background: #ffc107 !important; }
 .stat-mini-icon.info { background: #17a2b8 !important; }
 
-/* ========== GRAPHIQUES ULTRA-COMPACTS ========== */
-.dashboard-charts-ultra-compact {
+/* ========== GRAPHIQUES RESPONSIVE ========== */
+.dashboard-charts-responsive {
     display: grid !important;
-    grid-template-columns: repeat(3, 1fr) !important; /* 3 colonnes au lieu de 4 pour plus d'espace */
-    grid-template-rows: repeat(2, 1fr) !important;
-    gap: 1rem !important; /* Gap augmenté */
-    height: 500px !important; /* Hauteur considérablement augmentée */
-    max-height: 500px !important;
-    overflow: hidden !important;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)) !important;
+    gap: 1.5rem !important;
+    margin-bottom: 2rem !important;
 }
 
-.chart-mini {
+.chart-responsive {
     background: white !important;
-    border-radius: 10px !important; /* Arrondi augmenté */
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12) !important; /* Ombre plus prononcée */
+    border-radius: 12px !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12) !important;
     overflow: hidden !important;
     display: flex !important;
     flex-direction: column !important;
-    height: 240px !important; /* Hauteur considérablement augmentée */
-    max-height: 240px !important;
+    min-height: 300px !important;
 }
 
 .chart-mini h6 {
@@ -2790,36 +2779,20 @@ canvas[id*="type"] {
     font-weight: 500 !important; /* Poids augmenté */
 }
 
-/* ========== RESPONSIVE ULTRA-COMPACT ========== */
+/* ========== RESPONSIVE AMÉLIORÉ ========== */
 @media (max-width: 1400px) {
-    .dashboard-ultra-compact-layout {
-        grid-template-columns: 220px 1fr 350px !important; /* Colonnes ajustées */
-        height: 450px !important; /* Hauteur ajustée */
+    .dashboard-responsive-layout {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
+        gap: 1.5rem !important;
     }
 
-    .dashboard-charts-ultra-compact {
-        grid-template-columns: repeat(3, 1fr) !important;
-        grid-template-rows: repeat(2, 1fr) !important;
-        height: 450px !important; /* Hauteur ajustée */
+    .dashboard-charts-responsive {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
+        gap: 1rem !important;
     }
 
-    .chart-detailed {
-        grid-column: span 1 !important; /* 1 colonne sur tablette */
-    }
-
-    .chart-mini {
-        height: 200px !important; /* Hauteur réduite sur tablette */
-    }
-
-    .chart-mini-container {
-        height: 150px !important;
-    }
-
-    .chart-mini-container canvas {
-        max-width: 140px !important;
-        max-height: 140px !important;
-        width: 140px !important;
-        height: 140px !important;
+    .chart-responsive {
+        min-height: 280px !important;
     }
 }
 
@@ -2951,56 +2924,6 @@ canvas[id*="type"] {
 
 /* Responsive pour toutes les pages admin */
 @media (max-width: 1200px) {
-    /* Sidebar responsive */
-    .admin-sidebar {
-        transform: translateX(-100%) !important;
-        position: fixed !important;
-        z-index: 1050 !important;
-        height: 100vh !important;
-        transition: transform 0.3s ease !important;
-    }
-
-    .admin-sidebar.show {
-        transform: translateX(0) !important;
-    }
-
-    .admin-main {
-        margin-left: 0 !important;
-        padding: 1rem !important;
-        width: 100% !important;
-    }
-
-    /* Hamburger menu visible */
-    .hamburger-btn {
-        display: block !important;
-        position: fixed !important;
-        top: 1rem !important;
-        left: 1rem !important;
-        z-index: 1051 !important;
-        background: #2c3e50 !important;
-        color: white !important;
-        border: none !important;
-        padding: 0.5rem !important;
-        border-radius: 4px !important;
-        cursor: pointer !important;
-    }
-
-    /* Overlay pour fermer la sidebar */
-    .sidebar-overlay {
-        position: fixed !important;
-        top: 0 !important;
-        left: 0 !important;
-        width: 100% !important;
-        height: 100% !important;
-        background: rgba(0, 0, 0, 0.5) !important;
-        z-index: 1049 !important;
-        display: none !important;
-    }
-
-    .sidebar-overlay.show {
-        display: block !important;
-    }
-
     /* Tables responsive */
     .admin-table-container {
         overflow-x: auto !important;

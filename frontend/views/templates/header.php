@@ -60,7 +60,7 @@ function getBaseUrl()
                 --bs-navbar-color: rgba(255, 255, 255, 0.85);
                 --bs-navbar-hover-color: var(--accent-color);
                 --bs-navbar-active-color: var(--accent-color);">
-        <div class="container">
+        <div class="container-fluid px-3">
             <!-- Logo à gauche -->
             <a class="navbar-brand d-flex align-items-center" href="<?php echo getBaseUrl(); ?>">
                 <div class="logo-container me-2">
@@ -74,8 +74,8 @@ function getBaseUrl()
             </button>
 
             <div class="collapse navbar-collapse" id="navbarNav">
-                <!-- Menu principal centré -->
-                <ul class="navbar-nav mx-auto">
+                <!-- Menu principal étendu -->
+                <ul class="navbar-nav me-auto flex-grow-1 justify-content-evenly">
                     <li class="nav-item">
                         <a class="nav-link <?php echo empty($_GET['url']) ? 'active' : ''; ?>" href="<?php echo getBaseUrl(); ?>">Accueil</a>
                     </li>

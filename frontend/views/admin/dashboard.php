@@ -27,171 +27,213 @@
             <?php unset($_SESSION['error']); ?>
         <?php endif; ?>
 
-        <!-- Layout ultra-compact : Stats + Graphiques + Tableaux en une seule ligne -->
-        <div class="dashboard-ultra-compact-layout">
-            <!-- Colonne 1 : Stats compactes -->
-            <div class="dashboard-stats-compact">
-                <div class="stat-mini primary">
-                    <div class="stat-mini-content">
-                        <h6>Utilisateurs</h6>
-                        <h3><?php echo $userStats['total']; ?></h3>
-                        <small><?php echo isset($userStats['new_this_month']) ? $userStats['new_this_month'] : 0; ?> nouveaux</small>
-                    </div>
-                    <div class="stat-mini-icon">
-                        <i class="fas fa-users"></i>
-                    </div>
-                </div>
-
-                <div class="stat-mini success">
-                    <div class="stat-mini-content">
-                        <h6>Revenus</h6>
-                        <h3><?php echo number_format($revenueStats['total'], 2); ?> €</h3>
-                        <small><?php echo number_format(isset($revenueStats['this_month']) ? $revenueStats['this_month'] : 0, 2); ?> € ce mois</small>
-                    </div>
-                    <div class="stat-mini-icon">
-                        <i class="fas fa-euro-sign"></i>
+        <!-- Layout desktop optimisé : Stats en haut, puis grille 2x2 -->
+        <div class="dashboard-desktop-layout">
+            <!-- Section 1 : Stats principales en haut sur toute la largeur -->
+            <div class="dashboard-stats-desktop">
+                <div class="stat-card primary">
+                    <div class="stat-card-content">
+                        <div class="stat-card-header">
+                            <h6>Utilisateurs total</h6>
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h2><?php echo $userStats['total']; ?></h2>
+                        <p class="stat-card-subtitle">Utilisateurs inscrits</p>
                     </div>
                 </div>
 
-                <div class="stat-mini warning">
-                    <div class="stat-mini-content">
-                        <h6>Réservations</h6>
-                        <h3><?php echo $reservationStats['total']; ?></h3>
-                        <small><?php echo $reservationStats['today']; ?> aujourd'hui</small>
-                    </div>
-                    <div class="stat-mini-icon">
-                        <i class="fas fa-calendar-check"></i>
+                <div class="stat-card primary-light">
+                    <div class="stat-card-content">
+                        <div class="stat-card-header">
+                            <h6>Nouveaux utilisateurs</h6>
+                            <i class="fas fa-user-plus"></i>
+                        </div>
+                        <h2><?php echo isset($userStats['new_this_month']) ? $userStats['new_this_month'] : 0; ?></h2>
+                        <p class="stat-card-subtitle">Ce mois-ci</p>
                     </div>
                 </div>
 
-                <div class="stat-mini info">
-                    <div class="stat-mini-content">
-                        <h6>Places libres</h6>
-                        <h3><?php echo isset($placeStats['libre']) ? $placeStats['libre'] : 0; ?></h3>
-                        <small>sur <?php echo $placeStats['total']; ?> places</small>
+                <div class="stat-card success">
+                    <div class="stat-card-content">
+                        <div class="stat-card-header">
+                            <h6>Revenus</h6>
+                            <i class="fas fa-euro-sign"></i>
+                        </div>
+                        <h2><?php echo number_format($revenueStats['total'], 2); ?> €</h2>
+                        <p class="stat-card-subtitle"><?php echo number_format(isset($revenueStats['this_month']) ? $revenueStats['this_month'] : 0, 2); ?> € ce mois</p>
                     </div>
-                    <div class="stat-mini-icon">
-                        <i class="fas fa-car"></i>
+                </div>
+
+                <div class="stat-card warning">
+                    <div class="stat-card-content">
+                        <div class="stat-card-header">
+                            <h6>Réservations</h6>
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                        <h2><?php echo $reservationStats['total']; ?></h2>
+                        <p class="stat-card-subtitle"><?php echo $reservationStats['today']; ?> aujourd'hui</p>
+                    </div>
+                </div>
+
+                <div class="stat-card info">
+                    <div class="stat-card-content">
+                        <div class="stat-card-header">
+                            <h6>Places libres</h6>
+                            <i class="fas fa-car"></i>
+                        </div>
+                        <h2><?php echo isset($placeStats['libre']) ? $placeStats['libre'] : 0; ?></h2>
+                        <p class="stat-card-subtitle">sur <?php echo $placeStats['total']; ?> places</p>
+                    </div>
+                </div>
+
+                <div class="stat-card secondary">
+                    <div class="stat-card-content">
+                        <div class="stat-card-header">
+                            <h6>Types de places</h6>
+                            <i class="fas fa-th-large"></i>
+                        </div>
+                        <h2><?php echo count($placeTypeStats ?? []); ?></h2>
+                        <p class="stat-card-subtitle">Types disponibles</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Colonne 2 : Graphiques ultra-compacts -->
-            <div class="dashboard-charts-ultra-compact">
-                <div class="chart-mini">
-                    <h6><i class="fas fa-chart-line"></i> Revenus</h6>
-                    <div class="chart-mini-container">
-                        <canvas id="revenueChart"></canvas>
+            <!-- Section 2 : Contenu principal en grille 2x2 -->
+            <div class="dashboard-main-grid">
+                <!-- Zone 1 : Graphiques principaux -->
+                <div class="dashboard-charts-main">
+                    <div class="chart-card featured">
+                        <div class="chart-card-header">
+                            <h5><i class="fas fa-chart-line"></i> Revenus mensuels</h5>
+                        </div>
+                        <div class="chart-card-body">
+                            <canvas id="revenueChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-card">
+                        <div class="chart-card-header">
+                            <h6><i class="fas fa-chart-pie"></i> Répartition des places</h6>
+                        </div>
+                        <div class="chart-card-body">
+                            <canvas id="placesChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-card">
+                        <div class="chart-card-header">
+                            <h6><i class="fas fa-chart-pie"></i> État des places</h6>
+                        </div>
+                        <div class="chart-card-body">
+                            <canvas id="placeStatusChart"></canvas>
+                        </div>
                     </div>
                 </div>
 
-                <div class="chart-mini">
-                    <h6><i class="fas fa-chart-pie"></i> Places</h6>
-                    <div class="chart-mini-container">
-                        <canvas id="placesChart"></canvas>
+                <!-- Zone 2 : Graphiques secondaires -->
+                <div class="dashboard-charts-secondary">
+                    <div class="chart-card">
+                        <div class="chart-card-header">
+                            <h6><i class="fas fa-chart-bar"></i> Réservations par statut</h6>
+                        </div>
+                        <div class="chart-card-body">
+                            <canvas id="reservationStatusChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-card detailed">
+                        <div class="chart-card-header">
+                            <h6><i class="fas fa-chart-donut"></i> Abonnements détaillés</h6>
+                        </div>
+                        <div class="chart-card-body">
+                            <canvas id="subscriptionsChartDetailed"></canvas>
+                        </div>
+                        <div class="chart-card-legend" id="subscriptionsLegendDetailed">
+                            <!-- La légende sera générée par JavaScript -->
+                        </div>
                     </div>
                 </div>
 
-                <div class="chart-mini">
-                    <h6><i class="fas fa-chart-donut"></i> Abonnements</h6>
-                    <div class="chart-mini-container">
-                        <canvas id="subscriptionsChart"></canvas>
+                <!-- Zone 3 : Informations et tableaux -->
+                <div class="dashboard-info-section">
+                    <div class="info-card">
+                        <div class="info-card-header">
+                            <h5><i class="fas fa-calendar-check"></i> Réservations actives</h5>
+                            <a href="<?php echo BASE_URL; ?>admin/reservations" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-list"></i> Voir tout
+                            </a>
+                        </div>
+                        <div class="info-card-body">
+                            <?php if (count($activeReservations) > 0): ?>
+                                <div class="reservations-list">
+                                    <?php foreach (array_slice($activeReservations, 0, 5) as $reservation): ?>
+                                        <div class="reservation-item">
+                                            <div class="reservation-place">
+                                                <span class="place-number"><?php echo htmlspecialchars($reservation['numero']); ?></span>
+                                            </div>
+                                            <div class="reservation-user">
+                                                <strong><?php echo htmlspecialchars($reservation['nom']); ?></strong>
+                                                <?php if (!empty($reservation['prenom'])): ?>
+                                                    <?php echo htmlspecialchars($reservation['prenom']); ?>
+                                                <?php endif; ?>
+                                            </div>
+                                            <div class="reservation-time">
+                                                <i class="fas fa-clock"></i>
+                                                <?php echo date('H:i', strtotime($reservation['date_debut'])); ?>
+                                                -
+                                                <?php echo date('H:i', strtotime($reservation['date_fin'])); ?>
+                                            </div>
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
+                            <?php else: ?>
+                                <div class="empty-state">
+                                    <i class="fas fa-info-circle"></i>
+                                    <p>Aucune réservation active</p>
+                                </div>
+                            <?php endif; ?>
+                        </div>
                     </div>
-                </div>
 
-                <div class="chart-mini">
-                    <h6><i class="fas fa-chart-bar"></i> Statut</h6>
-                    <div class="chart-mini-container">
-                        <canvas id="placeStatusChart"></canvas>
-                    </div>
-                </div>
-
-                <div class="chart-mini">
-                    <h6><i class="fas fa-chart-bar"></i> Types</h6>
-                    <div class="chart-mini-container">
-                        <canvas id="placeTypeChart"></canvas>
-                    </div>
-                </div>
-
-                <div class="chart-mini chart-detailed">
-                    <h6><i class="fas fa-chart-donut"></i> Abonnements détaillés</h6>
-                    <div class="chart-mini-container">
-                        <canvas id="subscriptionsChartDetailed"></canvas>
-                    </div>
-                    <div class="chart-mini-legend" id="subscriptionsLegendDetailed">
-                        <!-- La légende sera générée par JavaScript -->
+                    <!-- Activité récente -->
+                    <div class="info-card">
+                        <div class="info-card-header">
+                            <h5><i class="fas fa-history"></i> Activité récente</h5>
+                        </div>
+                        <div class="info-card-body">
+                            <?php if (count($recentLogs) > 0): ?>
+                                <div class="activity-list">
+                                    <?php foreach (array_slice($recentLogs, 0, 5) as $log): ?>
+                                        <div class="activity-item">
+                                            <div class="activity-time">
+                                                <i class="fas fa-clock"></i>
+                                                <?php echo date('H:i', strtotime($log['created_at'])); ?>
+                                            </div>
+                                            <div class="activity-content">
+                                                <div class="activity-user">
+                                                    <?php if ($log['nom'] && $log['prenom']): ?>
+                                                        <strong><?php echo htmlspecialchars($log['prenom'] . ' ' . $log['nom']); ?></strong>
+                                                    <?php else: ?>
+                                                        <em>Invité</em>
+                                                    <?php endif; ?>
+                                                </div>
+                                                <div class="activity-description">
+                                                    <?php echo htmlspecialchars($log['description']); ?>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
+                            <?php else: ?>
+                                <div class="empty-state">
+                                    <i class="fas fa-info-circle"></i>
+                                    <p>Aucune activité récente</p>
+                                </div>
+                            <?php endif; ?>
+                        </div>
                     </div>
                 </div>
             </div>
-
-            <!-- Colonne 3 : Tableaux compacts -->
-            <div class="dashboard-tables-compact">
-                <div class="table-mini">
-                    <div class="table-mini-header">
-                        <h6><i class="fas fa-calendar-check"></i> Réservations actives</h6>
-                        <a href="<?php echo BASE_URL; ?>admin/reservations" class="btn-mini">
-                            <i class="fas fa-list"></i>
-                        </a>
-                    </div>
-                    <div class="table-mini-body">
-                        <?php if (count($activeReservations) > 0): ?>
-                            <div class="table-mini-scroll">
-                                <?php foreach (array_slice($activeReservations, 0, 3) as $reservation): ?>
-                                    <div class="table-mini-row">
-                                        <div class="table-mini-cell">
-                                            <strong><?php echo htmlspecialchars($reservation['numero']); ?></strong>
-                                        </div>
-                                        <div class="table-mini-cell">
-                                            <?php echo htmlspecialchars($reservation['nom']); ?>
-                                        </div>
-                                        <div class="table-mini-cell">
-                                            <?php echo date('H:i', strtotime($reservation['date_debut'])); ?>
-                                        </div>
-                                    </div>
-                                <?php endforeach; ?>
-                            </div>
-                        <?php else: ?>
-                            <div class="table-mini-empty">
-                                <i class="fas fa-info-circle"></i>
-                                Aucune réservation
-                            </div>
-                        <?php endif; ?>
-                    </div>
-                </div>
-
-                <div class="table-mini">
-                    <div class="table-mini-header">
-                        <h6><i class="fas fa-history"></i> Dernières actions</h6>
-                    </div>
-                    <div class="table-mini-body">
-                        <?php if (count($recentLogs) > 0): ?>
-                            <div class="table-mini-scroll">
-                                <?php foreach (array_slice($recentLogs, 0, 3) as $log): ?>
-                                    <div class="table-mini-row">
-                                        <div class="table-mini-cell">
-                                            <?php echo date('H:i', strtotime($log['created_at'])); ?>
-                                        </div>
-                                        <div class="table-mini-cell">
-                                            <?php if ($log['nom'] && $log['prenom']): ?>
-                                                <?php echo htmlspecialchars($log['prenom']); ?>
-                                            <?php else: ?>
-                                                <em>Invité</em>
-                                            <?php endif; ?>
-                                        </div>
-                                        <div class="table-mini-cell">
-                                            <?php echo substr(htmlspecialchars($log['description']), 0, 20); ?>...
-                                        </div>
-                                    </div>
-                                <?php endforeach; ?>
-                            </div>
-                        <?php else: ?>
-                            <div class="table-mini-empty">
-                                <i class="fas fa-info-circle"></i>
-                                Aucune action
-                            </div>
-                        <?php endif; ?>
-                    </div>
-                </div>
             </div>
         </div>
 

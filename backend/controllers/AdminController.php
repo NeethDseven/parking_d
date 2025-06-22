@@ -9,6 +9,7 @@ class AdminController extends BaseController
     private $homeModel;
     private $logModel;
     private $subscriptionModel;
+    private $contactModel;
 
     public function __construct()
     {
@@ -22,6 +23,7 @@ class AdminController extends BaseController
         $this->homeModel = new HomeModel();
         $this->logModel = new LogModel();
         $this->subscriptionModel = new SubscriptionModel();
+        $this->contactModel = new ContactModel();
     }
 
     // Tableau de bord d'administration avec statistiques
@@ -865,5 +867,187 @@ class AdminController extends BaseController
         }
 
         return true;
+    }
+
+    // ====== GESTION DES MESSAGES DE CONTACT ======
+
+    /**
+     * Page principale des messages de contact
+     */
+    public function contact($page = 1)
+    {
+        $limit = 10;
+        $offset = ($page - 1) * $limit;
+        $statusFilter = isset($_GET['status']) ? $_GET['status'] : 'all';
+
+        // Récupérer les messages avec pagination
+        $messages = $this->contactModel->getMessagesPaginated($offset, $limit, $statusFilter);
+        $totalMessages = $this->contactModel->countMessages($statusFilter);
+        $totalPages = ceil($totalMessages / $limit);
+
+        // Récupérer les statistiques
+        $stats = $this->contactModel->getStats();
+
+        $data = $this->setActiveMenu('contact') + [
+            'title' => 'Messages de Contact - Administration',
+            'messages' => $messages,
+            'stats' => $stats,
+            'currentPage' => $page,
+            'totalPages' => $totalPages,
+            'totalMessages' => $totalMessages,
+            'statusFilter' => $statusFilter
+        ];
+
+        $this->renderView('admin/contact/index', $data, 'admin');
+    }
+
+    /**
+     * Affiche les détails d'un message de contact
+     */
+    public function contactView($id)
+    {
+        $message = $this->contactModel->getById($id);
+
+        if (!$message) {
+            $_SESSION['error'] = 'Message introuvable.';
+            header('Location: ' . BASE_URL . 'admin/contact');
+            exit;
+        }
+
+        // Marquer comme lu si c'est un nouveau message
+        if ($message['status'] === 'nouveau') {
+            $this->contactModel->markAsRead($id, $_SESSION['user']['id']);
+            $message['status'] = 'lu'; // Mettre à jour localement pour l'affichage
+        }
+
+        $data = $this->setActiveMenu('contact') + [
+            'title' => 'Détails du Message - Administration',
+            'message' => $message
+        ];
+
+        $this->renderView('admin/contact/view', $data, 'admin');
+    }
+
+    /**
+     * Traite la réponse à un message de contact
+     */
+    public function contactRespond($id)
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: ' . BASE_URL . 'admin/contactView/' . $id);
+            exit;
+        }
+
+        $message = $this->contactModel->getById($id);
+        if (!$message) {
+            $_SESSION['error'] = 'Message introuvable.';
+            header('Location: ' . BASE_URL . 'admin/contact');
+            exit;
+        }
+
+        $response = trim($_POST['admin_response'] ?? '');
+        if (empty($response)) {
+            $_SESSION['error'] = 'Veuillez saisir une réponse.';
+            header('Location: ' . BASE_URL . 'admin/contactView/' . $id);
+            exit;
+        }
+
+        $success = $this->contactModel->addAdminResponse($id, $response, $_SESSION['user']['id']);
+
+        if ($success) {
+            $_SESSION['success'] = 'Réponse ajoutée avec succès.';
+
+            // Log de l'action
+            $this->logModel->addLog($_SESSION['user']['id'], 'contact_response',
+                'Réponse ajoutée au message #' . $id . ' de ' . $message['email']);
+        } else {
+            $_SESSION['error'] = 'Erreur lors de l\'ajout de la réponse.';
+        }
+
+        header('Location: ' . BASE_URL . 'admin/contactView/' . $id);
+        exit;
+    }
+
+    /**
+     * Change le statut d'un message de contact
+     */
+    public function contactUpdateStatus($id)
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: ' . BASE_URL . 'admin/contact');
+            exit;
+        }
+
+        $status = $_POST['status'] ?? '';
+        $validStatuses = ['nouveau', 'lu', 'traite', 'archive'];
+
+        if (!in_array($status, $validStatuses)) {
+            $_SESSION['error'] = 'Statut invalide.';
+            header('Location: ' . BASE_URL . 'admin/contact');
+            exit;
+        }
+
+        $success = $this->contactModel->updateStatus($id, $status, $_SESSION['user']['id']);
+
+        if ($success) {
+            $_SESSION['success'] = 'Statut mis à jour avec succès.';
+        } else {
+            $_SESSION['error'] = 'Erreur lors de la mise à jour du statut.';
+        }
+
+        // Rediriger vers la page précédente ou la liste
+        $redirect = $_POST['redirect'] ?? BASE_URL . 'admin/contact';
+        header('Location: ' . $redirect);
+        exit;
+    }
+
+    /**
+     * Archive un message de contact
+     */
+    public function contactArchive($id)
+    {
+        $success = $this->contactModel->archiveMessage($id);
+
+        if ($success) {
+            $_SESSION['success'] = 'Message archivé avec succès.';
+        } else {
+            $_SESSION['error'] = 'Erreur lors de l\'archivage du message.';
+        }
+
+        header('Location: ' . BASE_URL . 'admin/contact');
+        exit;
+    }
+
+    /**
+     * Supprime définitivement un message de contact
+     */
+    public function contactDelete($id)
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: ' . BASE_URL . 'admin/contact');
+            exit;
+        }
+
+        $message = $this->contactModel->getById($id);
+        if (!$message) {
+            $_SESSION['error'] = 'Message introuvable.';
+            header('Location: ' . BASE_URL . 'admin/contact');
+            exit;
+        }
+
+        $success = $this->contactModel->deleteMessage($id);
+
+        if ($success) {
+            $_SESSION['success'] = 'Message supprimé définitivement.';
+
+            // Log de l'action
+            $this->logModel->addLog($_SESSION['user']['id'], 'contact_delete',
+                'Message #' . $id . ' de ' . $message['email'] . ' supprimé définitivement');
+        } else {
+            $_SESSION['error'] = 'Erreur lors de la suppression du message.';
+        }
+
+        header('Location: ' . BASE_URL . 'admin/contact');
+        exit;
     }
 }

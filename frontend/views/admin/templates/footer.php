@@ -7,6 +7,5 @@
 
     <!-- Scripts personnalisés admin -->
     <script src="<?php echo getBaseUrl(); ?>frontend/assets/js/admin-modals-fix.js?v=<?php echo time(); ?>"></script>
-    <script src="<?php echo getBaseUrl(); ?>frontend/assets/js/pages/admin-sidebar.js?v=<?php echo time(); ?>"></script>
 </body>
 </html>

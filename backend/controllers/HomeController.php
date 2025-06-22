@@ -119,11 +119,34 @@ class HomeController extends BaseController
 
         // Traitement du formulaire de contact
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            // Valider et traiter le formulaire ici
-            // ...
+            // Valider les champs requis
+            $requiredFields = ['nom', 'email', 'sujet', 'message', 'rgpd'];
+            $validated = $this->validateRequiredFields($requiredFields);
 
-            // Simuler l'envoi d'un email (dans une application réelle, utiliser mail() ou une bibliothèque comme PHPMailer)
-            $data['success'] = 'Votre message a été envoyé avec succès. Nous vous répondrons dans les plus brefs délais.';
+            if ($validated) {
+                // Créer le modèle de contact
+                $contactModel = new ContactModel();
+
+                // Sauvegarder le message en base de données
+                $messageId = $contactModel->createMessage(
+                    $validated['nom'],
+                    $validated['email'],
+                    $validated['sujet'],
+                    $validated['message']
+                );
+
+                if ($messageId) {
+                    $data['success'] = 'Votre message a été envoyé avec succès. Nous vous répondrons dans les plus brefs délais.';
+
+                    // Log de l'action
+                    $logModel = new LogModel();
+                    $logModel->addLog(null, 'contact_message', 'Nouveau message de contact reçu de ' . $validated['email']);
+                } else {
+                    $data['error'] = 'Une erreur est survenue lors de l\'envoi de votre message. Veuillez réessayer.';
+                }
+            } else {
+                $data['error'] = 'Veuillez remplir tous les champs obligatoires.';
+            }
         }
 
         $this->renderView('home/contact', $data);
@@ -242,4 +265,6 @@ class HomeController extends BaseController
 
         $this->renderView('home/careers', $data);
     }
+
+
 }
