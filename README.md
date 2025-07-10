@@ -627,7 +627,7 @@ mysql -u root -p parking_db < backup_20241222.sql
 - **Développeur** : Labidi Sami
 - **Email** : labidi.neeth@gmail.com
 - **Licence** : Open Source
-- **Dernière mise à jour** : Décembre 2024
+- **Dernière mise à jour** : Juin 2025
 - **Fonctionnalités principales** :
   - Interface moderne responsive
   - Dashboard administratif optimisé
